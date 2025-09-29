@@ -4,7 +4,6 @@ import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mrcrayfish.vehicle.client.EntityRayTracer;
 import com.mrcrayfish.vehicle.client.model.SpecialModels;
 import com.mrcrayfish.vehicle.client.render.AbstractLandVehicleRenderer;
-import com.mrcrayfish.vehicle.common.ItemLookup;
 import com.mrcrayfish.vehicle.entity.VehicleProperties;
 import com.mrcrayfish.vehicle.entity.Wheel;
 import com.mrcrayfish.vehicle.entity.vehicle.DuneBuggyEntity;
