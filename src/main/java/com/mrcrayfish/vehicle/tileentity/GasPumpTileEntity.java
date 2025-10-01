@@ -1,23 +1,21 @@
 package com.mrcrayfish.vehicle.tileentity;
 
-import com.mrcrayfish.obfuscate.common.data.SyncedPlayerData;
 import com.mrcrayfish.vehicle.Config;
 import com.mrcrayfish.vehicle.client.util.HermiteInterpolator;
 import com.mrcrayfish.vehicle.init.ModDataKeys;
 import com.mrcrayfish.vehicle.init.ModTileEntities;
 import com.mrcrayfish.vehicle.util.TileEntityUtil;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.tileentity.ITickableTileEntity;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvents;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.common.util.Constants;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import net.minecraftforge.fluids.capability.templates.FluidTank;
 
 import javax.annotation.Nullable;
@@ -26,17 +24,17 @@ import java.util.Optional;
 /**
  * Author: MrCrayfish
  */
-public class GasPumpTileEntity extends TileEntitySynced implements ITickableTileEntity
+public class GasPumpTileEntity extends TileEntitySynced
 {
     private int fuelingEntityId;
-    private PlayerEntity fuelingEntity;
+    private Player fuelingEntity;
 
     private HermiteInterpolator cachedSpline;
     private boolean recentlyUsed;
 
-    public GasPumpTileEntity()
+    public GasPumpTileEntity(BlockPos pos, BlockState state)
     {
-        super(ModTileEntities.GAS_PUMP.get());
+        super(ModTileEntities.GAS_PUMP.get(), pos, state);
     }
 
     public HermiteInterpolator getCachedSpline()
@@ -62,7 +60,7 @@ public class GasPumpTileEntity extends TileEntitySynced implements ITickableTile
     @Nullable
     public FluidTank getTank()
     {
-        TileEntity tileEntity = this.level.getBlockEntity(this.worldPosition.below());
+        BlockEntity tileEntity = this.level.getBlockEntity(this.worldPosition.below());
         if(tileEntity instanceof GasPumpTankTileEntity)
         {
             return ((GasPumpTankTileEntity) tileEntity).getFluidTank();
@@ -70,104 +68,96 @@ public class GasPumpTileEntity extends TileEntitySynced implements ITickableTile
         return null;
     }
 
-    public PlayerEntity getFuelingEntity()
+    public Player getFuelingEntity()
     {
         return this.fuelingEntity;
     }
 
-    public void setFuelingEntity(@Nullable PlayerEntity entity)
+    public void setFuelingEntity(@Nullable Player entity)
     {
         if(!this.level.isClientSide)
         {
             if(this.fuelingEntity != null)
             {
-                SyncedPlayerData.instance().set(this.fuelingEntity, ModDataKeys.GAS_PUMP, Optional.empty());
+                ModDataKeys.GAS_PUMP.setValue(this.fuelingEntity, Optional.empty());
             }
             this.fuelingEntity = null;
             this.fuelingEntityId = -1;
             if(entity != null)
             {
                 this.fuelingEntityId = entity.getId();
-                SyncedPlayerData.instance().set(entity, ModDataKeys.GAS_PUMP, Optional.of(this.getBlockPos()));
+                ModDataKeys.GAS_PUMP.setValue(entity, Optional.of(this.getBlockPos()));
             }
             this.syncToClient();
         }
     }
 
-    @Override
-    public void tick()
+    public static void tick(Level level, BlockPos pos, BlockState state, GasPumpTileEntity blockEntity)
     {
-        if(this.fuelingEntityId != -1)
+        if(blockEntity.fuelingEntityId != -1)
         {
-            if(this.fuelingEntity == null)
+            if(blockEntity.fuelingEntity == null)
             {
-                Entity entity = this.level.getEntity(this.fuelingEntityId);
-                if(entity instanceof PlayerEntity)
+                Entity entity = blockEntity.level.getEntity(blockEntity.fuelingEntityId);
+                if(entity instanceof Player)
                 {
-                    this.fuelingEntity = (PlayerEntity) entity;
+                    blockEntity.fuelingEntity = (Player) entity;
                 }
-                else if(!this.level.isClientSide)
+                else if(!blockEntity.level.isClientSide)
                 {
-                    this.fuelingEntityId = -1;
-                    this.syncFuelingEntity();
+                    blockEntity.fuelingEntityId = -1;
+                    blockEntity.syncFuelingEntity();
                 }
             }
         }
-        else if(this.level.isClientSide && this.fuelingEntity != null)
+        else if(blockEntity.level.isClientSide && blockEntity.fuelingEntity != null)
         {
-            this.fuelingEntity = null;
+            blockEntity.fuelingEntity = null;
         }
 
-        if(!this.level.isClientSide && this.fuelingEntity != null)
+        if(!blockEntity.level.isClientSide && blockEntity.fuelingEntity != null)
         {
-            if(Math.sqrt(this.fuelingEntity.distanceToSqr(this.worldPosition.getX() + 0.5, this.worldPosition.getY() + 0.5, this.worldPosition.getZ() + 0.5)) > Config.SERVER.maxHoseDistance.get() || !this.fuelingEntity.isAlive())
+            if(Math.sqrt(blockEntity.fuelingEntity.distanceToSqr(blockEntity.worldPosition.getX() + 0.5, blockEntity.worldPosition.getY() + 0.5, blockEntity.worldPosition.getZ() + 0.5)) > Config.SERVER.maxHoseDistance.get() || !blockEntity.fuelingEntity.isAlive())
             {
-                if(this.fuelingEntity.isAlive())
+                if(blockEntity.fuelingEntity.isAlive())
                 {
-                    this.level.playSound(null, this.fuelingEntity.blockPosition(), SoundEvents.ITEM_BREAK, SoundCategory.PLAYERS, 1.0F, 1.0F);
+                    blockEntity.level.playSound(null, blockEntity.fuelingEntity.blockPosition(), SoundEvents.ITEM_BREAK, SoundSource.PLAYERS, 1.0F, 1.0F);
                 }
-                SyncedPlayerData.instance().set(this.fuelingEntity, ModDataKeys.GAS_PUMP, Optional.empty());
-                this.fuelingEntityId = -1;
-                this.fuelingEntity = null;
-                this.syncFuelingEntity();
+                ModDataKeys.GAS_PUMP.setValue(blockEntity.fuelingEntity, Optional.empty());
+                blockEntity.fuelingEntityId = -1;
+                blockEntity.fuelingEntity = null;
+                blockEntity.syncFuelingEntity();
             }
         }
     }
 
     @Override
-    public void load(BlockState state, CompoundNBT compound)
+    public void load(CompoundTag compound)
     {
-        super.load(state, compound);
-        if(compound.contains("FuelingEntity", Constants.NBT.TAG_INT))
+        super.load(compound);
+        if(compound.contains("FuelingEntity", Tag.TAG_INT))
         {
             this.fuelingEntityId = compound.getInt("FuelingEntity");
         }
     }
 
     @Override
-    public CompoundNBT save(CompoundNBT compound)
+    public void saveAdditional(CompoundTag compound)
     {
+        super.saveAdditional(compound);
         compound.putInt("FuelingEntity", this.fuelingEntityId);
-        return super.save(compound);
     }
 
     private void syncFuelingEntity()
     {
-        CompoundNBT compound = new CompoundNBT();
-        compound.putInt("FuelingEntity", this.fuelingEntityId);
-        TileEntityUtil.sendUpdatePacket(this, super.save(compound));
+        CompoundTag compound = new CompoundTag();
+        this.saveAdditional(compound);
+        TileEntityUtil.sendUpdatePacket(this, compound);
     }
 
     @Override
-    public AxisAlignedBB getRenderBoundingBox()
+    public AABB getRenderBoundingBox()
     {
         return INFINITE_EXTENT_AABB;
-    }
-
-    @Override
-    @OnlyIn(Dist.CLIENT)
-    public double getViewDistance()
-    {
-        return 65536.0D;
     }
 }

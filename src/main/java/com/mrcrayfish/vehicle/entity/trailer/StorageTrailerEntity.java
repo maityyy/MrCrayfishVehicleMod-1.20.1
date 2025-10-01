@@ -10,21 +10,21 @@ import com.mrcrayfish.vehicle.network.message.MessageAttachTrailer;
 import com.mrcrayfish.vehicle.network.message.MessageOpenStorage;
 import com.mrcrayfish.vehicle.util.InventoryUtil;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.InventoryHelper;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.Hand;
-import net.minecraft.util.SoundEvents;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.world.World;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.Containers;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fml.DistExecutor;
 
 import javax.annotation.Nullable;
@@ -38,7 +38,7 @@ import java.util.Map;
 public class StorageTrailerEntity extends TrailerEntity implements IStorage
 {
     private static final EntityRayTracer.RayTracePart CONNECTION_BOX = new EntityRayTracer.RayTracePart(createScaledBoundingBox(-6 * 0.0625, 4.2 * 0.0625, 9 * 0.0625, 6 * 0.0625, 8.3 * 0.0625F, 17 * 0.0625, 1.1));
-    private static final EntityRayTracer.RayTracePart CHEST_BOX = new EntityRayTracer.RayTracePart(new AxisAlignedBB(-0.4375, 0.475, -0.4375, 0.4375, 1.34, 0.4375));
+    private static final EntityRayTracer.RayTracePart CHEST_BOX = new EntityRayTracer.RayTracePart(new AABB(-0.4375, 0.475, -0.4375, 0.4375, 1.34, 0.4375));
     private static final Map<EntityRayTracer.RayTracePart, EntityRayTracer.TriangleRayTraceList> interactionBoxMapStatic = DistExecutor.callWhenOn(Dist.CLIENT, () -> () -> {
         Map<EntityRayTracer.RayTracePart, EntityRayTracer.TriangleRayTraceList> map = new HashMap<>();
         map.put(CONNECTION_BOX, EntityRayTracer.boxToTriangles(CONNECTION_BOX.getBox(), null));
@@ -48,7 +48,7 @@ public class StorageTrailerEntity extends TrailerEntity implements IStorage
 
     private StorageInventory inventory;
 
-    public StorageTrailerEntity(EntityType<? extends StorageTrailerEntity> type, World worldIn)
+    public StorageTrailerEntity(EntityType<? extends StorageTrailerEntity> type, Level worldIn)
     {
         super(type, worldIn);
         this.initInventory();
@@ -101,7 +101,7 @@ public class StorageTrailerEntity extends TrailerEntity implements IStorage
             else if(result.getPartHit() == CHEST_BOX)
             {
                 PacketHandler.instance.sendToServer(new MessageOpenStorage(this.getId()));
-                Minecraft.getInstance().player.swing(Hand.MAIN_HAND);
+                Minecraft.getInstance().player.swing(InteractionHand.MAIN_HAND);
                 return true;
             }
         }
@@ -109,10 +109,10 @@ public class StorageTrailerEntity extends TrailerEntity implements IStorage
     }
 
     @Override
-    protected void readAdditionalSaveData(CompoundNBT compound)
+    protected void readAdditionalSaveData(CompoundTag compound)
     {
         super.readAdditionalSaveData(compound);
-        if(compound.contains("Inventory", Constants.NBT.TAG_LIST))
+        if(compound.contains("Inventory", Tag.TAG_LIST))
         {
             this.initInventory();
             InventoryUtil.readInventoryToNBT(compound, "Inventory", inventory);
@@ -120,7 +120,7 @@ public class StorageTrailerEntity extends TrailerEntity implements IStorage
     }
 
     @Override
-    protected void addAdditionalSaveData(CompoundNBT compound)
+    protected void addAdditionalSaveData(CompoundTag compound)
     {
         super.addAdditionalSaveData(compound);
         if(this.inventory != null)
@@ -153,7 +153,7 @@ public class StorageTrailerEntity extends TrailerEntity implements IStorage
         super.onVehicleDestroyed(entity);
         if(this.inventory != null)
         {
-            InventoryHelper.dropContents(this.level, this, this.inventory);
+            Containers.dropContents(this.level(), this, this.inventory);
         }
     }
 
@@ -170,13 +170,13 @@ public class StorageTrailerEntity extends TrailerEntity implements IStorage
     }
 
     @Override
-    public void startOpen(PlayerEntity player)
+    public void startOpen(Player player)
     {
         this.playSound(SoundEvents.CHEST_OPEN, 0.5F, 0.9F);
     }
 
     @Override
-    public ITextComponent getStorageName()
+    public Component getStorageName()
     {
         return this.getDisplayName();
     }

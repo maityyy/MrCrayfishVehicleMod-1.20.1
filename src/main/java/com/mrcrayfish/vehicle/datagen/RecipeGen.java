@@ -4,16 +4,18 @@ import com.mrcrayfish.vehicle.crafting.FluidEntry;
 import com.mrcrayfish.vehicle.crafting.WorkstationIngredient;
 import com.mrcrayfish.vehicle.entity.VehicleEntity;
 import com.mrcrayfish.vehicle.init.*;
-import net.minecraft.data.*;
-import net.minecraft.entity.EntityType;
-import net.minecraft.item.Item;
-import net.minecraft.item.Items;
-import net.minecraft.item.crafting.Ingredient;
-import net.minecraft.util.IItemProvider;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.data.PackOutput;
+import net.minecraft.data.recipes.*;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.level.ItemLike;
 import net.minecraftforge.common.Tags;
 import net.minecraftforge.common.crafting.conditions.ModLoadedCondition;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -24,17 +26,17 @@ import java.util.function.Consumer;
  */
 public class RecipeGen extends RecipeProvider
 {
-    public RecipeGen(DataGenerator generator)
+    public RecipeGen(PackOutput generator)
     {
         super(generator);
     }
 
     @Override
-    protected void buildShapelessRecipes(Consumer<IFinishedRecipe> consumer)
+    protected void buildRecipes(Consumer<FinishedRecipe> consumer)
     {
         netheriteSmithing(consumer, ModItems.DIAMOND_ELECTRIC_ENGINE.get(), ModItems.NETHERITE_ELECTRIC_ENGINE.get());
 
-        ShapedRecipeBuilder.shaped(ModItems.DIAMOND_ELECTRIC_ENGINE.get())
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.DIAMOND_ELECTRIC_ENGINE.get())
                 .pattern(" U ")
                 .pattern("UEU")
                 .pattern(" U ")
@@ -44,7 +46,7 @@ public class RecipeGen extends RecipeProvider
                 .unlockedBy("has_gold_electric_engine", has(ModItems.GOLD_ELECTRIC_ENGINE.get()))
                 .save(consumer);
 
-        ShapedRecipeBuilder.shaped(ModItems.GOLD_ELECTRIC_ENGINE.get())
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.GOLD_ELECTRIC_ENGINE.get())
                 .pattern(" U ")
                 .pattern("UEU")
                 .pattern(" U ")
@@ -54,7 +56,7 @@ public class RecipeGen extends RecipeProvider
                 .unlockedBy("has_iron_electric_engine", has(ModItems.IRON_ELECTRIC_ENGINE.get()))
                 .save(consumer);
 
-        ShapedRecipeBuilder.shaped(ModItems.IRON_ELECTRIC_ENGINE.get())
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.IRON_ELECTRIC_ENGINE.get())
                 .pattern("IRI")
                 .pattern("TBT")
                 .pattern("IPI")
@@ -72,7 +74,7 @@ public class RecipeGen extends RecipeProvider
 
         netheriteSmithing(consumer, ModItems.DIAMOND_SMALL_ENGINE.get(), ModItems.NETHERITE_SMALL_ENGINE.get());
 
-        ShapedRecipeBuilder.shaped(ModItems.DIAMOND_SMALL_ENGINE.get())
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.DIAMOND_SMALL_ENGINE.get())
                 .pattern(" U ")
                 .pattern("UEU")
                 .pattern(" U ")
@@ -82,7 +84,7 @@ public class RecipeGen extends RecipeProvider
                 .unlockedBy("has_gold_small_engine", has(ModItems.GOLD_SMALL_ENGINE.get()))
                 .save(consumer);
 
-        ShapedRecipeBuilder.shaped(ModItems.GOLD_SMALL_ENGINE.get())
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.GOLD_SMALL_ENGINE.get())
                 .pattern(" U ")
                 .pattern("UEU")
                 .pattern(" U ")
@@ -92,7 +94,7 @@ public class RecipeGen extends RecipeProvider
                 .unlockedBy("has_iron_small_engine", has(ModItems.IRON_SMALL_ENGINE.get()))
                 .save(consumer);
 
-        ShapedRecipeBuilder.shaped(ModItems.IRON_SMALL_ENGINE.get())
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.IRON_SMALL_ENGINE.get())
                 .pattern("IRI")
                 .pattern("PFP")
                 .pattern("IRI")
@@ -109,7 +111,7 @@ public class RecipeGen extends RecipeProvider
 
         netheriteSmithing(consumer, ModItems.DIAMOND_LARGE_ENGINE.get(), ModItems.NETHERITE_LARGE_ENGINE.get());
 
-        ShapedRecipeBuilder.shaped(ModItems.DIAMOND_LARGE_ENGINE.get())
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.DIAMOND_LARGE_ENGINE.get())
                 .pattern(" U ")
                 .pattern("UEU")
                 .pattern(" U ")
@@ -119,7 +121,7 @@ public class RecipeGen extends RecipeProvider
                 .unlockedBy("has_gold_large_engine", has(ModItems.GOLD_LARGE_ENGINE.get()))
                 .save(consumer);
 
-        ShapedRecipeBuilder.shaped(ModItems.GOLD_LARGE_ENGINE.get())
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.GOLD_LARGE_ENGINE.get())
                 .pattern(" U ")
                 .pattern("UEU")
                 .pattern(" U ")
@@ -129,7 +131,7 @@ public class RecipeGen extends RecipeProvider
                 .unlockedBy("has_iron_large_engine", has(ModItems.IRON_LARGE_ENGINE.get()))
                 .save(consumer);
 
-        ShapedRecipeBuilder.shaped(ModItems.IRON_LARGE_ENGINE.get())
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.IRON_LARGE_ENGINE.get())
                 .pattern("BRB")
                 .pattern("PFP")
                 .pattern("IRI")
@@ -146,7 +148,7 @@ public class RecipeGen extends RecipeProvider
                 .save(consumer);
 
         //TODO eventually add a battery component item
-        ShapedRecipeBuilder.shaped(ModBlocks.FLUID_EXTRACTOR.get())
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.FLUID_EXTRACTOR.get())
                 .pattern("III")
                 .pattern("GPR")
                 .pattern("IEI")
@@ -163,7 +165,7 @@ public class RecipeGen extends RecipeProvider
                 .save(consumer);
 
         //TODO eventually add a battery component item
-        ShapedRecipeBuilder.shaped(ModBlocks.FLUID_MIXER.get())
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.FLUID_MIXER.get())
                 .pattern("III")
                 .pattern("HRH")
                 .pattern("IEI")
@@ -177,7 +179,7 @@ public class RecipeGen extends RecipeProvider
                 .unlockedBy("has_engine", has(ModItems.IRON_ELECTRIC_ENGINE.get()))
                 .save(consumer);
 
-        ShapedRecipeBuilder.shaped(ModBlocks.FLUID_PIPE.get(), 8)
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.FLUID_PIPE.get(), 8)
                 .pattern("IRI")
                 .pattern("GGG")
                 .pattern("III")
@@ -189,7 +191,7 @@ public class RecipeGen extends RecipeProvider
                 .unlockedBy("has_glass_pane", has(Tags.Items.GLASS_PANES))
                 .save(consumer);
 
-        ShapedRecipeBuilder.shaped(ModBlocks.FLUID_PUMP.get(), 2)
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.FLUID_PUMP.get(), 2)
                 .pattern("IRI")
                 .pattern("GDG")
                 .pattern("IHI")
@@ -205,7 +207,7 @@ public class RecipeGen extends RecipeProvider
                 .unlockedBy("has_hopper", has(Items.HOPPER))
                 .save(consumer);
 
-        ShapedRecipeBuilder.shaped(ModBlocks.FUEL_DRUM.get())
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.FUEL_DRUM.get())
                 .pattern("III")
                 .pattern("PBP")
                 .pattern("III")
@@ -217,7 +219,7 @@ public class RecipeGen extends RecipeProvider
                 .unlockedBy("has_panel", has(ModItems.PANEL.get()))
                 .save(consumer);
 
-        ShapedRecipeBuilder.shaped(ModBlocks.INDUSTRIAL_FUEL_DRUM.get())
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.INDUSTRIAL_FUEL_DRUM.get())
                 .pattern("III")
                 .pattern("IFI")
                 .pattern("III")
@@ -227,7 +229,7 @@ public class RecipeGen extends RecipeProvider
                 .unlockedBy("has_fuel_drum", has(ModBlocks.FUEL_DRUM.get()))
                 .save(consumer);
 
-        ShapedRecipeBuilder.shaped(ModBlocks.GAS_PUMP.get())
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.GAS_PUMP.get())
                 .pattern("IRI")
                 .pattern("GPG")
                 .pattern("IFI")
@@ -243,7 +245,7 @@ public class RecipeGen extends RecipeProvider
                 .unlockedBy("has_gold_ingot", has(Tags.Items.INGOTS_GOLD))
                 .save(consumer);
 
-        ShapedRecipeBuilder.shaped(ModItems.HAMMER.get())
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.HAMMER.get())
                 .pattern("III")
                 .pattern(" G ")
                 .pattern(" W ")
@@ -255,7 +257,7 @@ public class RecipeGen extends RecipeProvider
                 .unlockedBy("has_black_wool", has(Items.BLACK_WOOL))
                 .save(consumer);
 
-        ShapedRecipeBuilder.shaped(ModItems.WRENCH.get())
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.WRENCH.get())
                 .pattern("I")
                 .pattern("G")
                 .pattern("W")
@@ -267,7 +269,7 @@ public class RecipeGen extends RecipeProvider
                 .unlockedBy("has_black_wool", has(Items.BLACK_WOOL))
                 .save(consumer);
 
-        ShapedRecipeBuilder.shaped(ModItems.JERRY_CAN.get())
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.JERRY_CAN.get())
                 .pattern("III")
                 .pattern("IDI")
                 .pattern("III")
@@ -277,7 +279,7 @@ public class RecipeGen extends RecipeProvider
                 .unlockedBy("has_purple_dye", has(Tags.Items.DYES_PURPLE))
                 .save(consumer);
 
-        ShapedRecipeBuilder.shaped(ModItems.INDUSTRIAL_JERRY_CAN.get())
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.INDUSTRIAL_JERRY_CAN.get())
                 .pattern("III")
                 .pattern("IJI")
                 .pattern("III")
@@ -287,7 +289,7 @@ public class RecipeGen extends RecipeProvider
                 .unlockedBy("has_jerry_can", has(ModItems.JERRY_CAN.get()))
                 .save(consumer);
 
-        ShapedRecipeBuilder.shaped(ModBlocks.JACK.get())
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.JACK.get())
                 .pattern("IPI")
                 .pattern("IRI")
                 .define('I', Tags.Items.INGOTS_GOLD)
@@ -298,7 +300,7 @@ public class RecipeGen extends RecipeProvider
                 .unlockedBy("has_redstone", has(Items.REDSTONE))
                 .save(consumer);
 
-        ShapedRecipeBuilder.shaped(ModItems.KEY.get())
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.KEY.get())
                 .pattern("WII")
                 .define('W', Items.BLACK_WOOL)
                 .define('I', Tags.Items.INGOTS_GOLD)
@@ -306,14 +308,14 @@ public class RecipeGen extends RecipeProvider
                 .unlockedBy("has_iron_ingot", has(Tags.Items.INGOTS_IRON))
                 .save(consumer);
 
-        ShapedRecipeBuilder.shaped(ModItems.PANEL.get(), 2)
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.PANEL.get(), 2)
                 .pattern("III")
                 .pattern("III")
                 .define('I', Tags.Items.NUGGETS_IRON)
                 .unlockedBy("has_iron_nugget", has(Tags.Items.NUGGETS_IRON))
                 .save(consumer);
 
-        ShapedRecipeBuilder.shaped(ModBlocks.TRAFFIC_CONE.get(), 8)
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.TRAFFIC_CONE.get(), 8)
                 .pattern("O")
                 .pattern("W")
                 .pattern("O")
@@ -323,7 +325,7 @@ public class RecipeGen extends RecipeProvider
                 .unlockedBy("has_white_concrete", has(Items.WHITE_CONCRETE))
                 .save(consumer);
 
-        ShapedRecipeBuilder.shaped(ModBlocks.WORKSTATION.get())
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.WORKSTATION.get())
                 .pattern("III")
                 .pattern("GCG")
                 .pattern("GGG")
@@ -335,7 +337,7 @@ public class RecipeGen extends RecipeProvider
                 .unlockedBy("has_crafting_table", has(Items.CRAFTING_TABLE))
                 .save(consumer);
 
-        ShapedRecipeBuilder.shaped(ModItems.SPRAY_CAN.get())
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.SPRAY_CAN.get())
                 .pattern("IDI")
                 .pattern("IWI")
                 .pattern("III")
@@ -349,8 +351,8 @@ public class RecipeGen extends RecipeProvider
 
         //TODO crafting wheels, boost ramp and pads,
 
-        CustomRecipeBuilder.special(ModRecipeSerializers.COLOR_SPRAY_CAN.get()).save(consumer, "vehicle:color_spray_can");
-        CustomRecipeBuilder.special(ModRecipeSerializers.REFILL_SPRAY_CAN.get()).save(consumer, "vehicle:refill_spray_can");
+        SpecialRecipeBuilder.special(ModRecipeSerializers.COLOR_SPRAY_CAN.get()).save(consumer, "vehicle:color_spray_can");
+        SpecialRecipeBuilder.special(ModRecipeSerializers.REFILL_SPRAY_CAN.get()).save(consumer, "vehicle:refill_spray_can");
 
         // Vehicles
         workstationCrafting(consumer, ModEntities.ALUMINUM_BOAT.get(), WorkstationIngredient.of(Tags.Items.INGOTS_IRON, 80), WorkstationIngredient.of(ModItems.PANEL.get(), 10));
@@ -389,32 +391,33 @@ public class RecipeGen extends RecipeProvider
         fluidMixing(consumer, FluidEntry.of(ModFluids.ENDER_SAP.get(), 200),  FluidEntry.of(ModFluids.BLAZE_JUICE.get(), 200), Items.GLOWSTONE_DUST, FluidEntry.of(ModFluids.FUELIUM.get(), 400));
     }
 
-    private static void netheriteSmithing(Consumer<IFinishedRecipe> consumer, Item inputItem, Item resultItem)
+    private static void netheriteSmithing(Consumer<FinishedRecipe> consumer, Item inputItem, Item resultItem)
     {
-        ResourceLocation id = Registry.ITEM.getKey(resultItem.asItem());
-        SmithingRecipeBuilder.smithing(Ingredient.of(inputItem), Ingredient.of(Items.NETHERITE_INGOT), resultItem).unlocks("has_netherite_ingot", has(Items.NETHERITE_INGOT)).save(consumer, new ResourceLocation(id.getNamespace(), id.getPath() + "_smithing"));
+        ResourceLocation id = BuiltInRegistries.ITEM.getKey(resultItem.asItem());
+        // FIXME
+        SmithingTransformRecipeBuilder.smithing(Ingredient.of(Items.NETHERITE_UPGRADE_SMITHING_TEMPLATE), Ingredient.of(inputItem), Ingredient.of(Items.NETHERITE_INGOT), RecipeCategory.MISC, resultItem).unlocks("has_netherite_ingot", has(Items.NETHERITE_INGOT)).save(consumer, new ResourceLocation(id.getNamespace(), id.getPath() + "_smithing"));
     }
 
-    private static void workstationCrafting(Consumer<IFinishedRecipe> consumer, EntityType<? extends VehicleEntity> type, WorkstationIngredient ... materials)
+    private static void workstationCrafting(Consumer<FinishedRecipe> consumer, EntityType<? extends VehicleEntity> type, WorkstationIngredient ... materials)
     {
-        ResourceLocation entityId = Objects.requireNonNull(type.getRegistryName());
+        ResourceLocation entityId = Objects.requireNonNull(ForgeRegistries.ENTITY_TYPES.getKey(type)); // FIXME
         WorkstationRecipeBuilder.crafting(entityId, Arrays.asList(materials)).save(consumer, new ResourceLocation(entityId.getNamespace(), entityId.getPath() + "_crafting"));
     }
 
-    private static void dependantWorkstationCrafting(Consumer<IFinishedRecipe> consumer, String modId, ResourceLocation entityId, WorkstationIngredient ... materials)
+    private static void dependantWorkstationCrafting(Consumer<FinishedRecipe> consumer, String modId, ResourceLocation entityId, WorkstationIngredient ... materials)
     {
         WorkstationRecipeBuilder.crafting(entityId, Arrays.asList(materials)).addCondition(new ModLoadedCondition(modId)).save(consumer, new ResourceLocation(entityId.getNamespace(), entityId.getPath() + "_crafting"));
     }
 
-    private static void fluidExtracting(Consumer<IFinishedRecipe> consumer, IItemProvider provider, FluidEntry output)
+    private static void fluidExtracting(Consumer<FinishedRecipe> consumer, ItemLike provider, FluidEntry output)
     {
-        ResourceLocation id = Objects.requireNonNull(output.getFluid().getRegistryName());
+        ResourceLocation id = Objects.requireNonNull(ForgeRegistries.FLUIDS.getKey(output.getFluid())); // FIXME
         FluidExtractorRecipeBuilder.extracting(Ingredient.of(provider), output).save(consumer, new ResourceLocation(id.getNamespace(), id.getPath() + "_extracting"));
     }
 
-    private static void fluidMixing(Consumer<IFinishedRecipe> consumer, FluidEntry inputOne, FluidEntry inputTwo, IItemProvider provider, FluidEntry output)
+    private static void fluidMixing(Consumer<FinishedRecipe> consumer, FluidEntry inputOne, FluidEntry inputTwo, ItemLike provider, FluidEntry output)
     {
-        ResourceLocation id = Objects.requireNonNull(output.getFluid().getRegistryName());
+        ResourceLocation id = Objects.requireNonNull(ForgeRegistries.FLUIDS.getKey(output.getFluid())); // FIXME
         FluidMixerRecipeBuilder.mixing(inputOne, inputTwo, Ingredient.of(provider), output).save(consumer, new ResourceLocation(id.getNamespace(), id.getPath() + "_mixing"));
     }
 }

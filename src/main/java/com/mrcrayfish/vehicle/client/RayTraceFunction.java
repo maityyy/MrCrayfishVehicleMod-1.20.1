@@ -1,6 +1,5 @@
 package com.mrcrayfish.vehicle.client;
 
-import com.mrcrayfish.obfuscate.common.data.SyncedPlayerData;
 import com.mrcrayfish.vehicle.Config;
 import com.mrcrayfish.vehicle.client.handler.ControllerHandler;
 import com.mrcrayfish.vehicle.entity.PoweredVehicleEntity;
@@ -10,16 +9,17 @@ import com.mrcrayfish.vehicle.network.PacketHandler;
 import com.mrcrayfish.vehicle.network.message.MessageFuelVehicle;
 import com.mrcrayfish.vehicle.tileentity.GasPumpTankTileEntity;
 import com.mrcrayfish.vehicle.tileentity.GasPumpTileEntity;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandlerItem;
 import net.minecraftforge.fluids.capability.templates.FluidTank;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.Optional;
 
@@ -28,7 +28,7 @@ import java.util.Optional;
  */
 public interface RayTraceFunction
 {
-    Hand apply(EntityRayTracer rayTracer, EntityRayTracer.RayTraceResultRotated result, PlayerEntity player);
+    InteractionHand apply(EntityRayTracer rayTracer, EntityRayTracer.RayTraceResultRotated result, Player player);
 
     /**
      * Checks if fuel can be transferred from a jerry can to a powered vehicle, and sends a packet to do so every other tick, if it can
@@ -45,43 +45,43 @@ public interface RayTraceFunction
         if(!poweredVehicle.requiresFuel() || poweredVehicle.getCurrentFuel() >= poweredVehicle.getFuelCapacity())
             return null;
 
-        gasPump: if(SyncedPlayerData.instance().get(player, ModDataKeys.GAS_PUMP).isPresent() && ControllerHandler.isRightClicking())
+        gasPump: if(ModDataKeys.GAS_PUMP.getValue(player).isPresent() && ControllerHandler.isRightClicking())
         {
-            BlockPos pos = SyncedPlayerData.instance().get(player, ModDataKeys.GAS_PUMP).get();
-            TileEntity tileEntity = player.level.getBlockEntity(pos);
+            BlockPos pos = ModDataKeys.GAS_PUMP.getValue(player).get();
+            BlockEntity tileEntity = player.level().getBlockEntity(pos);
             if(!(tileEntity instanceof GasPumpTileEntity))
                 break gasPump;
 
-            tileEntity = player.level.getBlockEntity(pos.below());
+            tileEntity = player.level().getBlockEntity(pos.below());
             if(!(tileEntity instanceof GasPumpTankTileEntity))
                 break gasPump;
 
             GasPumpTankTileEntity gasPumpTank = (GasPumpTankTileEntity) tileEntity;
             FluidTank tank = gasPumpTank.getFluidTank();
             FluidStack stack = tank.getFluid();
-            if(stack.isEmpty() || !Config.SERVER.validFuels.get().contains(stack.getFluid().getRegistryName().toString()))
+            if(stack.isEmpty() || !Config.SERVER.validFuels.get().contains(ForgeRegistries.FLUIDS.getKey(stack.getFluid()).toString())) // FIXME
                 break gasPump;
 
             if(rayTracer.getContinuousInteractionTickCounter() % 2 == 0)
             {
-                PacketHandler.instance.sendToServer(new MessageFuelVehicle(result.getEntity().getId(), Hand.MAIN_HAND));
+                PacketHandler.instance.sendToServer(new MessageFuelVehicle(result.getEntity().getId(), InteractionHand.MAIN_HAND));
             }
-            return Hand.MAIN_HAND;
+            return InteractionHand.MAIN_HAND;
         }
 
-        for(Hand hand : Hand.values())
+        for(InteractionHand hand : InteractionHand.values())
         {
             ItemStack stack = player.getItemInHand(hand);
             if(stack.isEmpty() || !(stack.getItem() instanceof JerryCanItem) || !ControllerHandler.isRightClicking())
                 continue;
 
-            Optional<IFluidHandlerItem> optional = stack.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY).resolve();
+            Optional<IFluidHandlerItem> optional = stack.getCapability(ForgeCapabilities.FLUID_HANDLER_ITEM).resolve();
             if(!optional.isPresent())
                 continue;
 
             IFluidHandlerItem handler = optional.get();
             FluidStack fluidStack = handler.getFluidInTank(0);
-            if(fluidStack.isEmpty() || !Config.SERVER.validFuels.get().contains(fluidStack.getFluid().getRegistryName().toString()))
+            if(fluidStack.isEmpty() || !Config.SERVER.validFuels.get().contains(ForgeRegistries.FLUIDS.getKey(fluidStack.getFluid()).toString())) // FIXME
                 continue;
 
             if(rayTracer.getContinuousInteractionTickCounter() % 2 == 0)

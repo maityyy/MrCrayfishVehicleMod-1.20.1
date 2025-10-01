@@ -5,15 +5,15 @@ import com.mrcrayfish.vehicle.common.entity.PartPosition;
 import com.mrcrayfish.vehicle.network.PacketHandler;
 import com.mrcrayfish.vehicle.network.message.MessageDrift;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.network.datasync.DataParameter;
-import net.minecraft.network.datasync.DataSerializers;
-import net.minecraft.network.datasync.EntityDataManager;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.world.World;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -22,7 +22,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
  */
 public abstract class LandVehicleEntity extends PoweredVehicleEntity
 {
-    private static final DataParameter<Boolean> DRIFTING = EntityDataManager.defineId(LandVehicleEntity.class, DataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> DRIFTING = SynchedEntityData.defineId(LandVehicleEntity.class, EntityDataSerializers.BOOLEAN);
 
     public float drifting;
     public float additionalYaw;
@@ -37,7 +37,7 @@ public abstract class LandVehicleEntity extends PoweredVehicleEntity
     @OnlyIn(Dist.CLIENT)
     public float prevRearWheelRotation;
 
-    public LandVehicleEntity(EntityType<?> entityType, World worldIn)
+    public LandVehicleEntity(EntityType<?> entityType, Level worldIn)
     {
         super(entityType, worldIn);
     }
@@ -101,11 +101,11 @@ public abstract class LandVehicleEntity extends PoweredVehicleEntity
             if(acceleration == AccelerationDirection.CHARGING && this.charging)
             {
                 PartPosition bodyPosition = properties.getBodyPosition();
-                Vector3d frontAxel = properties.getFrontAxelVec().scale(0.0625F).scale(bodyPosition.getScale());
-                Vector3d nextFrontAxel = frontAxel.yRot((this.turnAngle / 20F) * 0.017453292F);
-                Vector3d deltaAxel = frontAxel.subtract(nextFrontAxel).yRot(-this.yRot * 0.017453292F);
+                Vec3 frontAxel = properties.getFrontAxelVec().scale(0.0625F).scale(bodyPosition.getScale());
+                Vec3 nextFrontAxel = frontAxel.yRot((this.turnAngle / 20F) * 0.017453292F);
+                Vec3 deltaAxel = frontAxel.subtract(nextFrontAxel).yRot(-this.getYRot() * 0.017453292F);
                 double deltaYaw = -this.turnAngle / 20F;
-                this.yRot += deltaYaw;
+                this.setYRot((float) (this.getYRot() + deltaYaw));
                 this.deltaYaw = (float) -deltaYaw;
                 this.vehicleMotionX = (float) deltaAxel.x();
                 if(!this.launching)
@@ -117,25 +117,25 @@ public abstract class LandVehicleEntity extends PoweredVehicleEntity
             }
 
             PartPosition bodyPosition = properties.getBodyPosition();
-            Vector3d nextFrontAxelVec = new Vector3d(0, 0, currentSpeed / 20F).yRot(this.wheelAngle * 0.017453292F);
+            Vec3 nextFrontAxelVec = new Vec3(0, 0, currentSpeed / 20F).yRot(this.wheelAngle * 0.017453292F);
             nextFrontAxelVec = nextFrontAxelVec.add(properties.getFrontAxelVec().scale(0.0625).scale(bodyPosition.getScale()));
-            Vector3d nextRearAxelVec = new Vector3d(0, 0, currentSpeed / 20F);
+            Vec3 nextRearAxelVec = new Vec3(0, 0, currentSpeed / 20F);
             nextRearAxelVec = nextRearAxelVec.add(properties.getRearAxelVec().scale(0.0625).scale(bodyPosition.getScale()));
             double deltaYaw = Math.toDegrees(Math.atan2(nextRearAxelVec.z - nextFrontAxelVec.z, nextRearAxelVec.x - nextFrontAxelVec.x)) + 90;
             if(this.isRearWheelSteering())
             {
                 deltaYaw -= 180;
             }
-            this.yRot += deltaYaw;
+            this.setYRot((float) (this.getYRot() + deltaYaw));
             this.deltaYaw = (float) -deltaYaw;
 
-            Vector3d nextVehicleVec = nextFrontAxelVec.add(nextRearAxelVec).scale(0.5);
+            Vec3 nextVehicleVec = nextFrontAxelVec.add(nextRearAxelVec).scale(0.5);
             nextVehicleVec = nextVehicleVec.subtract(properties.getFrontAxelVec().add(properties.getRearAxelVec()).scale(0.0625).scale(bodyPosition.getScale()).scale(0.5));
-            nextVehicleVec = nextVehicleVec.scale(bodyPosition.getScale()).yRot((-this.yRot + 90) * 0.017453292F);
+            nextVehicleVec = nextVehicleVec.scale(bodyPosition.getScale()).yRot((-this.getYRot() + 90) * 0.017453292F);
 
             float targetRotation = (float) Math.toDegrees(Math.atan2(nextVehicleVec.z, nextVehicleVec.x));
-            float f1 = MathHelper.sin(targetRotation * 0.017453292F) / 20F * (currentSpeed > 0 ? 1 : -1);
-            float f2 = MathHelper.cos(targetRotation * 0.017453292F) / 20F * (currentSpeed > 0 ? 1 : -1);
+            float f1 = Mth.sin(targetRotation * 0.017453292F) / 20F * (currentSpeed > 0 ? 1 : -1);
+            float f2 = Mth.cos(targetRotation * 0.017453292F) / 20F * (currentSpeed > 0 ? 1 : -1);
             this.vehicleMotionX = (-currentSpeed * f1);
             if(!launching)
             {
@@ -145,8 +145,8 @@ public abstract class LandVehicleEntity extends PoweredVehicleEntity
         }
         else
         {
-            float f1 = MathHelper.sin(this.yRot * 0.017453292F) / 20F;
-            float f2 = MathHelper.cos(this.yRot * 0.017453292F) / 20F;
+            float f1 = Mth.sin(this.getYRot() * 0.017453292F) / 20F;
+            float f2 = Mth.cos(this.getYRot() * 0.017453292F) / 20F;
             this.vehicleMotionX = (-currentSpeed * f1);
             if(!launching)
             {
@@ -158,7 +158,7 @@ public abstract class LandVehicleEntity extends PoweredVehicleEntity
     @Override
     protected void updateTurning()
     {
-        if(this.level.isClientSide())
+        if(this.level().isClientSide())
         {
             this.turnAngle = VehicleHelper.getTargetTurnAngle(this, this.isDrifting());
         }
@@ -175,7 +175,7 @@ public abstract class LandVehicleEntity extends PoweredVehicleEntity
             this.deltaYaw = this.wheelAngle * (this.currentSpeed / 30F) / 2F;
         }
 
-        if(this.level.isClientSide)
+        if(this.level().isClientSide)
         {
             this.targetWheelAngle = this.isDrifting() ? -35F * (this.turnAngle / (float) this.getMaxTurnAngle()) * this.getNormalSpeed() : this.wheelAngle - 35F * (this.turnAngle / (float) this.getMaxTurnAngle()) * drifting;
             this.renderWheelAngle = this.renderWheelAngle + (this.targetWheelAngle - this.renderWheelAngle) * (this.isDrifting() ? 0.35F : 0.5F);
@@ -246,7 +246,7 @@ public abstract class LandVehicleEntity extends PoweredVehicleEntity
         super.removePassenger(passenger);
         if(this.getControllingPassenger() == null)
         {
-            this.yRot -= this.additionalYaw;
+            this.setYRot(this.getYRot() - this.additionalYaw);
             this.additionalYaw = 0;
             this.drifting = 0;
         }
@@ -282,7 +282,7 @@ public abstract class LandVehicleEntity extends PoweredVehicleEntity
     @Override
     public float getModifiedRotationYaw()
     {
-        return this.yRot - this.additionalYaw;
+        return this.getYRot() - this.additionalYaw;
     }
 
     public boolean isRearWheelSteering()

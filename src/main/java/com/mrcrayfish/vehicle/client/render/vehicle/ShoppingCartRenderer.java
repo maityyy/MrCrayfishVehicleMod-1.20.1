@@ -1,14 +1,14 @@
 package com.mrcrayfish.vehicle.client.render.vehicle;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mrcrayfish.vehicle.client.EntityRayTracer;
 import com.mrcrayfish.vehicle.client.model.SpecialModels;
 import com.mrcrayfish.vehicle.client.render.AbstractLandVehicleRenderer;
 import com.mrcrayfish.vehicle.entity.VehicleProperties;
 import com.mrcrayfish.vehicle.entity.vehicle.ShoppingCartEntity;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
-import net.minecraft.client.renderer.entity.model.PlayerModel;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.client.model.PlayerModel;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.world.entity.player.Player;
 
 import javax.annotation.Nullable;
 
@@ -23,13 +23,13 @@ public class ShoppingCartRenderer extends AbstractLandVehicleRenderer<ShoppingCa
     }
 
     @Override
-    public void render(@Nullable ShoppingCartEntity vehicle, MatrixStack matrixStack, IRenderTypeBuffer renderTypeBuffer, float partialTicks, int light)
+    public void render(@Nullable ShoppingCartEntity vehicle, PoseStack matrixStack, MultiBufferSource renderTypeBuffer, float partialTicks, int light)
     {
         this.renderDamagedPart(vehicle, SpecialModels.SHOPPING_CART_BODY.getModel(), matrixStack, renderTypeBuffer, light);
     }
 
     @Override
-    public void applyPlayerModel(ShoppingCartEntity entity, PlayerEntity player, PlayerModel model, float partialTicks)
+    public void applyPlayerModel(ShoppingCartEntity entity, Player player, PlayerModel model, float partialTicks)
     {
         model.rightArm.xRot = (float) Math.toRadians(-70F);
         model.rightArm.yRot = (float) Math.toRadians(5F);

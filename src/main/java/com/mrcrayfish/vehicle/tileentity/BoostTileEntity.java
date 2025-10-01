@@ -1,9 +1,10 @@
 package com.mrcrayfish.vehicle.tileentity;
 
 import com.mrcrayfish.vehicle.init.ModTileEntities;
-import net.minecraft.block.BlockState;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraftforge.common.util.Constants;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * Author: MrCrayfish
@@ -12,14 +13,14 @@ public class BoostTileEntity extends TileEntitySynced
 {
     private float speedMultiplier;
 
-    public BoostTileEntity()
+    public BoostTileEntity(BlockPos pos, BlockState state)
     {
-        super(ModTileEntities.BOOST.get());
+        super(ModTileEntities.BOOST.get(), pos, state);
     }
 
-    public BoostTileEntity(float defaultSpeedMultiplier)
+    public BoostTileEntity(BlockPos pos, BlockState state, float defaultSpeedMultiplier)
     {
-        super(ModTileEntities.BOOST.get());
+        super(ModTileEntities.BOOST.get(), pos, state);
         this.speedMultiplier = defaultSpeedMultiplier;
     }
 
@@ -29,20 +30,20 @@ public class BoostTileEntity extends TileEntitySynced
     }
 
     @Override
-    public void load(BlockState state, CompoundNBT compound)
+    public void load(CompoundTag compound)
     {
-        super.load(state, compound);
-        if(compound.contains("SpeedMultiplier", Constants.NBT.TAG_FLOAT))
+        super.load(compound);
+        if(compound.contains("SpeedMultiplier", Tag.TAG_FLOAT))
         {
             this.speedMultiplier = compound.getFloat("SpeedMultiplier");
         }
     }
 
     @Override
-    public CompoundNBT save(CompoundNBT compound)
+    public void saveAdditional(CompoundTag compound)
     {
+        super.saveAdditional(compound);
         compound.putFloat("SpeedMultiplier", this.speedMultiplier);
-        return super.save(compound);
     }
 }
 

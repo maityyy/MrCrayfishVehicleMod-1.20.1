@@ -6,25 +6,25 @@ import com.mrcrayfish.vehicle.network.PacketHandler;
 import com.mrcrayfish.vehicle.network.message.MessageAttachTrailer;
 import com.mrcrayfish.vehicle.network.message.MessageEntityFluid;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.Hand;
-import net.minecraft.world.World;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.fluids.FluidAttributes;
+import net.minecraftforge.entity.IEntityAdditionalSpawnData;
+import net.minecraftforge.fluids.FluidType;
 import net.minecraftforge.fluids.FluidUtil;
-import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.templates.FluidTank;
 import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
-import net.minecraftforge.fml.network.PacketDistributor;
+import net.minecraftforge.network.PacketDistributor;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -45,7 +45,7 @@ public class FluidTrailerEntity extends TrailerEntity implements IEntityAddition
         return map;
     });
 
-    protected FluidTank tank = new FluidTank(FluidAttributes.BUCKET_VOLUME * 100)
+    protected FluidTank tank = new FluidTank(FluidType.BUCKET_VOLUME * 100)
     {
         @Override
         protected void onContentsChanged()
@@ -54,7 +54,7 @@ public class FluidTrailerEntity extends TrailerEntity implements IEntityAddition
         }
     };
 
-    public FluidTrailerEntity(EntityType<? extends FluidTrailerEntity> type, World worldIn)
+    public FluidTrailerEntity(EntityType<? extends FluidTrailerEntity> type, Level worldIn)
     {
         super(type, worldIn);
     }
@@ -66,13 +66,13 @@ public class FluidTrailerEntity extends TrailerEntity implements IEntityAddition
     }
 
     @Override
-    public ActionResultType interact(PlayerEntity player, Hand hand)
+    public InteractionResult interact(Player player, InteractionHand hand)
     {
-        if(!level.isClientSide && !player.isCrouching())
+        if(!level().isClientSide && !player.isCrouching())
         {
             if(FluidUtil.interactWithFluidHandler(player, hand, tank))
             {
-                return ActionResultType.SUCCESS;
+                return InteractionResult.SUCCESS;
             }
         }
         return super.interact(player, hand);
@@ -112,20 +112,20 @@ public class FluidTrailerEntity extends TrailerEntity implements IEntityAddition
     }
 
     @Override
-    protected void readAdditionalSaveData(CompoundNBT compound)
+    protected void readAdditionalSaveData(CompoundTag compound)
     {
         super.readAdditionalSaveData(compound);
-        if(compound.contains("Tank", Constants.NBT.TAG_COMPOUND))
+        if(compound.contains("Tank", Tag.TAG_COMPOUND))
         {
             this.tank.readFromNBT(compound.getCompound("Tank"));
         }
     }
 
     @Override
-    protected void addAdditionalSaveData(CompoundNBT compound)
+    protected void addAdditionalSaveData(CompoundTag compound)
     {
         super.addAdditionalSaveData(compound);
-        CompoundNBT tankTag = new CompoundNBT();
+        CompoundTag tankTag = new CompoundTag();
         this.tank.writeToNBT(tankTag);
         compound.put("Tank", tankTag);
     }
@@ -134,7 +134,7 @@ public class FluidTrailerEntity extends TrailerEntity implements IEntityAddition
     @Override
     public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap)
     {
-        if (cap == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY)
+        if (cap == ForgeCapabilities.FLUID_HANDLER)
             return LazyOptional.of(() -> this.tank).cast();
         return super.getCapability(cap);
     }
@@ -146,21 +146,21 @@ public class FluidTrailerEntity extends TrailerEntity implements IEntityAddition
 
     public void syncTank()
     {
-        if(!this.level.isClientSide)
+        if(!this.level().isClientSide)
         {
             PacketHandler.instance.send(PacketDistributor.TRACKING_ENTITY.with(() -> this), new MessageEntityFluid(this.getId(), this.tank.getFluid()));
         }
     }
 
     @Override
-    public void writeSpawnData(PacketBuffer buffer)
+    public void writeSpawnData(FriendlyByteBuf buffer)
     {
         super.writeSpawnData(buffer);
-        buffer.writeNbt(this.tank.writeToNBT(new CompoundNBT()));
+        buffer.writeNbt(this.tank.writeToNBT(new CompoundTag()));
     }
 
     @Override
-    public void readSpawnData(PacketBuffer buffer)
+    public void readSpawnData(FriendlyByteBuf buffer)
     {
         super.readSpawnData(buffer);
         this.tank.readFromNBT(buffer.readNbt());

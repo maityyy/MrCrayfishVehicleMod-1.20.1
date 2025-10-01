@@ -12,19 +12,22 @@ import com.mrcrayfish.vehicle.entity.VehicleProperties;
 import com.mrcrayfish.vehicle.init.*;
 import com.mrcrayfish.vehicle.network.PacketHandler;
 import net.minecraft.data.DataGenerator;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.item.ItemStack;
+import net.minecraft.data.PackOutput;
+import net.minecraft.data.loot.LootTableProvider;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.data.event.GatherDataEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.GatherDataEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * Author: MrCrayfish
@@ -33,28 +36,22 @@ import org.apache.logging.log4j.Logger;
 public class VehicleMod
 {
     public static final Logger LOGGER = LogManager.getLogger(Reference.MOD_ID);
-    public static final ItemGroup CREATIVE_TAB = new ItemGroup(Reference.MOD_ID)
-    {
-        @Override
-        public ItemStack makeIcon()
-        {
-            return new ItemStack(ModItems.IRON_SMALL_ENGINE.get());
-        }
-    };
 
-    public VehicleMod()
+    public VehicleMod(FMLJavaModLoadingContext context)
     {
-        IEventBus eventBus = FMLJavaModLoadingContext.get().getModEventBus();
+        IEventBus eventBus = context.getModEventBus();
         ModBlocks.REGISTER.register(eventBus);
         ModItems.REGISTER.register(eventBus);
+        ModItemTabs.REGISTER.register(eventBus);
         ModEntities.REGISTER.register(eventBus);
         ModTileEntities.REGISTER.register(eventBus);
         ModContainers.REGISTER.register(eventBus);
         ModSounds.REGISTER.register(eventBus);
         ModRecipeSerializers.REGISTER.register(eventBus);
         ModFluids.REGISTER.register(eventBus);
-        ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, Config.serverSpec);
-        ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, Config.clientSpec);
+        ModFluidTypes.REGISTER.register(eventBus);
+        context.registerConfig(ModConfig.Type.SERVER, Config.serverSpec);
+        context.registerConfig(ModConfig.Type.CLIENT, Config.clientSpec);
         eventBus.addListener(this::onCommonSetup);
         eventBus.addListener(this::onClientSetup);
         eventBus.addListener(this::onGatherData);
@@ -80,8 +77,9 @@ public class VehicleMod
     private void onGatherData(GatherDataEvent event)
     {
         DataGenerator generator = event.getGenerator();
-        generator.addProvider(new LootTableGen(generator));
-        generator.addProvider(new RecipeGen(generator));
-        generator.addProvider(new VehiclePropertiesGen(generator));
+        PackOutput packOutput = generator.getPackOutput();
+        generator.addProvider(event.includeServer(), new LootTableProvider(packOutput, Set.of(), List.of(new LootTableProvider.SubProviderEntry(LootTableGen::new, LootContextParamSets.BLOCK))));
+        generator.addProvider(event.includeServer(), new RecipeGen(packOutput));
+        generator.addProvider(event.includeServer(), new VehiclePropertiesGen(packOutput));
     }
 }

@@ -1,41 +1,45 @@
 package com.mrcrayfish.vehicle.client.render.tileentity;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
 import com.mrcrayfish.vehicle.block.RotatedObjectBlock;
 import com.mrcrayfish.vehicle.client.EntityRayTracer;
 import com.mrcrayfish.vehicle.client.model.SpecialModels;
-import com.mrcrayfish.vehicle.client.render.Axis;
 import com.mrcrayfish.vehicle.entity.VehicleEntity;
 import com.mrcrayfish.vehicle.init.ModBlocks;
 import com.mrcrayfish.vehicle.tileentity.VehicleCrateTileEntity;
 import com.mrcrayfish.vehicle.util.RenderUtil;
-import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
-import net.minecraft.client.renderer.WorldRenderer;
+import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.entity.EntityRenderer;
-import net.minecraft.client.renderer.model.ItemCameraTransforms;
-import net.minecraft.client.renderer.texture.AtlasTexture;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
-import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.util.Direction;
+import net.minecraft.core.Direction;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.level.block.state.BlockState;
 import org.apache.commons.lang3.tuple.Pair;
 
 /**
  * Author: MrCrayfish
  */
-public class VehicleCrateRenderer extends TileEntityRenderer<VehicleCrateTileEntity>
+public class VehicleCrateRenderer implements BlockEntityRenderer<VehicleCrateTileEntity>
 {
-    public VehicleCrateRenderer(TileEntityRendererDispatcher dispatcher)
+    public VehicleCrateRenderer(BlockEntityRendererProvider.Context dispatcher) {}
+
+    @Override
+    public int getViewDistance()
     {
-        super(dispatcher);
+        return 65536;
     }
 
     @Override
-    public void render(VehicleCrateTileEntity crate, float partialTicks, MatrixStack matrixStack, IRenderTypeBuffer renderTypeBuffer, int light, int overlay)
+    public void render(VehicleCrateTileEntity crate, float partialTicks, PoseStack matrixStack, MultiBufferSource renderTypeBuffer, int light, int overlay)
     {
         BlockState state = crate.getLevel().getBlockState(crate.getBlockPos());
         if(state.getBlock() != ModBlocks.VEHICLE_CRATE.get())
@@ -45,14 +49,14 @@ public class VehicleCrateRenderer extends TileEntityRenderer<VehicleCrateTileEnt
 
         Direction facing = state.getValue(RotatedObjectBlock.DIRECTION);
         matrixStack.translate(0.5, 0.5, 0.5);
-        matrixStack.mulPose(Axis.POSITIVE_Y.rotationDegrees(facing.get2DDataValue() * -90F + 180F));
+        matrixStack.mulPose(Axis.YP.rotationDegrees(facing.get2DDataValue() * -90F + 180F));
         matrixStack.translate(-0.5, -0.5, -0.5);
 
-        this.renderer.textureManager.bind(AtlasTexture.LOCATION_BLOCKS);
+        RenderSystem.setShaderTexture(0, InventoryMenu.BLOCK_ATLAS); // FIXME
 
         matrixStack.pushPose();
 
-        light = WorldRenderer.getLightColor(crate.getLevel(), crate.getBlockPos().above()); //TODO figure out the correct way to calculate light
+        light = LevelRenderer.getLightColor(crate.getLevel(), crate.getBlockPos().above()); //TODO figure out the correct way to calculate light
 
         if(crate.isOpened() && crate.getTimer() > 150)
         {
@@ -65,7 +69,7 @@ public class VehicleCrateRenderer extends TileEntityRenderer<VehicleCrateTileEnt
         {
             matrixStack.pushPose();
             matrixStack.translate(0.5, 0, 0.5);
-            matrixStack.mulPose(Axis.POSITIVE_Y.rotationDegrees(90F * i));
+            matrixStack.mulPose(Axis.YP.rotationDegrees(90F * i));
             matrixStack.translate(0, 0, 8 * 0.0625);
 
             if(crate.isOpened())
@@ -73,12 +77,12 @@ public class VehicleCrateRenderer extends TileEntityRenderer<VehicleCrateTileEnt
                 double progress = Math.min(1.0, Math.max(0, crate.getTimer() - (i * 20) + 5 * partialTicks) / 90.0);
                 double angle = (progress * progress) * 90F;
                 double rotation = 1.0 - Math.cos(Math.toRadians(angle));
-                matrixStack.mulPose(Axis.POSITIVE_X.rotationDegrees((float) rotation * 90F));
+                matrixStack.mulPose(Axis.XP.rotationDegrees((float) rotation * 90F));
             }
             matrixStack.translate(0.0, 0.5, 0.0);
             matrixStack.translate(0, 0, -1.999 * 0.0625);
             //if(i % 2 == 0) matrixStack.scale(-1, 1, 1);
-            RenderUtil.renderColoredModel(SpecialModels.VEHICLE_CRATE_SIDE.getModel(), ItemCameraTransforms.TransformType.NONE, false, matrixStack, renderTypeBuffer, -1, light, OverlayTexture.NO_OVERLAY);
+            RenderUtil.renderColoredModel(SpecialModels.VEHICLE_CRATE_SIDE.getModel(), ItemDisplayContext.NONE, false, matrixStack, renderTypeBuffer, -1, light, OverlayTexture.NO_OVERLAY);
             matrixStack.popPose();
         }
 
@@ -87,18 +91,18 @@ public class VehicleCrateRenderer extends TileEntityRenderer<VehicleCrateTileEnt
         {
             matrixStack.pushPose();
             matrixStack.translate(0.5, 0.5, 0.5);
-            matrixStack.mulPose(Axis.POSITIVE_X.rotationDegrees(-90F));
+            matrixStack.mulPose(Axis.XP.rotationDegrees(-90F));
             matrixStack.translate(0, 0, (6.001 * 0.0625));
-            RenderUtil.renderColoredModel(SpecialModels.VEHICLE_CRATE_TOP.getModel(), ItemCameraTransforms.TransformType.NONE, false, matrixStack, renderTypeBuffer, -1, light, OverlayTexture.NO_OVERLAY);
+            RenderUtil.renderColoredModel(SpecialModels.VEHICLE_CRATE_TOP.getModel(), ItemDisplayContext.NONE, false, matrixStack, renderTypeBuffer, -1, light, OverlayTexture.NO_OVERLAY);
             matrixStack.popPose();
         }
 
         //Render bottom panel
         matrixStack.pushPose();
         matrixStack.translate(0.5, 0.5, 0.5);
-        matrixStack.mulPose(Axis.POSITIVE_X.rotationDegrees(90F));
+        matrixStack.mulPose(Axis.XP.rotationDegrees(90F));
         matrixStack.translate(0, 0, (6 * 0.0625) * 0.998);
-        RenderUtil.renderColoredModel(SpecialModels.VEHICLE_CRATE_SIDE.getModel(), ItemCameraTransforms.TransformType.NONE, false, matrixStack, renderTypeBuffer, -1, light, OverlayTexture.NO_OVERLAY);
+        RenderUtil.renderColoredModel(SpecialModels.VEHICLE_CRATE_SIDE.getModel(), ItemDisplayContext.NONE, false, matrixStack, renderTypeBuffer, -1, light, OverlayTexture.NO_OVERLAY);
         matrixStack.popPose();
 
         matrixStack.popPose();
@@ -116,7 +120,7 @@ public class VehicleCrateRenderer extends TileEntityRenderer<VehicleCrateTileEnt
             if(crate.getTimer() >= 150)
             {
                 matrixStack.translate(0, Math.sin(Math.PI * progress) * 5, 0);
-                matrixStack.mulPose(Axis.POSITIVE_Y.rotationDegrees((float) (720F * progress)));
+                matrixStack.mulPose(Axis.YP.rotationDegrees((float) (720F * progress)));
             }
 
             matrixStack.translate(0, (2 * 0.0625F) * (1.0F - progress), 0);

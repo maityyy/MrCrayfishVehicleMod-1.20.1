@@ -6,17 +6,16 @@ import com.mrcrayfish.vehicle.entity.VehicleEntity;
 import com.mrcrayfish.vehicle.init.ModEntities;
 import com.mrcrayfish.vehicle.init.ModSounds;
 import com.mrcrayfish.vehicle.init.ModTileEntities;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.material.PushReaction;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.MoverType;
-import net.minecraft.tileentity.ITickableTileEntity;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.common.util.Constants;
+import net.minecraft.core.BlockPos;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.PushReaction;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -24,7 +23,7 @@ import java.util.List;
 /**
  * Author: MrCrayfish
  */
-public class JackTileEntity extends TileEntitySynced implements ITickableTileEntity
+public class JackTileEntity extends TileEntitySynced
 {
     public static final int MAX_LIFT_PROGRESS = 20;
 
@@ -34,14 +33,14 @@ public class JackTileEntity extends TileEntitySynced implements ITickableTileEnt
     public int prevLiftProgress;
     public int liftProgress;
 
-    public JackTileEntity()
+    public JackTileEntity(BlockPos pos, BlockState state)
     {
-        super(ModTileEntities.JACK.get());
+        super(ModTileEntities.JACK.get(), pos, state);
     }
 
     public void setVehicle(VehicleEntity vehicle)
     {
-        this.jack = new EntityJack(ModEntities.JACK.get(), this.level, this.worldPosition, 11 * 0.0625, vehicle.yRot);
+        this.jack = new EntityJack(ModEntities.JACK.get(), this.level, this.worldPosition, 11 * 0.0625, vehicle.getYRot());
         vehicle.startRiding(this.jack, true);
         this.jack.rideTick();
         this.level.addFreshEntity(this.jack);
@@ -53,65 +52,64 @@ public class JackTileEntity extends TileEntitySynced implements ITickableTileEnt
         return this.jack;
     }
 
-    @Override
-    public void tick()
+    public static void tick(Level level, BlockPos pos, BlockState state, JackTileEntity blockEntity)
     {
-        if(!this.activated && this.liftProgress == 0 && this.prevLiftProgress == 1)
+        if(!blockEntity.activated && blockEntity.liftProgress == 0 && blockEntity.prevLiftProgress == 1)
         {
-            this.level.setBlock(this.worldPosition, this.getBlockState().setValue(JackBlock.ENABLED, false), Constants.BlockFlags.DEFAULT);
+            blockEntity.level.setBlock(blockEntity.worldPosition, blockEntity.getBlockState().setValue(JackBlock.ENABLED, false), Block.UPDATE_ALL);
         }
 
-        this.prevLiftProgress = this.liftProgress;
+        blockEntity.prevLiftProgress = blockEntity.liftProgress;
 
-        if(this.jack == null)
+        if(blockEntity.jack == null)
         {
-            List<EntityJack> jacks = this.level.getEntitiesOfClass(EntityJack.class, new AxisAlignedBB(this.worldPosition));
+            List<EntityJack> jacks = blockEntity.level.getEntitiesOfClass(EntityJack.class, new AABB(blockEntity.worldPosition));
             if(jacks.size() > 0)
             {
-                this.jack = jacks.get(0);
+                blockEntity.jack = jacks.get(0);
             }
         }
 
-        if(this.jack != null && (this.jack.getPassengers().isEmpty() || !this.jack.isAlive()))
+        if(blockEntity.jack != null && (blockEntity.jack.getPassengers().isEmpty() || !blockEntity.jack.isAlive()))
         {
-            this.jack = null;
+            blockEntity.jack = null;
         }
 
-        if(this.jack != null)
+        if(blockEntity.jack != null)
         {
-            if(this.jack.getPassengers().size() > 0)
+            if(blockEntity.jack.getPassengers().size() > 0)
             {
-                if(!this.activated)
+                if(!blockEntity.activated)
                 {
-                    this.level.playSound(null, this.worldPosition, ModSounds.BLOCK_JACK_HEAD_UP.get(), SoundCategory.BLOCKS, 1.0F, 1.0F);
-                    this.activated = true;
-                    this.level.setBlock(this.worldPosition, this.getBlockState().setValue(JackBlock.ENABLED, true), Constants.BlockFlags.DEFAULT);
+                    blockEntity.level.playSound(null, blockEntity.worldPosition, ModSounds.BLOCK_JACK_HEAD_UP.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
+                    blockEntity.activated = true;
+                    blockEntity.level.setBlock(blockEntity.worldPosition, blockEntity.getBlockState().setValue(JackBlock.ENABLED, true), Block.UPDATE_ALL);
                 }
             }
-            else if(this.activated)
+            else if(blockEntity.activated)
             {
-                this.level.playSound(null, this.worldPosition, ModSounds.BLOCK_JACK_HEAD_DOWN.get(), SoundCategory.BLOCKS, 1.0F, 1.0F);
-                this.activated = false;
+                blockEntity.level.playSound(null, blockEntity.worldPosition, ModSounds.BLOCK_JACK_HEAD_DOWN.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
+                blockEntity.activated = false;
             }
         }
-        else if(this.activated)
+        else if(blockEntity.activated)
         {
-            this.level.playSound(null, this.worldPosition, ModSounds.BLOCK_JACK_HEAD_DOWN.get(), SoundCategory.BLOCKS, 1.0F, 1.0F);
-            this.activated = false;
+            blockEntity.level.playSound(null, blockEntity.worldPosition, ModSounds.BLOCK_JACK_HEAD_DOWN.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
+            blockEntity.activated = false;
         }
 
-        if(this.activated)
+        if(blockEntity.activated)
         {
-            if(this.liftProgress < MAX_LIFT_PROGRESS)
+            if(blockEntity.liftProgress < MAX_LIFT_PROGRESS)
             {
-                this.liftProgress++;
-                this.moveCollidedEntities();
+                blockEntity.liftProgress++;
+                blockEntity.moveCollidedEntities();
             }
         }
-        else if(this.liftProgress > 0)
+        else if(blockEntity.liftProgress > 0)
         {
-            this.liftProgress--;
-            this.moveCollidedEntities();
+            blockEntity.liftProgress--;
+            blockEntity.moveCollidedEntities();
         }
     }
 
@@ -120,7 +118,7 @@ public class JackTileEntity extends TileEntitySynced implements ITickableTileEnt
         BlockState state = this.level.getBlockState(this.getBlockPos());
         if(state.getBlock() instanceof JackBlock)
         {
-            AxisAlignedBB boundingBox = state.getShape(this.level, this.worldPosition).bounds().move(this.worldPosition);
+            AABB boundingBox = state.getShape(this.level, this.worldPosition).bounds().move(this.worldPosition);
             List<Entity> list = this.level.getEntities(this.jack, boundingBox);
             if(!list.isEmpty())
             {
@@ -128,9 +126,9 @@ public class JackTileEntity extends TileEntitySynced implements ITickableTileEnt
                 {
                     if(entity.getPistonPushReaction() != PushReaction.IGNORE)
                     {
-                        AxisAlignedBB entityBoundingBox = entity.getBoundingBox();
+                        AABB entityBoundingBox = entity.getBoundingBox();
                         double posY = boundingBox.maxY - entityBoundingBox.minY;
-                        entity.move(MoverType.PISTON, new Vector3d(0.0, posY, 0.0));
+                        entity.move(MoverType.PISTON, new Vec3(0.0, posY, 0.0));
                     }
                 }
             }
@@ -143,15 +141,8 @@ public class JackTileEntity extends TileEntitySynced implements ITickableTileEnt
     }
 
     @Override
-    public AxisAlignedBB getRenderBoundingBox()
+    public AABB getRenderBoundingBox()
     {
         return INFINITE_EXTENT_AABB;
-    }
-
-    @Override
-    @OnlyIn(Dist.CLIENT)
-    public double getViewDistance()
-    {
-        return 65536.0D;
     }
 }

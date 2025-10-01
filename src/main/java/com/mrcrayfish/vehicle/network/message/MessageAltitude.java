@@ -1,10 +1,10 @@
 package com.mrcrayfish.vehicle.network.message;
 
 import com.mrcrayfish.vehicle.entity.HelicopterEntity;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraftforge.network.NetworkEvent.Context;
 
 import java.util.function.Supplier;
 
@@ -20,23 +20,23 @@ public class MessageAltitude implements IMessage<MessageAltitude>
 	}
 
 	@Override
-	public void encode(MessageAltitude message, PacketBuffer buffer)
+	public void encode(MessageAltitude message, FriendlyByteBuf buffer)
 	{
 		buffer.writeEnum(message.altitudeChange);
 	}
 
 	@Override
-	public MessageAltitude decode(PacketBuffer buffer)
+	public MessageAltitude decode(FriendlyByteBuf buffer)
 	{
 		return new MessageAltitude(buffer.readEnum(HelicopterEntity.AltitudeChange.class));
 	}
 
 	@Override
-	public void handle(MessageAltitude message, Supplier<NetworkEvent.Context> supplier)
+	public void handle(MessageAltitude message, Supplier<Context> supplier)
 	{
 		supplier.get().enqueueWork(() ->
 		{
-			ServerPlayerEntity player = supplier.get().getSender();
+			ServerPlayer player = supplier.get().getSender();
 			if(player != null)
 			{
 				Entity riding = player.getVehicle();

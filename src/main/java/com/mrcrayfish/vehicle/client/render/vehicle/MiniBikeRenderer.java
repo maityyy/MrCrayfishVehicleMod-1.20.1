@@ -1,12 +1,11 @@
 package com.mrcrayfish.vehicle.client.render.vehicle;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
-import com.mojang.blaze3d.vertex.IVertexBuilder;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
 import com.mrcrayfish.vehicle.client.EntityRayTracer;
 import com.mrcrayfish.vehicle.client.RayTraceFunction;
 import com.mrcrayfish.vehicle.client.model.SpecialModels;
 import com.mrcrayfish.vehicle.client.render.AbstractMotorcycleRenderer;
-import com.mrcrayfish.vehicle.client.render.Axis;
 import com.mrcrayfish.vehicle.common.Seat;
 import com.mrcrayfish.vehicle.entity.VehicleProperties;
 import com.mrcrayfish.vehicle.entity.Wheel;
@@ -15,14 +14,14 @@ import com.mrcrayfish.vehicle.init.ModEntities;
 import com.mrcrayfish.vehicle.init.ModItems;
 import com.mrcrayfish.vehicle.item.IDyeable;
 import com.mrcrayfish.vehicle.util.RenderUtil;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
-import net.minecraft.client.renderer.entity.model.PlayerModel;
-import net.minecraft.client.renderer.model.ItemCameraTransforms;
+import net.minecraft.client.model.PlayerModel;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
 
@@ -37,7 +36,7 @@ public class MiniBikeRenderer extends AbstractMotorcycleRenderer<MiniBikeEntity>
     }
 
     @Override
-    protected void render(@Nullable MiniBikeEntity vehicle, MatrixStack matrixStack, IRenderTypeBuffer renderTypeBuffer, float partialTicks, int light)
+    protected void render(@Nullable MiniBikeEntity vehicle, PoseStack matrixStack, MultiBufferSource renderTypeBuffer, float partialTicks, int light)
     {
         this.renderDamagedPart(vehicle, SpecialModels.MINI_BIKE_BODY.getModel(), matrixStack, renderTypeBuffer, light);
 
@@ -45,15 +44,15 @@ public class MiniBikeRenderer extends AbstractMotorcycleRenderer<MiniBikeEntity>
         matrixStack.pushPose();
 
         matrixStack.translate(0.0, 0.0, 10.5 * 0.0625);
-        matrixStack.mulPose(Axis.POSITIVE_X.rotationDegrees(-22.5F));
+        matrixStack.mulPose(Axis.XP.rotationDegrees(-22.5F));
         if(vehicle != null)
         {
             float wheelAngle = vehicle.prevWheelAngle + (vehicle.wheelAngle - vehicle.prevWheelAngle) * partialTicks;
             float wheelAngleNormal = wheelAngle / 45F;
             float turnRotation = wheelAngleNormal * 25F;
-            matrixStack.mulPose(Axis.POSITIVE_Y.rotationDegrees(turnRotation));
+            matrixStack.mulPose(Axis.YP.rotationDegrees(turnRotation));
         }
-        matrixStack.mulPose(Axis.POSITIVE_X.rotationDegrees(22.5F));
+        matrixStack.mulPose(Axis.XP.rotationDegrees(22.5F));
         matrixStack.translate(0.0, 0.0, -10.5 * 0.0625);
 
         this.renderDamagedPart(vehicle, SpecialModels.MINI_BIKE_HANDLES.getModel(), matrixStack, renderTypeBuffer, light);
@@ -69,16 +68,16 @@ public class MiniBikeRenderer extends AbstractMotorcycleRenderer<MiniBikeEntity>
                 matrixStack.translate(0, -0.5 + 1.7 * 0.0625, wheel.getOffsetZ() * 0.0625);
                 if(vehicle != null)
                 {
-                    float frontWheelSpin = MathHelper.lerp(partialTicks, vehicle.prevFrontWheelRotation, vehicle.frontWheelRotation);
+                    float frontWheelSpin = Mth.lerp(partialTicks, vehicle.prevFrontWheelRotation, vehicle.frontWheelRotation);
                     if(vehicle.isMoving())
                     {
-                        matrixStack.mulPose(Axis.POSITIVE_X.rotationDegrees(-frontWheelSpin));
+                        matrixStack.mulPose(Axis.XP.rotationDegrees(-frontWheelSpin));
                     }
                 }
                 matrixStack.scale(wheel.getScaleX(), wheel.getScaleY(), wheel.getScaleZ());
-                matrixStack.mulPose(Axis.POSITIVE_Y.rotationDegrees(180F));
+                matrixStack.mulPose(Axis.YP.rotationDegrees(180F));
                 int wheelColor = IDyeable.getColorFromStack(wheelStack);
-                RenderUtil.renderColoredModel(RenderUtil.getModel(wheelStack), ItemCameraTransforms.TransformType.NONE, false, matrixStack, renderTypeBuffer, wheelColor, light, OverlayTexture.NO_OVERLAY);
+                RenderUtil.renderColoredModel(RenderUtil.getModel(wheelStack), ItemDisplayContext.NONE, false, matrixStack, renderTypeBuffer, wheelColor, light, OverlayTexture.NO_OVERLAY);
                 matrixStack.popPose();
             }
         }
@@ -87,7 +86,7 @@ public class MiniBikeRenderer extends AbstractMotorcycleRenderer<MiniBikeEntity>
     }
 
     @Override
-    public void applyPlayerModel(MiniBikeEntity entity, PlayerEntity player, PlayerModel model, float partialTicks)
+    public void applyPlayerModel(MiniBikeEntity entity, Player player, PlayerModel model, float partialTicks)
     {
         float wheelAngle = entity.prevRenderWheelAngle + (entity.renderWheelAngle - entity.prevRenderWheelAngle) * partialTicks;
         float wheelAngleNormal = wheelAngle / 45F;
@@ -103,14 +102,14 @@ public class MiniBikeRenderer extends AbstractMotorcycleRenderer<MiniBikeEntity>
     }
 
     @Override
-    public void applyPlayerRender(MiniBikeEntity entity, PlayerEntity player, float partialTicks, MatrixStack matrixStack, IVertexBuilder builder)
+    public void applyPlayerRender(MiniBikeEntity entity, Player player, float partialTicks, PoseStack matrixStack)
     {
         int index = entity.getSeatTracker().getSeatIndex(player.getUUID());
         if(index != -1)
         {
             VehicleProperties properties = entity.getProperties();
             Seat seat = properties.getSeats().get(index);
-            Vector3d seatVec = seat.getPosition().add(0, properties.getAxleOffset() + properties.getWheelOffset(), 0).scale(properties.getBodyPosition().getScale()).scale(0.0625);
+            Vec3 seatVec = seat.getPosition().add(0, properties.getAxleOffset() + properties.getWheelOffset(), 0).scale(properties.getBodyPosition().getScale()).scale(0.0625);
             double scale = 32.0 / 30.0;
             double offsetX = seatVec.x * scale;
             double offsetY = (seatVec.y + player.getMyRidingOffset()) * scale + 24 * 0.0625; //Player is 2 blocks high tall but renders at 1.8 blocks tall
@@ -118,7 +117,7 @@ public class MiniBikeRenderer extends AbstractMotorcycleRenderer<MiniBikeEntity>
             matrixStack.translate(offsetX, offsetY, offsetZ);
             float currentSpeedNormal = (entity.prevCurrentSpeed + (entity.currentSpeed - entity.prevCurrentSpeed) * partialTicks) / entity.getMaxSpeed();
             float turnAngleNormal = (entity.prevTurnAngle + (entity.turnAngle - entity.prevTurnAngle) * partialTicks) / 45F;
-            matrixStack.mulPose(Axis.POSITIVE_Z.rotationDegrees(turnAngleNormal * currentSpeedNormal * 20F));
+            matrixStack.mulPose(Axis.ZP.rotationDegrees(turnAngleNormal * currentSpeedNormal * 20F));
             matrixStack.translate(-offsetX, -offsetY, -offsetZ);
         }
     }

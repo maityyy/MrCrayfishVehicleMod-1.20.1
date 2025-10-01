@@ -6,10 +6,10 @@ import com.mrcrayfish.vehicle.entity.VehicleEntity;
 import com.mrcrayfish.vehicle.network.PacketHandler;
 import com.mrcrayfish.vehicle.network.message.MessageAttachTrailer;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.DistExecutor;
@@ -32,7 +32,7 @@ public class VehicleEntityTrailer extends TrailerEntity
         return map;
     });
 
-    public VehicleEntityTrailer(EntityType<? extends VehicleEntityTrailer> type, World worldIn)
+    public VehicleEntityTrailer(EntityType<? extends VehicleEntityTrailer> type, Level worldIn)
     {
         super(type, worldIn);
     }
@@ -56,14 +56,14 @@ public class VehicleEntityTrailer extends TrailerEntity
     }
 
     @Override
-    public void positionRider(Entity passenger)
+    public void positionRider(Entity passenger, MoveFunction moveFunction)
     {
         if(passenger instanceof VehicleEntity)
         {
-            Vector3d offset = ((VehicleEntity) passenger).getProperties().getTrailerOffset().yRot((float) Math.toRadians(-this.yRot));
-            passenger.setPos(this.getX() + offset.x, this.getY() + getPassengersRidingOffset() + offset.y, this.getZ() + offset.z);
+            Vec3 offset = ((VehicleEntity) passenger).getProperties().getTrailerOffset().yRot((float) Math.toRadians(-this.getYRot()));
+            moveFunction.accept(passenger, this.getX() + offset.x, this.getY() + getPassengersRidingOffset() + offset.y, this.getZ() + offset.z);
             passenger.yRotO = this.yRotO;
-            passenger.yRot = this.yRot;
+            passenger.setYRot(this.getYRot());
         }
     }
 

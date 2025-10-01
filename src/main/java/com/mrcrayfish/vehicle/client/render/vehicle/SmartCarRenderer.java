@@ -1,19 +1,20 @@
 package com.mrcrayfish.vehicle.client.render.vehicle;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
 import com.mrcrayfish.vehicle.client.EntityRayTracer;
 import com.mrcrayfish.vehicle.client.model.SpecialModels;
 import com.mrcrayfish.vehicle.client.render.AbstractLandVehicleRenderer;
-import com.mrcrayfish.vehicle.client.render.Axis;
 import com.mrcrayfish.vehicle.entity.VehicleProperties;
 import com.mrcrayfish.vehicle.entity.vehicle.SmartCarEntity;
 import com.mrcrayfish.vehicle.init.ModEntities;
 import com.mrcrayfish.vehicle.util.RenderUtil;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
-import net.minecraft.client.renderer.entity.model.PlayerModel;
-import net.minecraft.client.renderer.model.ItemCameraTransforms;
+import com.mrcrayfish.vehicle.util.Vector3fAxis;
+import net.minecraft.client.model.PlayerModel;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemDisplayContext;
 
 import javax.annotation.Nullable;
 
@@ -28,7 +29,7 @@ public class SmartCarRenderer extends AbstractLandVehicleRenderer<SmartCarEntity
     }
 
     @Override
-    public void render(@Nullable SmartCarEntity vehicle, MatrixStack matrixStack, IRenderTypeBuffer renderTypeBuffer, float partialTicks, int light)
+    public void render(@Nullable SmartCarEntity vehicle, PoseStack matrixStack, MultiBufferSource renderTypeBuffer, float partialTicks, int light)
     {
         this.renderDamagedPart(vehicle, SpecialModels.SMART_CAR_BODY.getModel(), matrixStack, renderTypeBuffer, light);
 
@@ -36,7 +37,7 @@ public class SmartCarRenderer extends AbstractLandVehicleRenderer<SmartCarEntity
         matrixStack.pushPose();
         {
             matrixStack.translate(0, 0.2, 0.3);
-            matrixStack.mulPose(Axis.POSITIVE_X.rotationDegrees(-67.5F));
+            matrixStack.mulPose(Axis.XP.rotationDegrees(-67.5F));
             matrixStack.translate(0, -0.02, 0);
             matrixStack.scale(0.9F, 0.9F, 0.9F);
 
@@ -45,16 +46,16 @@ public class SmartCarRenderer extends AbstractLandVehicleRenderer<SmartCarEntity
                 float wheelAngle = vehicle.prevWheelAngle + (vehicle.wheelAngle - vehicle.prevWheelAngle) * partialTicks;
                 float wheelAngleNormal = wheelAngle / 45F;
                 float turnRotation = wheelAngleNormal * 25F;
-                matrixStack.mulPose(Axis.POSITIVE_Y.rotationDegrees(turnRotation));
+                matrixStack.mulPose(Axis.YP.rotationDegrees(turnRotation));
             }
 
-            RenderUtil.renderColoredModel(SpecialModels.GO_KART_STEERING_WHEEL.getModel(), ItemCameraTransforms.TransformType.NONE, false, matrixStack, renderTypeBuffer, -1, light, OverlayTexture.NO_OVERLAY);
+            RenderUtil.renderColoredModel(SpecialModels.GO_KART_STEERING_WHEEL.getModel(), ItemDisplayContext.NONE, false, matrixStack, renderTypeBuffer, -1, light, OverlayTexture.NO_OVERLAY);
         }
         matrixStack.popPose();
     }
 
     @Override
-    public void applyPlayerModel(SmartCarEntity entity, PlayerEntity player, PlayerModel model, float partialTicks)
+    public void applyPlayerModel(SmartCarEntity entity, Player player, PlayerModel model, float partialTicks)
     {
         model.rightLeg.xRot = (float) Math.toRadians(-85F);
         model.rightLeg.yRot = (float) Math.toRadians(10F);
@@ -78,11 +79,11 @@ public class SmartCarRenderer extends AbstractLandVehicleRenderer<SmartCarEntity
             EntityRayTracer.createTransformListForPart(SpecialModels.SMART_CAR_BODY, parts, transforms);
             EntityRayTracer.createTransformListForPart(SpecialModels.GO_KART_STEERING_WHEEL, parts, transforms,
                     EntityRayTracer.MatrixTransformation.createTranslation(0.0F, 0.2F, 0.3F),
-                    EntityRayTracer.MatrixTransformation.createRotation(Axis.POSITIVE_X, -67.5F),
+                    EntityRayTracer.MatrixTransformation.createRotation(Vector3fAxis.POSITIVE_X, -67.5F),
                     EntityRayTracer.MatrixTransformation.createTranslation(0.0F, -0.02F, 0.0F),
                     EntityRayTracer.MatrixTransformation.createScale(0.9F));
             EntityRayTracer.createTransformListForPart(SpecialModels.TOW_BAR, parts,
-                    EntityRayTracer.MatrixTransformation.createRotation(Axis.POSITIVE_Y, 180F),
+                    EntityRayTracer.MatrixTransformation.createRotation(Vector3fAxis.POSITIVE_Y, 180F),
                     EntityRayTracer.MatrixTransformation.createTranslation(0.0F, 0.5F, 1.35F));
             EntityRayTracer.createFuelPartTransforms(ModEntities.SMART_CAR.get(), SpecialModels.FUEL_DOOR_CLOSED, parts, transforms);
         };

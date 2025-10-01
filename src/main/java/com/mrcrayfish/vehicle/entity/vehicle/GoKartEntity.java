@@ -2,21 +2,21 @@ package com.mrcrayfish.vehicle.entity.vehicle;
 
 import com.mrcrayfish.vehicle.entity.LandVehicleEntity;
 import com.mrcrayfish.vehicle.init.ModSounds;
-import net.minecraft.entity.EntityType;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.world.World;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * Author: MrCrayfish
  */
 public class GoKartEntity extends LandVehicleEntity
 {
-    public GoKartEntity(EntityType<? extends GoKartEntity> type, World worldIn)
+    public GoKartEntity(EntityType<? extends GoKartEntity> type, Level worldIn)
     {
         super(type, worldIn);
         this.setMaxSpeed(20F);
-        this.maxUpStep = 0.625F;
+        this.setMaxUpStep(0.625F);
         this.setFuelConsumption(0.5F);
     }
 
@@ -45,9 +45,9 @@ public class GoKartEntity extends LandVehicleEntity
     }
 
     @Override
-    public Vector3d getEngineSmokePosition()
+    public Vec3 getEngineSmokePosition()
     {
-        return new Vector3d(0, 0.55, -0.9);
+        return new Vec3(0, 0.55, -0.9);
     }
 
     @Override

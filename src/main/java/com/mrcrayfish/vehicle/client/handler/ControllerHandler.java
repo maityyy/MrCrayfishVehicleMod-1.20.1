@@ -1,27 +1,11 @@
 package com.mrcrayfish.vehicle.client.handler;
 
 import com.mrcrayfish.controllable.Controllable;
-import com.mrcrayfish.controllable.client.Action;
-import com.mrcrayfish.controllable.client.Buttons;
-import com.mrcrayfish.controllable.event.AvailableActionsEvent;
-import com.mrcrayfish.controllable.event.ControllerEvent;
-import com.mrcrayfish.controllable.event.RenderPlayerPreviewEvent;
-import com.mrcrayfish.vehicle.Config;
 import com.mrcrayfish.vehicle.client.ClientHandler;
-import com.mrcrayfish.vehicle.entity.*;
-import com.mrcrayfish.vehicle.network.PacketHandler;
-import com.mrcrayfish.vehicle.network.message.MessageHitchTrailer;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.math.EntityRayTraceResult;
-import net.minecraft.util.math.RayTraceResult;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.lwjgl.glfw.GLFW;
-
-import java.util.Map;
 
 /**
  * Manages controller input
@@ -31,12 +15,13 @@ import java.util.Map;
 @OnlyIn(Dist.CLIENT)
 public class ControllerHandler
 {
+    /*
     @SubscribeEvent
     public void onButtonInput(ControllerEvent.ButtonInput event)
     {
         if(event.getState())
         {
-            PlayerEntity player = Minecraft.getInstance().player;
+            Player player = Minecraft.getInstance().player;
             if(player == null)
                 return;
 
@@ -90,7 +75,7 @@ public class ControllerHandler
     @SubscribeEvent
     public void onControllerMove(ControllerEvent.Move event)
     {
-        PlayerEntity player = Minecraft.getInstance().player;
+        Player player = Minecraft.getInstance().player;
         if(player.getVehicle() instanceof VehicleEntity)
         {
             event.setCanceled(true);
@@ -102,7 +87,7 @@ public class ControllerHandler
     {
         Map<Integer, Action> availableActions = event.getActions();
         Minecraft mc = Minecraft.getInstance();
-        PlayerEntity player = mc.player;
+        Player player = mc.player;
         if(player.getVehicle() instanceof VehicleEntity && mc.screen == null)
         {
             availableActions.remove(Buttons.RIGHT_BUMPER);
@@ -160,7 +145,7 @@ public class ControllerHandler
             {
                 if(mc.hitResult != null && mc.hitResult.getType() == RayTraceResult.Type.ENTITY)
                 {
-                    Entity entity = ((EntityRayTraceResult) mc.hitResult).getEntity();
+                    Entity entity = ((EntityHitResult) mc.hitResult).getEntity();
                     if(entity instanceof VehicleEntity)
                     {
                         availableActions.put(Buttons.LEFT_TRIGGER, new Action("Ride Vehicle", Action.Side.RIGHT));
@@ -173,12 +158,13 @@ public class ControllerHandler
     @SubscribeEvent
     public void onRenderPlayerPreview(RenderPlayerPreviewEvent event)
     {
-        PlayerEntity player = Minecraft.getInstance().player;
+        Player player = Minecraft.getInstance().player;
         if(player.getVehicle() instanceof VehicleEntity)
         {
             event.setCanceled(true);
         }
     }
+    */
 
     public static boolean isRightClicking()
     {

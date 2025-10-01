@@ -8,12 +8,12 @@ import com.mrcrayfish.vehicle.network.message.MessageSyncHeldVehicle;
 import com.mrcrayfish.vehicle.network.message.MessageSyncInventory;
 import com.mrcrayfish.vehicle.network.message.MessageSyncPlayerSeat;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.world.World;
-import net.minecraftforge.common.util.Constants;
+import net.minecraft.nbt.Tag;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.templates.FluidTank;
 
@@ -25,7 +25,7 @@ public class ClientPlayHandler
 
     public static void handleSyncInventory(MessageSyncInventory message)
     {
-        World world = Minecraft.getInstance().level;
+        Level world = Minecraft.getInstance().level;
         if(world == null)
             return;
 
@@ -33,12 +33,12 @@ public class ClientPlayHandler
         if(!(entity instanceof IStorage))
             return;
 
-        ((IStorage) entity).getInventory().fromTag(message.getCompound().getList("Inventory", Constants.NBT.TAG_COMPOUND));
+        ((IStorage) entity).getInventory().fromTag(message.getCompound().getList("Inventory", Tag.TAG_COMPOUND));
     }
 
     public static void handleEntityFluid(MessageEntityFluid message)
     {
-        World world = Minecraft.getInstance().level;
+        Level world = Minecraft.getInstance().level;
         if(world == null)
             return;
 
@@ -46,7 +46,7 @@ public class ClientPlayHandler
         if(entity == null)
             return;
 
-        LazyOptional<IFluidHandler> optional = entity.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY);
+        LazyOptional<IFluidHandler> optional = entity.getCapability(ForgeCapabilities.FLUID_HANDLER);
         optional.ifPresent(handler ->
         {
             if(handler instanceof FluidTank)
@@ -59,7 +59,7 @@ public class ClientPlayHandler
 
     public static void handleSyncPlayerSeat(MessageSyncPlayerSeat message)
     {
-        PlayerEntity player = Minecraft.getInstance().player;
+        Player player = Minecraft.getInstance().player;
         if(player != null)
         {
             Entity entity = player.getCommandSenderWorld().getEntity(message.getEntityId());
@@ -73,13 +73,13 @@ public class ClientPlayHandler
 
     public static void handleSyncHeldVehicle(MessageSyncHeldVehicle message)
     {
-        World world = Minecraft.getInstance().level;
+        Level world = Minecraft.getInstance().level;
         if(world != null)
         {
             Entity entity = world.getEntity(message.getEntityId());
-            if(entity instanceof PlayerEntity)
+            if(entity instanceof Player)
             {
-                HeldVehicleDataHandler.setHeldVehicle((PlayerEntity) entity, message.getVehicleTag());
+                HeldVehicleDataHandler.setHeldVehicle((Player) entity, message.getVehicleTag());
             }
         }
     }

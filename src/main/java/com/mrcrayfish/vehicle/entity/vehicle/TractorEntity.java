@@ -2,17 +2,17 @@ package com.mrcrayfish.vehicle.entity.vehicle;
 
 import com.mrcrayfish.vehicle.entity.LandVehicleEntity;
 import com.mrcrayfish.vehicle.init.ModSounds;
-import net.minecraft.entity.EntityType;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.world.World;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * Author: MrCrayfish
  */
 public class TractorEntity extends LandVehicleEntity
 {
-    public TractorEntity(EntityType<? extends TractorEntity> type, World worldIn)
+    public TractorEntity(EntityType<? extends TractorEntity> type, Level worldIn)
     {
         super(type, worldIn);
         this.setMaxSpeed(6);
@@ -56,9 +56,9 @@ public class TractorEntity extends LandVehicleEntity
     }
 
     @Override
-    public Vector3d getEngineSmokePosition()
+    public Vec3 getEngineSmokePosition()
     {
-        return new Vector3d(-0.125, 1.9375, 1.125);
+        return new Vec3(-0.125, 1.9375, 1.125);
     }
 
     @Override

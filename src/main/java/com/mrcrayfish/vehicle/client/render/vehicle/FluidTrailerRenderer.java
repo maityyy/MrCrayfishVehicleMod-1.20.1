@@ -1,21 +1,22 @@
 package com.mrcrayfish.vehicle.client.render.vehicle;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
-import com.mojang.blaze3d.vertex.IVertexBuilder;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mrcrayfish.vehicle.client.EntityRayTracer;
 import com.mrcrayfish.vehicle.client.model.SpecialModels;
 import com.mrcrayfish.vehicle.client.render.AbstractTrailerRenderer;
 import com.mrcrayfish.vehicle.entity.VehicleProperties;
 import com.mrcrayfish.vehicle.entity.trailer.FluidTrailerEntity;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.texture.AtlasTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.fluid.Fluid;
-import net.minecraft.fluid.Fluids;
-import net.minecraft.util.math.vector.Matrix4f;
+import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.Fluids;
+import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.minecraftforge.fluids.capability.templates.FluidTank;
+import org.joml.Matrix4f;
 
 import javax.annotation.Nullable;
 
@@ -30,7 +31,7 @@ public class FluidTrailerRenderer extends AbstractTrailerRenderer<FluidTrailerEn
     }
 
     @Override
-    public void render(@Nullable FluidTrailerEntity vehicle, MatrixStack matrixStack, IRenderTypeBuffer renderTypeBuffer, float partialTicks, int light)
+    public void render(@Nullable FluidTrailerEntity vehicle, PoseStack matrixStack, MultiBufferSource renderTypeBuffer, float partialTicks, int light)
     {
         this.renderDamagedPart(vehicle, SpecialModels.FLUID_TRAILER.getModel(), matrixStack, renderTypeBuffer, light);
         this.renderWheel(vehicle, matrixStack, renderTypeBuffer, false, -11.5F * 0.0625F, -0.5F, -2.5F * 0.0625F, 1.25F, partialTicks, light);
@@ -43,15 +44,17 @@ public class FluidTrailerRenderer extends AbstractTrailerRenderer<FluidTrailerEn
         }
     }
 
-    private void drawFluid(FluidTrailerEntity vehicle, FluidTank tank, MatrixStack matrixStack, IRenderTypeBuffer renderTypeBuffer, float x, float y, float z, float width, float height, float depth, int light)
+    private void drawFluid(FluidTrailerEntity vehicle, FluidTank tank, PoseStack matrixStack, MultiBufferSource renderTypeBuffer, float x, float y, float z, float width, float height, float depth, int light)
     {
         Fluid fluid = tank.getFluid().getFluid();
         if(fluid == Fluids.EMPTY)
             return;
 
-        TextureAtlasSprite sprite = Minecraft.getInstance().getTextureAtlas(AtlasTexture.LOCATION_BLOCKS).apply(fluid.getFluid().getAttributes().getStillTexture());
+        IClientFluidTypeExtensions clientFluid = IClientFluidTypeExtensions.of(fluid);
 
-        int fluidColor = fluid.getAttributes().getColor(vehicle.getCommandSenderWorld(), vehicle.blockPosition());
+        TextureAtlasSprite sprite = Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(clientFluid.getStillTexture());
+
+        int fluidColor = clientFluid.getTintColor(fluid.defaultFluidState(), vehicle.getCommandSenderWorld(), vehicle.blockPosition());
         float red = (float) (fluidColor >> 16 & 255) / 255.0F;
         float green = (float) (fluidColor >> 8 & 255) / 255.0F;
         float blue = (float) (fluidColor & 255) / 255.0F;
@@ -60,7 +63,7 @@ public class FluidTrailerRenderer extends AbstractTrailerRenderer<FluidTrailerEn
         float minV = sprite.getV0();
         float maxV = Math.min(minV + (sprite.getV1() - minV) * height, sprite.getV1());
 
-        IVertexBuilder buffer = renderTypeBuffer.getBuffer(RenderType.translucentNoCrumbling());
+        VertexConsumer buffer = renderTypeBuffer.getBuffer(RenderType.translucentNoCrumbling());
         Matrix4f matrix = matrixStack.last().pose();
 
         //left side

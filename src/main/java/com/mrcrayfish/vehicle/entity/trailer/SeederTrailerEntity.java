@@ -11,32 +11,32 @@ import com.mrcrayfish.vehicle.network.PacketHandler;
 import com.mrcrayfish.vehicle.network.message.MessageAttachTrailer;
 import com.mrcrayfish.vehicle.network.message.MessageSyncInventory;
 import com.mrcrayfish.vehicle.util.InventoryUtil;
-import net.minecraft.block.Block;
-import net.minecraft.block.CropsBlock;
-import net.minecraft.block.FarmlandBlock;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.inventory.InventoryHelper;
-import net.minecraft.item.BlockNamedItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.Containers;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemNameBlockItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.CropBlock;
+import net.minecraft.world.level.block.FarmBlock;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.Tags;
-import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.fml.network.NetworkHooks;
-import net.minecraftforge.fml.network.PacketDistributor;
+import net.minecraftforge.network.NetworkHooks;
+import net.minecraftforge.network.PacketDistributor;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
@@ -58,7 +58,7 @@ public class SeederTrailerEntity extends TrailerEntity implements IStorage
     private int inventoryTimer;
     private StorageInventory inventory;
 
-    public SeederTrailerEntity(EntityType<? extends SeederTrailerEntity> type, World worldIn)
+    public SeederTrailerEntity(EntityType<? extends SeederTrailerEntity> type, Level worldIn)
     {
         super(type, worldIn);
         this.initInventory();
@@ -76,13 +76,13 @@ public class SeederTrailerEntity extends TrailerEntity implements IStorage
     }
 
     @Override
-    public ActionResultType interact(PlayerEntity player, Hand hand)
+    public InteractionResult interact(Player player, InteractionHand hand)
     {
         ItemStack heldItem = player.getItemInHand(hand);
-        if((heldItem.isEmpty() || !(heldItem.getItem() instanceof SprayCanItem)) && player instanceof ServerPlayerEntity)
+        if((heldItem.isEmpty() || !(heldItem.getItem() instanceof SprayCanItem)) && player instanceof ServerPlayer)
         {
-            NetworkHooks.openGui((ServerPlayerEntity) player, this.getInventory(), buffer -> buffer.writeVarInt(this.getId()));
-            return ActionResultType.SUCCESS;
+            NetworkHooks.openScreen((ServerPlayer) player, this.getInventory(), buffer -> buffer.writeVarInt(this.getId()));
+            return InteractionResult.SUCCESS;
         }
         return super.interact(player, hand);
     }
@@ -91,7 +91,7 @@ public class SeederTrailerEntity extends TrailerEntity implements IStorage
     public void tick()
     {
         super.tick();
-        if(!this.level.isClientSide && Config.SERVER.trailerInventorySyncCooldown.get() > 0 && inventoryTimer++ == Config.SERVER.trailerInventorySyncCooldown.get())
+        if(!this.level().isClientSide && Config.SERVER.trailerInventorySyncCooldown.get() > 0 && inventoryTimer++ == Config.SERVER.trailerInventorySyncCooldown.get())
         {
             this.inventoryTimer = 0;
             PacketHandler.instance.send(PacketDistributor.TRACKING_ENTITY.with(() -> SeederTrailerEntity.this), new MessageSyncInventory(this.getId(), this.inventory));
@@ -103,16 +103,16 @@ public class SeederTrailerEntity extends TrailerEntity implements IStorage
     {
         super.onUpdateVehicle();
 
-        Vector3d lookVec = this.getLookAngle();
+        Vec3 lookVec = this.getLookAngle();
         this.plantSeed(lookVec.yRot((float) Math.toRadians(90F)).scale(0.85));
-        this.plantSeed(Vector3d.ZERO);
+        this.plantSeed(Vec3.ZERO);
         this.plantSeed(lookVec.yRot((float) Math.toRadians(-90F)).scale(0.85));
     }
 
-    private void plantSeed(Vector3d vec)
+    private void plantSeed(Vec3 vec)
     {
-        BlockPos pos = new BlockPos(xo + vec.x, yo + 0.25, zo + vec.z);
-        if(level.isEmptyBlock(pos) && level.getBlockState(pos.below()).getBlock() instanceof FarmlandBlock)
+        BlockPos pos = BlockPos.containing(xo + vec.x, yo + 0.25, zo + vec.z); // FIXME
+        if(level().isEmptyBlock(pos) && level().getBlockState(pos.below()).getBlock() instanceof FarmBlock)
         {
             ItemStack seed = this.getSeed();
             if(seed.isEmpty() && this.getPullingEntity() instanceof StorageTrailerEntity)
@@ -121,8 +121,8 @@ public class SeederTrailerEntity extends TrailerEntity implements IStorage
             }
             if(this.isSeed(seed))
             {
-                Block seedBlock = ((BlockNamedItem) seed.getItem()).getBlock();
-                this.level.setBlockAndUpdate(pos, seedBlock.defaultBlockState());
+                Block seedBlock = ((ItemNameBlockItem) seed.getItem()).getBlock();
+                this.level().setBlockAndUpdate(pos, seedBlock.defaultBlockState());
                 seed.shrink(1);
             }
         }
@@ -143,7 +143,7 @@ public class SeederTrailerEntity extends TrailerEntity implements IStorage
 
     private boolean isSeed(ItemStack stack)
     {
-        return !stack.isEmpty() && stack.getItem() instanceof BlockNamedItem && ((BlockNamedItem) stack.getItem()).getBlock() instanceof CropsBlock;
+        return !stack.isEmpty() && stack.getItem() instanceof ItemNameBlockItem && ((ItemNameBlockItem) stack.getItem()).getBlock() instanceof CropBlock;
     }
 
     private ItemStack getSeedFromStorage(StorageTrailerEntity storageTrailer)
@@ -172,10 +172,10 @@ public class SeederTrailerEntity extends TrailerEntity implements IStorage
     }
 
     @Override
-    protected void readAdditionalSaveData(CompoundNBT compound)
+    protected void readAdditionalSaveData(CompoundTag compound)
     {
         super.readAdditionalSaveData(compound);
-        if(compound.contains("Inventory", Constants.NBT.TAG_LIST))
+        if(compound.contains("Inventory", Tag.TAG_LIST))
         {
             this.initInventory();
             InventoryUtil.readInventoryToNBT(compound, "Inventory", this.inventory);
@@ -183,7 +183,7 @@ public class SeederTrailerEntity extends TrailerEntity implements IStorage
     }
 
     @Override
-    protected void addAdditionalSaveData(CompoundNBT compound)
+    protected void addAdditionalSaveData(CompoundTag compound)
     {
         super.addAdditionalSaveData(compound);
         if(this.inventory != null)
@@ -216,7 +216,7 @@ public class SeederTrailerEntity extends TrailerEntity implements IStorage
         super.onVehicleDestroyed(entity);
         if(inventory != null)
         {
-            InventoryHelper.dropContents(level, this, inventory);
+            Containers.dropContents(level(), this, inventory);
         }
     }
 
@@ -265,11 +265,11 @@ public class SeederTrailerEntity extends TrailerEntity implements IStorage
     @Override
     public boolean isStorageItem(ItemStack stack)
     {
-        return !stack.isEmpty() && stack.getItem().is(Tags.Items.SEEDS);
+        return !stack.isEmpty() && stack.is(Tags.Items.SEEDS);
     }
 
     @Override
-    public ITextComponent getStorageName()
+    public Component getStorageName()
     {
         return this.getDisplayName();
     }

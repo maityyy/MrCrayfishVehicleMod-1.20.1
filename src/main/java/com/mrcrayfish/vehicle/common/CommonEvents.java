@@ -1,7 +1,6 @@
 package com.mrcrayfish.vehicle.common;
 
 import com.google.common.collect.ImmutableList;
-import com.mrcrayfish.obfuscate.common.data.SyncedPlayerData;
 import com.mrcrayfish.vehicle.Config;
 import com.mrcrayfish.vehicle.Reference;
 import com.mrcrayfish.vehicle.common.entity.HeldVehicleDataHandler;
@@ -16,31 +15,37 @@ import com.mrcrayfish.vehicle.network.PacketHandler;
 import com.mrcrayfish.vehicle.network.message.MessageThrowVehicle;
 import com.mrcrayfish.vehicle.tileentity.GasPumpTileEntity;
 import com.mrcrayfish.vehicle.tileentity.JackTileEntity;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.*;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.Entity.RemovalReason;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.ForgeMod;
-import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.MissingMappingsEvent;
+import net.minecraftforge.registries.MissingMappingsEvent.Mapping;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * Author: MrCrayfish
@@ -72,12 +77,13 @@ public class CommonEvents
     }
 
     @SubscribeEvent
-    public void onMissingItem(RegistryEvent.MissingMappings<Item> event)
+    public void onMissingItem(MissingMappingsEvent event)
     {
-        ImmutableList<RegistryEvent.MissingMappings.Mapping<Item>> mappings = ImmutableList.copyOf(event.getMappings().stream().filter(e -> e.key.getNamespace().equals(Reference.MOD_ID)).collect(Collectors.toList()));
-        for(RegistryEvent.MissingMappings.Mapping<Item> missing : mappings)
+        List<Mapping<Item>> mappings = event.getMappings(ForgeRegistries.ITEMS.getRegistryKey(), Reference.MOD_ID);
+        for(Mapping<Item> missing : mappings)
         {
-            if(missing.key.getNamespace().equals(Reference.MOD_ID) && IGNORE_ITEMS.contains(missing.key.getPath()))
+            // FIXME
+            if(missing.getKey().getNamespace().equals(Reference.MOD_ID) && IGNORE_ITEMS.contains(missing.getKey().getPath()))
             {
                 missing.ignore();
             }
@@ -85,12 +91,13 @@ public class CommonEvents
     }
 
     @SubscribeEvent
-    public void onMissingSound(RegistryEvent.MissingMappings<SoundEvent> event)
+    public void onMissingSound(MissingMappingsEvent event)
     {
-        ImmutableList<RegistryEvent.MissingMappings.Mapping<SoundEvent>> mappings = ImmutableList.copyOf(event.getMappings().stream().filter(e -> e.key.getNamespace().equals(Reference.MOD_ID)).collect(Collectors.toList()));
-        for(RegistryEvent.MissingMappings.Mapping<SoundEvent> missing : mappings)
+        List<Mapping<SoundEvent>> mappings = event.getMappings(ForgeRegistries.SOUND_EVENTS.getRegistryKey(), Reference.MOD_ID);
+        for(Mapping<SoundEvent> missing : mappings)
         {
-            if(missing.key.getNamespace().equals(Reference.MOD_ID) && IGNORE_SOUNDS.contains(missing.key.getPath()))
+            // FIXME
+            if(missing.getKey().getNamespace().equals(Reference.MOD_ID) && IGNORE_SOUNDS.contains(missing.getKey().getPath()))
             {
                 missing.ignore();
             }
@@ -98,12 +105,13 @@ public class CommonEvents
     }
 
     @SubscribeEvent
-    public void onMissingEntity(RegistryEvent.MissingMappings<EntityType<?>> event)
+    public void onMissingEntity(MissingMappingsEvent event)
     {
-        ImmutableList<RegistryEvent.MissingMappings.Mapping<EntityType<?>>> mappings = ImmutableList.copyOf(event.getMappings().stream().filter(e -> e.key.getNamespace().equals(Reference.MOD_ID)).collect(Collectors.toList()));
-        for(RegistryEvent.MissingMappings.Mapping<EntityType<?>> missing : mappings)
+        List<Mapping<EntityType<?>>> mappings = event.getMappings(ForgeRegistries.ENTITY_TYPES.getRegistryKey(), Reference.MOD_ID);
+        for(Mapping<EntityType<?>> missing : mappings)
         {
-            if(missing.key.getNamespace().equals(Reference.MOD_ID) && IGNORE_ENTITIES.contains(missing.key.getPath()))
+            // FIXME
+            if(missing.getKey().getNamespace().equals(Reference.MOD_ID) && IGNORE_ENTITIES.contains(missing.getKey().getPath()))
             {
                 missing.ignore();
             }
@@ -113,21 +121,21 @@ public class CommonEvents
     @SubscribeEvent
     public void onPlayerInteract(PlayerInteractEvent.EntityInteractSpecific event)
     {
-        if(pickUpVehicle(event.getWorld(), event.getPlayer(), event.getHand(), event.getTarget()))
+        if(pickUpVehicle(event.getLevel(), event.getEntity(), event.getHand(), event.getTarget()))
         {
             event.setCanceled(true);
         }
     }
 
-    public static boolean pickUpVehicle(World world, PlayerEntity player, Hand hand, Entity targetEntity)
+    public static boolean pickUpVehicle(Level world, Player player, InteractionHand hand, Entity targetEntity)
     {
-        if(hand == Hand.MAIN_HAND && !world.isClientSide && player.isCrouching() && !player.isSpectator() && Config.SERVER.pickUpVehicles.get())
+        if(hand == InteractionHand.MAIN_HAND && !world.isClientSide && player.isCrouching() && !player.isSpectator() && Config.SERVER.pickUpVehicles.get())
         {
             if(!HeldVehicleDataHandler.isHoldingVehicle(player))
             {
                 if(targetEntity instanceof VehicleEntity && !targetEntity.isVehicle() && targetEntity.isAlive())
                 {
-                    CompoundNBT tagCompound = new CompoundNBT();
+                    CompoundTag tagCompound = new CompoundTag();
                     String id = getEntityString(targetEntity);
                     if(id != null)
                     {
@@ -140,10 +148,10 @@ public class CommonEvents
                         HeldVehicleDataHandler.setHeldVehicle(player, tagCompound);
 
                         //Removes the entity from the world
-                        targetEntity.remove();
+                        targetEntity.remove(RemovalReason.DISCARDED);
 
                         //Plays pick up sound
-                        world.playSound(null, player.getX(), player.getY(), player.getZ(), ModSounds.ENTITY_VEHICLE_PICK_UP.get(), SoundCategory.PLAYERS, 1.0F, 1.0F);
+                        world.playSound(null, player.getX(), player.getY(), player.getZ(), ModSounds.ENTITY_VEHICLE_PICK_UP.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
 
                         return true;
                     }
@@ -151,7 +159,7 @@ public class CommonEvents
             }
             else if(targetEntity instanceof TrailerEntity && !targetEntity.isVehicle() && targetEntity.isAlive())
             {
-                CompoundNBT tagCompound = HeldVehicleDataHandler.getHeldVehicle(player);
+                CompoundTag tagCompound = HeldVehicleDataHandler.getHeldVehicle(player);
                 Optional<EntityType<?>> optional = EntityType.byString(tagCompound.getString("id"));
                 if(optional.isPresent())
                 {
@@ -160,14 +168,14 @@ public class CommonEvents
                     if(vehicle instanceof VehicleEntity && ((VehicleEntity) vehicle).canMountTrailer())
                     {
                         vehicle.load(tagCompound);
-                        vehicle.absMoveTo(targetEntity.getX(), targetEntity.getY(), targetEntity.getZ(), targetEntity.yRot, targetEntity.xRot);
+                        vehicle.absMoveTo(targetEntity.getX(), targetEntity.getY(), targetEntity.getZ(), targetEntity.getYRot(), targetEntity.getXRot());
 
                         //Updates the player capability
-                        HeldVehicleDataHandler.setHeldVehicle(player, new CompoundNBT());
+                        HeldVehicleDataHandler.setHeldVehicle(player, new CompoundTag());
 
                         //Plays place sound
                         world.addFreshEntity(vehicle);
-                        world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_STRONG, SoundCategory.PLAYERS, 1.0F, 1.0F);
+                        world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_STRONG, SoundSource.PLAYERS, 1.0F, 1.0F);
                         vehicle.startRiding(targetEntity);
 
                         return true;
@@ -181,10 +189,10 @@ public class CommonEvents
     @SubscribeEvent
     public void onPlayerInteract(PlayerInteractEvent.RightClickBlock event)
     {
-        if(event.getHand() == Hand.OFF_HAND) return;
+        if(event.getHand() == InteractionHand.OFF_HAND) return;
 
-        PlayerEntity player = event.getPlayer();
-        World world = event.getWorld();
+        Player player = event.getEntity();
+        Level world = event.getLevel();
         if(!world.isClientSide())
         {
             if(HeldVehicleDataHandler.isHoldingVehicle(player))
@@ -192,13 +200,13 @@ public class CommonEvents
                 if(event.getFace() == Direction.UP)
                 {
                     BlockPos pos = event.getPos();
-                    TileEntity tileEntity = event.getWorld().getBlockEntity(pos);
+                    BlockEntity tileEntity = event.getLevel().getBlockEntity(pos);
                     if(tileEntity instanceof JackTileEntity)
                     {
                         JackTileEntity jack = (JackTileEntity) tileEntity;
                         if(jack.getJack() == null)
                         {
-                            CompoundNBT tagCompound = HeldVehicleDataHandler.getHeldVehicle(player);
+                            CompoundTag tagCompound = HeldVehicleDataHandler.getHeldVehicle(player);
                             EntityType.byString(tagCompound.getString("id")).ifPresent(entityType ->
                             {
                                 Entity entity = entityType.create(world);
@@ -207,51 +215,51 @@ public class CommonEvents
                                     entity.load(tagCompound);
 
                                     //Updates the player capability
-                                    HeldVehicleDataHandler.setHeldVehicle(player, new CompoundNBT());
+                                    HeldVehicleDataHandler.setHeldVehicle(player, new CompoundTag());
 
                                     entity.fallDistance = 0.0F;
-                                    entity.yRot = (player.getYHeadRot() + 90F) % 360.0F;
+                                    entity.setYRot((player.getYHeadRot() + 90F) % 360.0F);
 
                                     jack.setVehicle((VehicleEntity) entity);
                                     if(jack.getJack() != null)
                                     {
                                         EntityJack entityJack = jack.getJack();
                                         entityJack.rideTick();
-                                        entity.moveTo(entity.getX(), entity.getY(), entity.getZ(), entity.yRot, entity.xRot);
+                                        entity.moveTo(entity.getX(), entity.getY(), entity.getZ(), entity.getYRot(), entity.getXRot());
                                     }
                                     world.addFreshEntity(entity);
-                                    world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_STRONG, SoundCategory.PLAYERS, 1.0F, 1.0F);
+                                    world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_STRONG, SoundSource.PLAYERS, 1.0F, 1.0F);
                                 }
                             });
                         }
                         event.setCanceled(true);
-                        event.setCancellationResult(ActionResultType.SUCCESS);
+                        event.setCancellationResult(InteractionResult.SUCCESS);
                         return;
                     }
                 }
 
                 if(player.isCrouching())
                 {
-                    //Vector3d clickedVec = event.getHitVec(); //TODO WHY DID FORGE REMOVE THIS. GOING TO CREATE A PATCH
-                    RayTraceResult result = player.pick(10.0, 0.0F, false);
-                    Vector3d clickedVec = result.getLocation();
+                    //Vec3 clickedVec = event.getHitVec(); //TODO WHY DID FORGE REMOVE THIS. GOING TO CREATE A PATCH
+                    HitResult result = player.pick(10.0, 0.0F, false);
+                    Vec3 clickedVec = result.getLocation();
                     if(clickedVec == null || event.getFace() != Direction.UP)
                     {
                         event.setCanceled(true);
                         return;
                     }
 
-                    CompoundNBT tagCompound = HeldVehicleDataHandler.getHeldVehicle(player);
+                    CompoundTag tagCompound = HeldVehicleDataHandler.getHeldVehicle(player);
                     EntityType.byString(tagCompound.getString("id")).ifPresent(entityType ->
                     {
-                        Entity entity = entityType.create(player.level);
+                        Entity entity = entityType.create(player.level());
                         if(entity instanceof VehicleEntity)
                         {
                             entity.load(tagCompound);
 
                             //Sets the positions and spawns the entity
                             float rotation = (player.getYHeadRot() + 90F) % 360.0F;
-                            Vector3d heldOffset = ((VehicleEntity) entity).getProperties().getHeldOffset().yRot((float) Math.toRadians(-player.getYHeadRot()));
+                            Vec3 heldOffset = ((VehicleEntity) entity).getProperties().getHeldOffset().yRot((float) Math.toRadians(-player.getYHeadRot()));
 
                             entity.absMoveTo(clickedVec.x + heldOffset.x * 0.0625D, clickedVec.y, clickedVec.z + heldOffset.z * 0.0625D, rotation, 0F);
                             entity.fallDistance = 0.0F;
@@ -261,14 +269,14 @@ public class CommonEvents
                                 return;
 
                             //Updates the player capability
-                            HeldVehicleDataHandler.setHeldVehicle(player, new CompoundNBT());
+                            HeldVehicleDataHandler.setHeldVehicle(player, new CompoundTag());
 
                             //Plays place sound
                             world.addFreshEntity(entity);
-                            world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_STRONG, SoundCategory.PLAYERS, 1.0F, 1.0F);
+                            world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_STRONG, SoundSource.PLAYERS, 1.0F, 1.0F);
 
                             event.setCanceled(true);
-                            event.setCancellationResult(ActionResultType.SUCCESS);
+                            event.setCancellationResult(InteractionResult.SUCCESS);
                         }
                     });
                 }
@@ -277,26 +285,26 @@ public class CommonEvents
         else if(HeldVehicleDataHandler.isHoldingVehicle(player))
         {
             event.setCanceled(true);
-            event.setCancellationResult(ActionResultType.FAIL);
+            event.setCancellationResult(InteractionResult.FAIL);
         }
     }
 
     @SubscribeEvent
     public void onPlayerInteract(PlayerInteractEvent event)
     {
-        if(event.getHand() == Hand.OFF_HAND)
+        if(event.getHand() == InteractionHand.OFF_HAND)
             return;
 
-        World world = event.getWorld();
+        Level world = event.getLevel();
         if(world.isClientSide)
         {
             if(event instanceof PlayerInteractEvent.RightClickEmpty || event instanceof PlayerInteractEvent.RightClickItem)
             {
-                PlayerEntity player = event.getPlayer();
-                float reach = (float) player.getAttribute(ForgeMod.REACH_DISTANCE.get()).getValue();
+                Player player = event.getEntity();
+                float reach = (float) player.getAttribute(ForgeMod.BLOCK_REACH.get()).getValue(); // FIXME
                 reach = player.isCreative() ? reach : reach - 0.5F;
-                RayTraceResult result = player.pick(reach, 0.0F, false);
-                if(result.getType() == RayTraceResult.Type.BLOCK)
+                HitResult result = player.pick(reach, 0.0F, false);
+                if(result.getType() == HitResult.Type.BLOCK)
                     return;
 
                 if(HeldVehicleDataHandler.isHoldingVehicle(player))
@@ -308,48 +316,47 @@ public class CommonEvents
                     if(event.isCancelable())
                     {
                         event.setCanceled(true);
-                        event.setCancellationResult(ActionResultType.SUCCESS);
+                        event.setCancellationResult(InteractionResult.SUCCESS);
                     }
                 }
             }
         }
     }
 
-    @Nullable
     private static String getEntityString(Entity entity)
     {
-        ResourceLocation resourceLocation = entity.getType().getRegistryName();
-        return resourceLocation == null ? null : resourceLocation.toString();
+        // FIXME
+        return ForgeRegistries.ENTITY_TYPES.getKey(entity.getType()).toString();
     }
 
     @SubscribeEvent
     public void onPlayerDeath(LivingDeathEvent event)
     {
-        Entity entity = event.getEntityLiving();
-        if(entity instanceof PlayerEntity)
+        Entity entity = event.getEntity();
+        if(entity instanceof Player)
         {
-            PlayerEntity player = (PlayerEntity) entity;
+            Player player = (Player) entity;
             this.dropVehicle(player);
         }
     }
 
-    private void dropVehicle(PlayerEntity player)
+    private void dropVehicle(Player player)
     {
-        CompoundNBT tagCompound = HeldVehicleDataHandler.getHeldVehicle(player);
+        CompoundTag tagCompound = HeldVehicleDataHandler.getHeldVehicle(player);
         if(!tagCompound.isEmpty())
         {
-            HeldVehicleDataHandler.setHeldVehicle(player, new CompoundNBT());
+            HeldVehicleDataHandler.setHeldVehicle(player, new CompoundTag());
 
             EntityType.byString(tagCompound.getString("id")).ifPresent(entityType ->
             {
-                Entity vehicle = entityType.create(player.level);
+                Entity vehicle = entityType.create(player.level());
                 if(vehicle instanceof VehicleEntity)
                 {
                     vehicle.load(tagCompound);
                     float rotation = (player.getYHeadRot() + 90F) % 360.0F;
-                    Vector3d heldOffset = ((VehicleEntity) vehicle).getProperties().getHeldOffset().yRot((float) Math.toRadians(-player.getYHeadRot()));
+                    Vec3 heldOffset = ((VehicleEntity) vehicle).getProperties().getHeldOffset().yRot((float) Math.toRadians(-player.getYHeadRot()));
                     vehicle.absMoveTo(player.getX() + heldOffset.x * 0.0625D, player.getY() + player.getEyeHeight() + heldOffset.y * 0.0625D, player.getZ() + heldOffset.z * 0.0625D, rotation, 0F);
-                    player.level.addFreshEntity(vehicle);
+                    player.level().addFreshEntity(vehicle);
                 }
             });
         }
@@ -360,11 +367,11 @@ public class CommonEvents
     {
         if(event.phase == TickEvent.Phase.END)
         {
-            PlayerEntity player = event.player;
-            World world = player.level;
+            Player player = event.player;
+            Level world = player.level();
             if(player.isCrouching())
             {
-                int trailerId = SyncedPlayerData.instance().get(player, ModDataKeys.TRAILER);
+                int trailerId = ModDataKeys.TRAILER.getValue(player);
                 if(trailerId != -1)
                 {
                     Entity entity = world.getEntity(trailerId);
@@ -372,7 +379,7 @@ public class CommonEvents
                     {
                         ((TrailerEntity) entity).setPullingEntity(null);
                     }
-                    SyncedPlayerData.instance().set(player, ModDataKeys.TRAILER, -1);
+                    ModDataKeys.TRAILER.setValue(player, -1);
                 }
             }
 
@@ -381,13 +388,13 @@ public class CommonEvents
                 this.dropVehicle(player);
             }
 
-            Optional<BlockPos> pos = SyncedPlayerData.instance().get(player, ModDataKeys.GAS_PUMP);
+            Optional<BlockPos> pos = ModDataKeys.GAS_PUMP.getValue(player);
             if(pos.isPresent())
             {
-                TileEntity tileEntity = world.getBlockEntity(pos.get());
+                BlockEntity tileEntity = world.getBlockEntity(pos.get());
                 if(!(tileEntity instanceof GasPumpTileEntity))
                 {
-                    SyncedPlayerData.instance().set(player, ModDataKeys.GAS_PUMP, Optional.empty());
+                    ModDataKeys.GAS_PUMP.setValue(player, Optional.empty());
                 }
             }
         }
@@ -396,7 +403,7 @@ public class CommonEvents
     @SubscribeEvent
     public void onRightClick(PlayerInteractEvent.RightClickItem event)
     {
-        if(SyncedPlayerData.instance().get(event.getPlayer(), ModDataKeys.GAS_PUMP).isPresent())
+        if(ModDataKeys.GAS_PUMP.getValue(event.getEntity()).isPresent())
         {
             event.setCanceled(true);
         }
@@ -405,15 +412,15 @@ public class CommonEvents
     @SubscribeEvent
     public void onRightClick(PlayerInteractEvent.RightClickBlock event)
     {
-        BlockState state = event.getWorld().getBlockState(event.getPos());
-        if(state.getBlock() != ModBlocks.GAS_PUMP.get() && SyncedPlayerData.instance().get(event.getPlayer(), ModDataKeys.GAS_PUMP).isPresent())
+        BlockState state = event.getLevel().getBlockState(event.getPos());
+        if(state.getBlock() != ModBlocks.GAS_PUMP.get() && ModDataKeys.GAS_PUMP.getValue(event.getEntity()).isPresent())
         {
             event.setCanceled(true);
         }
         else if(event.getItemStack().getItem() instanceof FluidPipeItem)
         {
-            TileEntity relativeTileEntity = event.getWorld().getBlockEntity(event.getPos());
-            if(relativeTileEntity != null && relativeTileEntity.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, event.getFace()).isPresent())
+            BlockEntity relativeTileEntity = event.getLevel().getBlockEntity(event.getPos());
+            if(relativeTileEntity != null && relativeTileEntity.getCapability(ForgeCapabilities.FLUID_HANDLER, event.getFace()).isPresent())
             {
                 event.setUseBlock(Event.Result.DENY);
                 event.setUseItem(Event.Result.ALLOW);

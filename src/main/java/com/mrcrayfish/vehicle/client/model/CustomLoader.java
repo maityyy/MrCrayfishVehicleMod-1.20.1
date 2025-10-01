@@ -39,7 +39,7 @@ public class CustomLoader
 	}
 	
 	@Override
-	public void onResourceManagerReload(IResourceManager manager) {}
+	public void onResourceManagerReload(ResourceManager manager) {}
 
 	@Override
 	public ISimpleModelGeometry read(JsonDeserializationContext deserializationContext, JsonObject modelContents)
@@ -48,7 +48,7 @@ public class CustomLoader
 	}
 
 	@Override
-	public void onResourceManagerReload(IResourceManager resourceManager)
+	public void onResourceManagerReload(ResourceManager resourceManager)
 	{
 
 	}*/

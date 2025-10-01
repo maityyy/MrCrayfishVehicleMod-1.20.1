@@ -1,17 +1,18 @@
 package com.mrcrayfish.vehicle.entity;
 
 import com.mrcrayfish.vehicle.tileentity.JackTileEntity;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.IPacket;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
-import net.minecraftforge.fml.network.NetworkHooks;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.entity.IEntityAdditionalSpawnData;
+import net.minecraftforge.network.NetworkHooks;
 
 /**
  * Author: MrCrayfish
@@ -24,14 +25,14 @@ public class EntityJack extends Entity implements IEntityAdditionalSpawnData
     private boolean activated = false;
     private int liftProgress;
 
-    public EntityJack(EntityType<? extends EntityJack> type, World worldIn)
+    public EntityJack(EntityType<? extends EntityJack> type, Level worldIn)
     {
         super(type, worldIn);
         this.setNoGravity(true);
         this.noPhysics = true;
     }
 
-    public EntityJack(EntityType<? extends EntityJack> type, World worldIn, BlockPos pos, double yOffset, float yaw)
+    public EntityJack(EntityType<? extends EntityJack> type, Level worldIn, BlockPos pos, double yOffset, float yaw)
     {
         this(type, worldIn);
         this.setPos(pos.getX() + 0.5, pos.getY() + yOffset, pos.getZ() + 0.5);
@@ -52,9 +53,9 @@ public class EntityJack extends Entity implements IEntityAdditionalSpawnData
     {
         super.tick();
 
-        if(!level.isClientSide && this.getPassengers().size() == 0)
+        if(!level().isClientSide && this.getPassengers().size() == 0)
         {
-            this.remove();
+            this.remove(RemovalReason.DISCARDED);
         }
 
         if(!this.isAlive())
@@ -77,7 +78,7 @@ public class EntityJack extends Entity implements IEntityAdditionalSpawnData
             this.liftProgress--;
         }
 
-        TileEntity tileEntity = this.level.getBlockEntity(new BlockPos(this.initialX, this.initialY, this.initialZ));
+        BlockEntity tileEntity = this.level().getBlockEntity(BlockPos.containing(this.initialX, this.initialY, this.initialZ));
         if(tileEntity instanceof JackTileEntity)
         {
             JackTileEntity jackTileEntity = (JackTileEntity) tileEntity;
@@ -101,24 +102,24 @@ public class EntityJack extends Entity implements IEntityAdditionalSpawnData
     }
 
     @Override
-    public IPacket<?> getAddEntityPacket()
+    public Packet<ClientGamePacketListener> getAddEntityPacket()
     {
         return NetworkHooks.getEntitySpawningPacket(this);
     }
 
     @Override
-    public void positionRider(Entity passenger)
+    public void positionRider(Entity passenger, MoveFunction moveFunction)
     {
         if(passenger instanceof VehicleEntity)
         {
             VehicleEntity vehicle = (VehicleEntity) passenger;
-            Vector3d heldOffset = vehicle.getProperties().getHeldOffset().yRot(passenger.yRot * 0.017453292F);
-            vehicle.setPos(this.getX() - heldOffset.z * 0.0625, this.getY() - heldOffset.y * 0.0625 - 2 * 0.0625, this.getZ() - heldOffset.x * 0.0625);
+            Vec3 heldOffset = vehicle.getProperties().getHeldOffset().yRot(passenger.getYRot() * 0.017453292F);
+            moveFunction.accept(vehicle, this.getX() - heldOffset.z * 0.0625, this.getY() - heldOffset.y * 0.0625 - 2 * 0.0625, this.getZ() - heldOffset.x * 0.0625);
         }
     }
 
     @Override
-    protected void readAdditionalSaveData(CompoundNBT compound)
+    protected void readAdditionalSaveData(CompoundTag compound)
     {
         this.initialX = compound.getDouble("initialX");
         this.initialY = compound.getDouble("initialY");
@@ -126,7 +127,7 @@ public class EntityJack extends Entity implements IEntityAdditionalSpawnData
     }
 
     @Override
-    protected void addAdditionalSaveData(CompoundNBT compound)
+    protected void addAdditionalSaveData(CompoundTag compound)
     {
         compound.putDouble("initialX", this.initialX);
         compound.putDouble("initialY", this.initialY);
@@ -134,7 +135,7 @@ public class EntityJack extends Entity implements IEntityAdditionalSpawnData
     }
 
     @Override
-    public void writeSpawnData(PacketBuffer buffer)
+    public void writeSpawnData(FriendlyByteBuf buffer)
     {
         buffer.writeDouble(this.initialX);
         buffer.writeDouble(this.initialY);
@@ -142,12 +143,12 @@ public class EntityJack extends Entity implements IEntityAdditionalSpawnData
     }
 
     @Override
-    public void readSpawnData(PacketBuffer buffer)
+    public void readSpawnData(FriendlyByteBuf buffer)
     {
         this.initialX = buffer.readDouble();
         this.initialY = buffer.readDouble();
         this.initialZ = buffer.readDouble();
-        this.moveTo(this.initialX, this.initialY, this.initialZ, this.yRot, this.xRot);
+        this.moveTo(this.initialX, this.initialY, this.initialZ, this.getYRot(), this.getXRot());
         this.xo = this.initialX;
         this.yo = this.initialY;
         this.zo = this.initialZ;

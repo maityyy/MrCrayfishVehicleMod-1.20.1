@@ -1,20 +1,19 @@
 package com.mrcrayfish.vehicle.common;
 
-import com.google.common.collect.ImmutableMap;
 import com.mrcrayfish.vehicle.entity.IWheelType;
 import com.mrcrayfish.vehicle.entity.PoweredVehicleEntity;
 import com.mrcrayfish.vehicle.entity.VehicleProperties;
 import com.mrcrayfish.vehicle.entity.Wheel;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.material.Material;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.core.BlockPos;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.util.Mth;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.common.Tags;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
-
-import static net.minecraft.block.material.Material.*;
 
 /**
  * Categories materials into a surface type to determine the
@@ -22,45 +21,22 @@ import static net.minecraft.block.material.Material.*;
  */
 public class SurfaceHelper
 {
-    private static final ImmutableMap<Material, SurfaceType> MATERIAL_TO_SURFACE_TYPE;
-
-    static
+    public static SurfaceType getSurfaceTypeForMaterial(BlockState state)
     {
-        ImmutableMap.Builder<Material, SurfaceType> builder = new ImmutableMap.Builder<>();
-        builder.put(CLOTH_DECORATION, SurfaceType.DIRT);
-        builder.put(PLANT, SurfaceType.DIRT);
-        builder.put(WATER_PLANT, SurfaceType.DIRT);
-        builder.put(TOP_SNOW, SurfaceType.SNOW);
-        builder.put(CLAY, SurfaceType.DIRT);
-        builder.put(DIRT, SurfaceType.DIRT);
-        builder.put(GRASS, SurfaceType.DIRT);
-        builder.put(ICE_SOLID, SurfaceType.SOLID);
-        builder.put(SAND, SurfaceType.DIRT);
-        builder.put(SPONGE, SurfaceType.DIRT);
-        builder.put(SHULKER_SHELL, SurfaceType.SOLID);
-        builder.put(WOOD, SurfaceType.SOLID);
-        builder.put(NETHER_WOOD, SurfaceType.SOLID);
-        builder.put(BAMBOO, SurfaceType.SOLID);
-        builder.put(WOOL, SurfaceType.DIRT);
-        builder.put(EXPLOSIVE, SurfaceType.SNOW);
-        builder.put(LEAVES, SurfaceType.SNOW);
-        builder.put(GLASS, SurfaceType.SOLID);
-        builder.put(ICE, SurfaceType.SOLID);
-        builder.put(CACTUS, SurfaceType.SNOW);
-        builder.put(STONE, SurfaceType.SOLID);
-        builder.put(METAL, SurfaceType.SOLID);
-        builder.put(SNOW, SurfaceType.SNOW);
-        builder.put(HEAVY_METAL, SurfaceType.SOLID);
-        builder.put(BARRIER, SurfaceType.SOLID);
-        builder.put(PISTON, SurfaceType.SOLID);
-        builder.put(CORAL, SurfaceType.SNOW);
-        builder.put(CAKE, SurfaceType.SNOW);
-        MATERIAL_TO_SURFACE_TYPE = builder.build();
-    }
+        if (state.is(BlockTags.DIRT) || state.is(Tags.Blocks.GRAVEL) || state.is(BlockTags.SAND) || state.is(BlockTags.WOOL) || state.is(Blocks.SPONGE))
+        {
+            return SurfaceType.DIRT;
+        }
+        else if (state.isSolid() || state.is(Tags.Blocks.STONE) || state.is(BlockTags.SHULKER_BOXES) || state.is(Tags.Blocks.GLASS))
+        {
+            return SurfaceType.SOLID;
+        }
+        else if (state.is(BlockTags.SNOW) || state.is(BlockTags.ICE) || state.is(BlockTags.LEAVES))
+        {
+            return SurfaceType.SNOW;
+        }
 
-    public static SurfaceType getSurfaceTypeForMaterial(Material material)
-    {
-        return MATERIAL_TO_SURFACE_TYPE.getOrDefault(material, SurfaceType.NONE);
+        return SurfaceType.NONE;
     }
 
     public static float getSurfaceModifier(PoweredVehicleEntity vehicle)
@@ -81,11 +57,11 @@ public class SurfaceHelper
             double wheelX = vehicle.getWheelPositions()[i * 3];
             double wheelY = vehicle.getWheelPositions()[i * 3 + 1];
             double wheelZ = vehicle.getWheelPositions()[i * 3 + 2];
-            int x = MathHelper.floor(vehicle.getX() + wheelX);
-            int y = MathHelper.floor(vehicle.getY() + wheelY - 0.2D);
-            int z = MathHelper.floor(vehicle.getZ() + wheelZ);
-            BlockState state = vehicle.level.getBlockState(new BlockPos(x, y, z));
-            SurfaceType surfaceType = getSurfaceTypeForMaterial(state.getMaterial());
+            int x = Mth.floor(vehicle.getX() + wheelX);
+            int y = Mth.floor(vehicle.getY() + wheelY - 0.2D);
+            int z = Mth.floor(vehicle.getZ() + wheelZ);
+            BlockState state = vehicle.level().getBlockState(new BlockPos(x, y, z));
+            SurfaceType surfaceType = getSurfaceTypeForMaterial(state);
             if(surfaceType == SurfaceType.NONE)
                 continue;
             IWheelType wheelType = optional.get();

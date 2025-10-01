@@ -14,28 +14,32 @@ import com.mrcrayfish.vehicle.network.PacketHandler;
 import com.mrcrayfish.vehicle.network.message.MessageAttachChest;
 import com.mrcrayfish.vehicle.network.message.MessageOpenStorage;
 import com.mrcrayfish.vehicle.util.InventoryUtil;
-import net.minecraft.block.Blocks;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.item.ItemEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.inventory.InventoryHelper;
-import net.minecraft.inventory.ItemStackHelper;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.datasync.DataParameter;
-import net.minecraft.network.datasync.DataSerializers;
-import net.minecraft.network.datasync.EntityDataManager;
-import net.minecraft.util.*;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.world.World;
+import net.minecraft.core.NonNullList;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.Container;
+import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.Containers;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fml.DistExecutor;
 
 import javax.annotation.Nullable;
@@ -48,8 +52,8 @@ import java.util.Map;
  */
 public class MopedEntity extends MotorcycleEntity implements IAttachableChest
 {
-    private static final DataParameter<Boolean> CHEST = EntityDataManager.defineId(MopedEntity.class, DataSerializers.BOOLEAN);
-    private static final DataParameter<Boolean> CHEST_OPEN = EntityDataManager.defineId(MopedEntity.class, DataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> CHEST = SynchedEntityData.defineId(MopedEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> CHEST_OPEN = SynchedEntityData.defineId(MopedEntity.class, EntityDataSerializers.BOOLEAN);
     private static final RayTracePart CHEST_BOX = new RayTracePart(createBoxScaled(-3.5, 10.5, -7, 3.5, 17.5, -14, 1.2));
     private static final RayTracePart TRAY_BOX = new RayTracePart(createBoxScaled(-4, 9.5, -6.5, 4, 10.5, -14.5, 1.2));
     private static final Map<RayTracePart, TriangleRayTraceList> interactionBoxMapStatic = DistExecutor.callWhenOn(Dist.CLIENT, () -> () ->
@@ -67,7 +71,7 @@ public class MopedEntity extends MotorcycleEntity implements IAttachableChest
     @OnlyIn(Dist.CLIENT)
     private float prevOpenProgress;
 
-    public MopedEntity(EntityType<? extends MopedEntity> type, World worldIn)
+    public MopedEntity(EntityType<? extends MopedEntity> type, Level worldIn)
     {
         super(type, worldIn);
         this.setMaxSpeed(12F);
@@ -110,13 +114,13 @@ public class MopedEntity extends MotorcycleEntity implements IAttachableChest
     }
 
     @Override
-    protected void readAdditionalSaveData(CompoundNBT compound)
+    protected void readAdditionalSaveData(CompoundTag compound)
     {
         super.readAdditionalSaveData(compound);
-        if(compound.contains("Chest", Constants.NBT.TAG_BYTE))
+        if(compound.contains("Chest", Tag.TAG_BYTE))
         {
             this.setChest(compound.getBoolean("Chest"));
-            if(compound.contains("Inventory", Constants.NBT.TAG_LIST))
+            if(compound.contains("Inventory", Tag.TAG_LIST))
             {
                 this.initInventory();
                 InventoryUtil.readInventoryToNBT(compound, "Inventory", inventory);
@@ -125,7 +129,7 @@ public class MopedEntity extends MotorcycleEntity implements IAttachableChest
     }
 
     @Override
-    protected void addAdditionalSaveData(CompoundNBT compound)
+    protected void addAdditionalSaveData(CompoundTag compound)
     {
         super.addAdditionalSaveData(compound);
         compound.putBoolean("Chest", this.hasChest());
@@ -155,13 +159,13 @@ public class MopedEntity extends MotorcycleEntity implements IAttachableChest
             if(partHit == CHEST_BOX && this.hasChest())
             {
                 PacketHandler.instance.sendToServer(new MessageOpenStorage(this.getId()));
-                Minecraft.getInstance().player.swing(Hand.MAIN_HAND);
+                Minecraft.getInstance().player.swing(InteractionHand.MAIN_HAND);
                 return true;
             }
             else if(partHit == TRAY_BOX && !this.hasChest())
             {
                 PacketHandler.instance.sendToServer(new MessageAttachChest(this.getId()));
-                Minecraft.getInstance().player.swing(Hand.MAIN_HAND);
+                Minecraft.getInstance().player.swing(InteractionHand.MAIN_HAND);
                 return true;
             }
         }
@@ -215,7 +219,7 @@ public class MopedEntity extends MotorcycleEntity implements IAttachableChest
         super.onVehicleDestroyed(entity);
         if(this.hasChest() && inventory != null)
         {
-            InventoryHelper.dropContents(level, this, inventory);
+            Containers.dropContents(level(), this, inventory);
         }
     }
 
@@ -238,14 +242,14 @@ public class MopedEntity extends MotorcycleEntity implements IAttachableChest
             this.setChest(true);
             this.initInventory();
 
-            CompoundNBT itemTag = stack.getTag();
+            CompoundTag itemTag = stack.getTag();
             if(itemTag != null)
             {
-                CompoundNBT blockEntityTag = itemTag.getCompound("BlockEntityTag");
-                if(!blockEntityTag.isEmpty() && blockEntityTag.contains("Items", Constants.NBT.TAG_LIST))
+                CompoundTag blockEntityTag = itemTag.getCompound("BlockEntityTag");
+                if(!blockEntityTag.isEmpty() && blockEntityTag.contains("Items", Tag.TAG_LIST))
                 {
                     NonNullList<ItemStack> chestInventory = NonNullList.withSize(27, ItemStack.EMPTY);
-                    ItemStackHelper.loadAllItems(blockEntityTag, chestInventory);
+                    ContainerHelper.loadAllItems(blockEntityTag, chestInventory);
                     for(int i = 0; i < chestInventory.size(); i++)
                     {
                         this.inventory.setItem(i, chestInventory.get(i));
@@ -260,12 +264,12 @@ public class MopedEntity extends MotorcycleEntity implements IAttachableChest
     {
         if(this.inventory != null)
         {
-            Vector3d target = this.getChestPosition();
-            InventoryUtil.dropInventoryItems(level, target.x, target.y, target.z, this.inventory);
+            Vec3 target = this.getChestPosition();
+            InventoryUtil.dropInventoryItems(level(), target.x, target.y, target.z, this.inventory);
             this.inventory = null;
             this.setChest(false);
-            level.playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.ITEM_BREAK, SoundCategory.BLOCKS, 1.0F, 1.0F);
-            level.addFreshEntity(new ItemEntity(level, target.x, target.y, target.z, new ItemStack(Blocks.CHEST)));
+            level().playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.ITEM_BREAK, SoundSource.BLOCKS, 1.0F, 1.0F);
+            level().addFreshEntity(new ItemEntity(level(), target.x, target.y, target.z, new ItemStack(Blocks.CHEST)));
         }
     }
 
@@ -277,16 +281,16 @@ public class MopedEntity extends MotorcycleEntity implements IAttachableChest
     }
 
     @Override
-    public ITextComponent getStorageName()
+    public Component getStorageName()
     {
         return this.getDisplayName();
     }
 
     @Override
-    public void startOpen(PlayerEntity player)
+    public void startOpen(Player player)
     {
-        Vector3d target = this.getChestPosition();
-        this.level.playSound(null, target.x, target.y, target.z, SoundEvents.CHEST_OPEN, this.getSoundSource(), 0.5F, 0.9F);
+        Vec3 target = this.getChestPosition();
+        this.level().playSound(null, target.x, target.y, target.z, SoundEvents.CHEST_OPEN, this.getSoundSource(), 0.5F, 0.9F);
     }
 
     @Override
@@ -297,7 +301,7 @@ public class MopedEntity extends MotorcycleEntity implements IAttachableChest
         if(this.hasChest())
         {
             // Updates the chest open state
-            if(!this.level.isClientSide())
+            if(!this.level().isClientSide())
             {
                 this.entityData.set(CHEST_OPEN, this.getPlayerCountInChest() > 0);
             }
@@ -315,17 +319,17 @@ public class MopedEntity extends MotorcycleEntity implements IAttachableChest
                     this.openProgress = Math.max(0.0F, this.openProgress - 0.1F);
                     if(this.openProgress < 0.5F && lastOpenProgress >= 0.5F)
                     {
-                        Vector3d target = this.getChestPosition();
-                        this.level.playLocalSound(target.x, target.y, target.z, SoundEvents.CHEST_CLOSE, this.getSoundSource(), 0.5F, this.level.random.nextFloat() * 0.1F + 0.9F, false);
+                        Vec3 target = this.getChestPosition();
+                        this.level().playLocalSound(target.x, target.y, target.z, SoundEvents.CHEST_CLOSE, this.getSoundSource(), 0.5F, this.level().random.nextFloat() * 0.1F + 0.9F, false);
                     }
                 }
             }
         }
     }
 
-    protected Vector3d getChestPosition()
+    protected Vec3 getChestPosition()
     {
-        return new Vector3d(0, 1.0, -0.75).yRot(-(this.yRot - this.additionalYaw) * 0.017453292F).add(this.position());
+        return new Vec3(0, 1.0, -0.75).yRot(-(this.getYRot() - this.additionalYaw) * 0.017453292F).add(this.position());
     }
 
     protected int getPlayerCountInChest()
@@ -336,11 +340,11 @@ public class MopedEntity extends MotorcycleEntity implements IAttachableChest
         }
 
         int count = 0;
-        for(PlayerEntity player : this.level.getEntitiesOfClass(PlayerEntity.class, this.getBoundingBox().inflate(5.0F)))
+        for(Player player : this.level().getEntitiesOfClass(Player.class, this.getBoundingBox().inflate(5.0F)))
         {
             if(player.containerMenu instanceof StorageContainer)
             {
-                IInventory container = ((StorageContainer) player.containerMenu).getStorageInventory();
+                Container container = ((StorageContainer) player.containerMenu).getStorageInventory();
                 if(container == this)
                 {
                     count++;

@@ -1,21 +1,21 @@
 package com.mrcrayfish.vehicle.common.inventory;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.inventory.container.Container;
-import net.minecraft.inventory.container.INamedContainerProvider;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.ListNBT;
-import net.minecraft.util.text.ITextComponent;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.ItemStack;
 
 import javax.annotation.Nullable;
 
 /**
  * Author: MrCrayfish
  */
-public class StorageInventory extends Inventory implements INamedContainerProvider
+public class StorageInventory extends SimpleContainer implements MenuProvider
 {
     private IStorage wrapper;
 
@@ -31,27 +31,27 @@ public class StorageInventory extends Inventory implements INamedContainerProvid
     }
 
     @Override
-    public ITextComponent getDisplayName()
+    public Component getDisplayName()
     {
         return this.wrapper.getStorageName();
     }
 
     @Nullable
     @Override
-    public Container createMenu(int windowId, PlayerInventory playerInventory, PlayerEntity playerEntity)
+    public AbstractContainerMenu createMenu(int windowId, Inventory playerInventory, Player playerEntity)
     {
         return this.wrapper.getStorageContainerProvider().createMenu(windowId, playerInventory, playerEntity);
     }
 
-    public ListNBT createTag()
+    public ListTag createTag()
     {
-        ListNBT tagList = new ListNBT();
+        ListTag tagList = new ListTag();
         for(int i = 0; i < this.getContainerSize(); i++)
         {
             ItemStack stack = this.getItem(i);
             if(!stack.isEmpty())
             {
-                CompoundNBT slotTag = new CompoundNBT();
+                CompoundTag slotTag = new CompoundTag();
                 slotTag.putByte("Slot", (byte) i);
                 stack.save(slotTag);
                 tagList.add(slotTag);
@@ -61,12 +61,12 @@ public class StorageInventory extends Inventory implements INamedContainerProvid
     }
 
     @Override
-    public void fromTag(ListNBT tagList)
+    public void fromTag(ListTag tagList)
     {
         this.clearContent();
         for(int i = 0; i < tagList.size(); i++)
         {
-            CompoundNBT slotTag = tagList.getCompound(i);
+            CompoundTag slotTag = tagList.getCompound(i);
             byte slot = slotTag.getByte("Slot");
             if(slot >= 0 && slot < this.getContainerSize())
             {

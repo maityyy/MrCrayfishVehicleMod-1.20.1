@@ -4,13 +4,13 @@ import com.mrcrayfish.vehicle.entity.LandVehicleEntity;
 import com.mrcrayfish.vehicle.entity.TrailerEntity;
 import com.mrcrayfish.vehicle.entity.VehicleEntity;
 import com.mrcrayfish.vehicle.entity.VehicleProperties;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvents;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.network.NetworkEvent.Context;
 
 import java.util.List;
 import java.util.function.Supplier;
@@ -30,23 +30,23 @@ public class MessageHitchTrailer implements IMessage<MessageHitchTrailer>
     }
 
     @Override
-    public void encode(MessageHitchTrailer message, PacketBuffer buffer)
+    public void encode(MessageHitchTrailer message, FriendlyByteBuf buffer)
     {
         buffer.writeBoolean(message.hitch);
     }
 
     @Override
-    public MessageHitchTrailer decode(PacketBuffer buffer)
+    public MessageHitchTrailer decode(FriendlyByteBuf buffer)
     {
         return new MessageHitchTrailer(buffer.readBoolean());
     }
 
     @Override
-    public void handle(MessageHitchTrailer message, Supplier<NetworkEvent.Context> supplier)
+    public void handle(MessageHitchTrailer message, Supplier<Context> supplier)
     {
         supplier.get().enqueueWork(() ->
         {
-            ServerPlayerEntity player = supplier.get().getSender();
+            ServerPlayer player = supplier.get().getSender();
             if(player != null)
             {
                 if(!(player.getVehicle() instanceof VehicleEntity))
@@ -61,40 +61,40 @@ public class MessageHitchTrailer implements IMessage<MessageHitchTrailer>
                     if(vehicle.getTrailer() != null)
                     {
                         vehicle.setTrailer(null);
-                        player.level.playSound(null, vehicle.blockPosition(), SoundEvents.ITEM_BREAK, SoundCategory.PLAYERS, 1.0F, 1.0F);
+                        player.level().playSound(null, vehicle.blockPosition(), SoundEvents.ITEM_BREAK, SoundSource.PLAYERS, 1.0F, 1.0F);
                     }
                 }
                 else
                 {
                     VehicleProperties properties = vehicle.getProperties();
-                    Vector3d vehicleVec = vehicle.position();
-                    Vector3d towBarVec = properties.getTowBarPosition();
-                    towBarVec = new Vector3d(towBarVec.x * 0.0625, towBarVec.y * 0.0625, towBarVec.z * 0.0625 + properties.getBodyPosition().getZ());
+                    Vec3 vehicleVec = vehicle.position();
+                    Vec3 towBarVec = properties.getTowBarPosition();
+                    towBarVec = new Vec3(towBarVec.x * 0.0625, towBarVec.y * 0.0625, towBarVec.z * 0.0625 + properties.getBodyPosition().getZ());
                     if(vehicle instanceof LandVehicleEntity)
                     {
                         LandVehicleEntity landVehicle = (LandVehicleEntity) vehicle;
-                        vehicleVec = vehicleVec.add(towBarVec.yRot((float) Math.toRadians(-vehicle.yRot + landVehicle.additionalYaw)));
+                        vehicleVec = vehicleVec.add(towBarVec.yRot((float) Math.toRadians(-vehicle.getYRot() + landVehicle.additionalYaw)));
                     }
                     else
                     {
-                        vehicleVec = vehicleVec.add(towBarVec.yRot((float) Math.toRadians(-vehicle.yRot)));
+                        vehicleVec = vehicleVec.add(towBarVec.yRot((float) Math.toRadians(-vehicle.getYRot())));
                     }
 
-                    AxisAlignedBB towBarBox = new AxisAlignedBB(vehicleVec.x, vehicleVec.y, vehicleVec.z, vehicleVec.x, vehicleVec.y, vehicleVec.z).inflate(0.25);
-                    List<TrailerEntity> trailers = player.level.getEntitiesOfClass(TrailerEntity.class, vehicle.getBoundingBox().inflate(5), input -> input.getPullingEntity() == null);
+                    AABB towBarBox = new AABB(vehicleVec.x, vehicleVec.y, vehicleVec.z, vehicleVec.x, vehicleVec.y, vehicleVec.z).inflate(0.25);
+                    List<TrailerEntity> trailers = player.level().getEntitiesOfClass(TrailerEntity.class, vehicle.getBoundingBox().inflate(5), input -> input.getPullingEntity() == null);
                     for(TrailerEntity trailer : trailers)
                     {
                         if(trailer.getPullingEntity() != null)
                             continue;
 
-                        Vector3d trailerVec = trailer.position();
-                        Vector3d hitchVec = new Vector3d(0, 0, -trailer.getHitchOffset() / 16.0);
-                        trailerVec = trailerVec.add(hitchVec.yRot((float) Math.toRadians(-trailer.yRot)));
-                        AxisAlignedBB hitchBox = new AxisAlignedBB(trailerVec.x, trailerVec.y, trailerVec.z, trailerVec.x, trailerVec.y, trailerVec.z).inflate(0.25);
+                        Vec3 trailerVec = trailer.position();
+                        Vec3 hitchVec = new Vec3(0, 0, -trailer.getHitchOffset() / 16.0);
+                        trailerVec = trailerVec.add(hitchVec.yRot((float) Math.toRadians(-trailer.getYRot())));
+                        AABB hitchBox = new AABB(trailerVec.x, trailerVec.y, trailerVec.z, trailerVec.x, trailerVec.y, trailerVec.z).inflate(0.25);
                         if(towBarBox.intersects(hitchBox))
                         {
                             vehicle.setTrailer(trailer);
-                            player.level.playSound(null, vehicle.blockPosition(), SoundEvents.ANVIL_PLACE, SoundCategory.PLAYERS, 1.0F, 1.5F);
+                            player.level().playSound(null, vehicle.blockPosition(), SoundEvents.ANVIL_PLACE, SoundSource.PLAYERS, 1.0F, 1.5F);
                             return;
                         }
                     }

@@ -1,22 +1,25 @@
 package com.mrcrayfish.vehicle.crafting;
 
 import com.mrcrayfish.vehicle.init.ModRecipeSerializers;
+import com.mrcrayfish.vehicle.init.ModRecipeTypes;
 import com.mrcrayfish.vehicle.tileentity.FluidMixerTileEntity;
 import com.mrcrayfish.vehicle.util.InventoryUtil;
-import net.minecraft.fluid.Fluid;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.IRecipe;
-import net.minecraft.item.crafting.IRecipeSerializer;
-import net.minecraft.item.crafting.IRecipeType;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.World;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.Objects;
 
 /**
  * Author: MrCrayfish
  */
-public class FluidMixerRecipe implements IRecipe<FluidMixerTileEntity>
+public class FluidMixerRecipe implements Recipe<FluidMixerTileEntity>
 {
     private ResourceLocation id;
     private FluidEntry[] inputs;
@@ -83,13 +86,13 @@ public class FluidMixerRecipe implements IRecipe<FluidMixerTileEntity>
     {
         if(this.hashCode == 0)
         {
-            this.hashCode = Objects.hash(this.inputs[0].getFluid().getRegistryName(), this.inputs[1].getFluid().getRegistryName(), this.ingredient.getItem().getRegistryName());
+            this.hashCode = Objects.hash(ForgeRegistries.FLUIDS.getKey(this.inputs[0].getFluid()), ForgeRegistries.FLUIDS.getKey(this.inputs[1].getFluid()), ForgeRegistries.ITEMS.getKey(this.ingredient.getItem()));
         }
         return this.hashCode;
     }
 
     @Override
-    public boolean matches(FluidMixerTileEntity fluidMixer, World worldIn)
+    public boolean matches(FluidMixerTileEntity fluidMixer, Level worldIn)
     {
         if(fluidMixer.getEnderSapTank().isEmpty() || fluidMixer.getBlazeTank().isEmpty())
             return false;
@@ -109,7 +112,7 @@ public class FluidMixerRecipe implements IRecipe<FluidMixerTileEntity>
     }
 
     @Override
-    public ItemStack assemble(FluidMixerTileEntity inv)
+    public ItemStack assemble(FluidMixerTileEntity inv, RegistryAccess registries)
     {
         return ItemStack.EMPTY;
     }
@@ -121,7 +124,7 @@ public class FluidMixerRecipe implements IRecipe<FluidMixerTileEntity>
     }
 
     @Override
-    public ItemStack getResultItem()
+    public ItemStack getResultItem(RegistryAccess registries)
     {
         return ItemStack.EMPTY;
     }
@@ -133,14 +136,14 @@ public class FluidMixerRecipe implements IRecipe<FluidMixerTileEntity>
     }
 
     @Override
-    public IRecipeSerializer<?> getSerializer()
+    public RecipeSerializer<?> getSerializer()
     {
         return ModRecipeSerializers.FLUID_MIXER.get();
     }
 
     @Override
-    public IRecipeType<?> getType()
+    public RecipeType<?> getType()
     {
-        return RecipeType.FLUID_MIXER;
+        return ModRecipeTypes.FLUID_MIXER.get();
     }
 }

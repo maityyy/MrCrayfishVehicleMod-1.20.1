@@ -1,6 +1,6 @@
 package com.mrcrayfish.vehicle.common.entity;
 
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * Author: MrCrayfish
@@ -9,8 +9,8 @@ public class PartPosition
 {
     public static final PartPosition DEFAULT = new PartPosition(1.0);
 
-    private Vector3d translate = Vector3d.ZERO;
-    private Vector3d rotation = Vector3d.ZERO;
+    private Vec3 translate = Vec3.ZERO;
+    private Vec3 rotation = Vec3.ZERO;
     private double scale;
 
     public PartPosition(double scale)
@@ -20,23 +20,23 @@ public class PartPosition
 
     public PartPosition(double offsetX, double offsetY, double offsetZ, double scale)
     {
-        this.translate = new Vector3d(offsetX, offsetY, offsetZ);
+        this.translate = new Vec3(offsetX, offsetY, offsetZ);
         this.scale = scale;
     }
 
     public PartPosition(double offsetX, double offsetY, double offsetZ, double rotX, double rotY, double rotZ, double scale)
     {
-        this.translate = new Vector3d(offsetX, offsetY, offsetZ);
-        this.rotation = new Vector3d(rotX, rotY, rotZ);
+        this.translate = new Vec3(offsetX, offsetY, offsetZ);
+        this.rotation = new Vec3(rotX, rotY, rotZ);
         this.scale = scale;
     }
 
-    public Vector3d getTranslate()
+    public Vec3 getTranslate()
     {
         return translate;
     }
 
-    public Vector3d getRotation()
+    public Vec3 getRotation()
     {
         return rotation;
     }
@@ -78,8 +78,8 @@ public class PartPosition
 
     public void update(double x, double y, double z, double rotX, double rotY, double rotZ, double scale)
     {
-        this.translate = new Vector3d(x, y, z);
-        this.rotation = new Vector3d(rotX, rotY, rotZ);
+        this.translate = new Vec3(x, y, z);
+        this.rotation = new Vec3(rotX, rotY, rotZ);
         this.scale = scale;
     }
 

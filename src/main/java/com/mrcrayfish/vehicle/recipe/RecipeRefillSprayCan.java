@@ -2,25 +2,27 @@ package com.mrcrayfish.vehicle.recipe;
 
 import com.mrcrayfish.vehicle.init.ModRecipeSerializers;
 import com.mrcrayfish.vehicle.item.SprayCanItem;
-import net.minecraft.inventory.CraftingInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.IRecipeSerializer;
-import net.minecraft.item.crafting.SpecialRecipe;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.World;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.inventory.CraftingContainer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingBookCategory;
+import net.minecraft.world.item.crafting.CustomRecipe;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.level.Level;
 
 /**
  * Author: MrCrayfish
  */
-public class RecipeRefillSprayCan extends SpecialRecipe
+public class RecipeRefillSprayCan extends CustomRecipe
 {
-    public RecipeRefillSprayCan(ResourceLocation id)
+    public RecipeRefillSprayCan(ResourceLocation id, CraftingBookCategory category)
     {
-        super(id);
+        super(id, category);
     }
 
     @Override
-    public boolean matches(CraftingInventory inventory, World worldIn)
+    public boolean matches(CraftingContainer inventory, Level worldIn)
     {
         ItemStack sprayCan = ItemStack.EMPTY;
         ItemStack emptySprayCan = ItemStack.EMPTY;
@@ -55,7 +57,7 @@ public class RecipeRefillSprayCan extends SpecialRecipe
     }
 
     @Override
-    public ItemStack assemble(CraftingInventory inventory)
+    public ItemStack assemble(CraftingContainer inventory, RegistryAccess registries)
     {
         ItemStack sprayCan = ItemStack.EMPTY;
         ItemStack emptySprayCan = ItemStack.EMPTY;
@@ -104,7 +106,7 @@ public class RecipeRefillSprayCan extends SpecialRecipe
     }
 
     @Override
-    public IRecipeSerializer<?> getSerializer()
+    public RecipeSerializer<?> getSerializer()
     {
         return ModRecipeSerializers.REFILL_SPRAY_CAN.get();
     }

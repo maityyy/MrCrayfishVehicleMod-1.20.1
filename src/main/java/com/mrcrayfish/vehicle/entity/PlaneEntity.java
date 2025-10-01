@@ -4,15 +4,16 @@ import com.mrcrayfish.vehicle.client.VehicleHelper;
 import com.mrcrayfish.vehicle.network.PacketHandler;
 import com.mrcrayfish.vehicle.network.message.MessageFlaps;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.datasync.DataParameter;
-import net.minecraft.network.datasync.DataSerializers;
-import net.minecraft.network.datasync.EntityDataManager;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.World;
-import net.minecraftforge.common.util.Constants;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.util.Mth;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Level;
 
 import java.util.Optional;
 
@@ -22,8 +23,8 @@ import java.util.Optional;
 public abstract class PlaneEntity extends PoweredVehicleEntity
 {
     //TODO Create own data parameter system if problems continue to occur
-    private static final DataParameter<Integer> FLAP_DIRECTION = EntityDataManager.defineId(PlaneEntity.class, DataSerializers.INT);
-    private static final DataParameter<Float> LIFT = EntityDataManager.defineId(PlaneEntity.class, DataSerializers.FLOAT);
+    private static final EntityDataAccessor<Integer> FLAP_DIRECTION = SynchedEntityData.defineId(PlaneEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Float> LIFT = SynchedEntityData.defineId(PlaneEntity.class, EntityDataSerializers.FLOAT);
 
     private float lift;
 
@@ -35,7 +36,7 @@ public abstract class PlaneEntity extends PoweredVehicleEntity
     public float bodyRotationY;
     public float bodyRotationZ;
 
-    protected PlaneEntity(EntityType<?> entityType, World worldIn)
+    protected PlaneEntity(EntityType<?> entityType, Level worldIn)
     {
         super(entityType, worldIn);
         this.setAccelerationSpeed(0.5F);
@@ -54,8 +55,8 @@ public abstract class PlaneEntity extends PoweredVehicleEntity
     @Override
     public void updateVehicleMotion()
     {
-        float f1 = MathHelper.sin(this.yRot * 0.017453292F) / 20F; //Divide by 20 ticks
-        float f2 = MathHelper.cos(this.yRot * 0.017453292F) / 20F;
+        float f1 = Mth.sin(this.getYRot() * 0.017453292F) / 20F; //Divide by 20 ticks
+        float f2 = Mth.cos(this.getYRot() * 0.017453292F) / 20F;
 
         this.updateLift();
 
@@ -212,7 +213,7 @@ public abstract class PlaneEntity extends PoweredVehicleEntity
     }
 
     @Override
-    protected void addAdditionalSaveData(CompoundNBT compound)
+    protected void addAdditionalSaveData(CompoundTag compound)
     {
         super.addAdditionalSaveData(compound);
         compound.putInt("FlapDirection", this.getFlapDirection().ordinal());
@@ -220,14 +221,14 @@ public abstract class PlaneEntity extends PoweredVehicleEntity
     }
 
     @Override
-    protected void readAdditionalSaveData(CompoundNBT compound)
+    protected void readAdditionalSaveData(CompoundTag compound)
     {
         super.readAdditionalSaveData(compound);
-        if(compound.contains("FlapDirection", Constants.NBT.TAG_INT))
+        if(compound.contains("FlapDirection", Tag.TAG_INT))
         {
             this.setFlapDirection(FlapDirection.values()[compound.getInt("FlapDirection")]);
         }
-        if(compound.contains("Lift", Constants.NBT.TAG_FLOAT))
+        if(compound.contains("Lift", Tag.TAG_FLOAT))
         {
             this.setLift(compound.getFloat("Lift"));
         }
@@ -255,14 +256,14 @@ public abstract class PlaneEntity extends PoweredVehicleEntity
 
     public boolean isFlying()
     {
-        return !this.onGround;
+        return !this.onGround();
     }
 
     /*
      * Overridden to prevent players from taking fall damage when landing a plane
      */
     @Override
-    public boolean causeFallDamage(float distance, float damageMultiplier)
+    public boolean causeFallDamage(float distance, float damageMultiplier, DamageSource source)
     {
         return false;
     }

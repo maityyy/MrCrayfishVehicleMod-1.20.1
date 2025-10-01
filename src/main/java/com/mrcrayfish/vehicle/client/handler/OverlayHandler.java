@@ -1,16 +1,14 @@
 package com.mrcrayfish.vehicle.client.handler;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mrcrayfish.vehicle.Config;
 import com.mrcrayfish.vehicle.entity.PoweredVehicleEntity;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
-import java.awt.*;
 import java.text.DecimalFormat;
 
 /**
@@ -31,7 +29,7 @@ public class OverlayHandler
         if(!mc.isWindowActive() || mc.options.hideGui)
             return;
 
-        PlayerEntity player = mc.player;
+        Player player = mc.player;
         if(player == null)
             return;
 
@@ -39,16 +37,17 @@ public class OverlayHandler
         if(!(entity instanceof PoweredVehicleEntity))
             return;
 
-        MatrixStack matrixStack = new MatrixStack();
+        PoseStack matrixStack = new PoseStack();
         PoweredVehicleEntity vehicle = (PoweredVehicleEntity) entity;
         String speed = new DecimalFormat("0.0").format(vehicle.getKilometersPreHour());
-        mc.font.drawShadow(matrixStack, TextFormatting.BOLD + "BPS: " + TextFormatting.YELLOW + speed, 10, 10, Color.WHITE.getRGB());
+        // FIXME
+        //mc.font.drawInBatch(matrixStack, ChatFormatting.BOLD + "BPS: " + ChatFormatting.YELLOW + speed, 10, 10, Color.WHITE.getRGB());
 
         if(vehicle.requiresFuel())
         {
             DecimalFormat format = new DecimalFormat("0.0");
             String fuel = format.format(vehicle.getCurrentFuel()) + "/" + format.format(vehicle.getFuelCapacity());
-            mc.font.drawShadow(matrixStack, TextFormatting.BOLD + "Fuel: " + TextFormatting.YELLOW + fuel, 10, 25, Color.WHITE.getRGB());
+            //mc.font.drawInBatch(matrixStack, ChatFormatting.BOLD + "Fuel: " + ChatFormatting.YELLOW + fuel, 10, 25, Color.WHITE.getRGB());
         }
     }
 }

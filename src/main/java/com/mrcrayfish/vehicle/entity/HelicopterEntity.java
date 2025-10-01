@@ -5,15 +5,16 @@ import com.mrcrayfish.vehicle.network.PacketHandler;
 import com.mrcrayfish.vehicle.network.message.MessageAltitude;
 import com.mrcrayfish.vehicle.network.message.MessageTravelProperties;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.network.datasync.DataParameter;
-import net.minecraft.network.datasync.DataSerializers;
-import net.minecraft.network.datasync.EntityDataManager;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.world.World;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.util.Mth;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.Optional;
 
@@ -22,10 +23,10 @@ import java.util.Optional;
  */
 public abstract class HelicopterEntity extends PoweredVehicleEntity
 {
-    private static final DataParameter<Integer> ALTITUDE_CHANGE = EntityDataManager.defineId(HelicopterEntity.class, DataSerializers.INT);
-    private static final DataParameter<Float> LIFT = EntityDataManager.defineId(HelicopterEntity.class, DataSerializers.FLOAT);
-    private static final DataParameter<Float> TRAVEL_DIRECTION = EntityDataManager.defineId(HelicopterEntity.class, DataSerializers.FLOAT);
-    private static final DataParameter<Float> TRAVEL_SPEED = EntityDataManager.defineId(HelicopterEntity.class, DataSerializers.FLOAT);
+    private static final EntityDataAccessor<Integer> ALTITUDE_CHANGE = SynchedEntityData.defineId(HelicopterEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Float> LIFT = SynchedEntityData.defineId(HelicopterEntity.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<Float> TRAVEL_DIRECTION = SynchedEntityData.defineId(HelicopterEntity.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<Float> TRAVEL_SPEED = SynchedEntityData.defineId(HelicopterEntity.class, EntityDataSerializers.FLOAT);
 
     private float lift;
 
@@ -44,7 +45,7 @@ public abstract class HelicopterEntity extends PoweredVehicleEntity
     public float dirX;
     public float dirZ;
 
-    protected HelicopterEntity(EntityType<?> entityType, World worldIn)
+    protected HelicopterEntity(EntityType<?> entityType, Level worldIn)
     {
         super(entityType, worldIn);
         this.setMaxSpeed(18F);
@@ -72,7 +73,7 @@ public abstract class HelicopterEntity extends PoweredVehicleEntity
         Entity entity = this.getControllingPassenger();
         if(entity != null && this.isFlying())
         {
-            float deltaYaw = entity.getYHeadRot() % 360.0F - yRot;
+            float deltaYaw = entity.getYHeadRot() % 360.0F - getYRot();
             while(deltaYaw < -180.0F)
             {
                 deltaYaw += 360.0F;
@@ -81,21 +82,21 @@ public abstract class HelicopterEntity extends PoweredVehicleEntity
             {
                 deltaYaw -= 360.0F;
             }
-            this.yRot = this.yRot + deltaYaw * 0.15F;
+            this.setYRot(this.getYRot() + deltaYaw * 0.15F);
         }
 
         float travelDirection = this.getTravelDirection();
         if(this.getAcceleration() != AccelerationDirection.NONE || this.getTurnDirection() != TurnDirection.FORWARD)
         {
-            float newDirX = MathHelper.sin(travelDirection * 0.017453292F) / 20F; //Divide by 20 ticks
-            float newDirZ = MathHelper.cos(travelDirection * 0.017453292F) / 20F;
+            float newDirX = Mth.sin(travelDirection * 0.017453292F) / 20F; //Divide by 20 ticks
+            float newDirZ = Mth.cos(travelDirection * 0.017453292F) / 20F;
             this.dirX = this.dirX + (newDirX -this.dirX) * 0.05F;
             this.dirZ = this.dirZ + (newDirZ - this.dirZ) * 0.05F;
         }
         this.vehicleMotionX = (-this.currentSpeed * this.dirX);
         this.vehicleMotionZ = (this.currentSpeed * this.dirZ);
 
-        Vector3d motion = this.getDeltaMovement();
+        Vec3 motion = this.getDeltaMovement();
         double motionY = motion.y();
         this.updateLift();
         if(this.isFueled())
@@ -195,7 +196,7 @@ public abstract class HelicopterEntity extends PoweredVehicleEntity
         {
             lift *= 0.85F;
         }
-        lift = MathHelper.clamp(this.lift, -0.5F, 0.25F);
+        lift = Mth.clamp(this.lift, -0.5F, 0.25F);
         this.setLift(this.lift);
     }
 
@@ -241,7 +242,7 @@ public abstract class HelicopterEntity extends PoweredVehicleEntity
     public void addPassenger(Entity passenger)
     {
         super.addPassenger(passenger);
-        passenger.yRot = this.yRot;
+        passenger.setYRot(this.getYRot());
     }
 
     @Override
@@ -257,7 +258,7 @@ public abstract class HelicopterEntity extends PoweredVehicleEntity
      * Overridden to prevent players from taking fall damage when landing a plane
      */
     @Override
-    public boolean causeFallDamage(float distance, float damageMultiplier)
+    public boolean causeFallDamage(float distance, float damageMultiplier, DamageSource source)
     {
         return false;
     }
@@ -284,7 +285,7 @@ public abstract class HelicopterEntity extends PoweredVehicleEntity
 
     public boolean isFlying()
     {
-        return !this.onGround;
+        return !this.onGround();
     }
 
     public float getBladeSpeedNormal()

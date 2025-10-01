@@ -3,26 +3,23 @@ package com.mrcrayfish.vehicle.item;
 import com.mrcrayfish.vehicle.Config;
 import com.mrcrayfish.vehicle.util.FluidUtils;
 import com.mrcrayfish.vehicle.util.RenderUtil;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.resources.I18n;
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUseContext;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.NonNullList;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraft.world.World;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.resources.language.I18n;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandlerItem;
 import net.minecraftforge.fluids.capability.templates.FluidHandlerItemStack;
@@ -49,56 +46,46 @@ public class JerryCanItem extends Item
     }
 
     @Override
-    public void fillItemCategory(ItemGroup group, NonNullList<ItemStack> items)
-    {
-        if(this.allowdedIn(group))
-        {
-            ItemStack stack = new ItemStack(this);
-            items.add(stack);
-        }
-    }
-
-    @Override
-    public void appendHoverText(ItemStack stack, @Nullable World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn)
+    public void appendHoverText(ItemStack stack, @Nullable Level worldIn, List<Component> tooltip, TooltipFlag flagIn)
     {
         if(Screen.hasShiftDown())
         {
-            tooltip.addAll(RenderUtil.lines(new TranslationTextComponent(this.getDescriptionId() + ".info"), 150));
+            tooltip.addAll(RenderUtil.lines(Component.translatable(this.getDescriptionId() + ".info"), 150));
         }
         else if(worldIn != null)
         {
-            stack.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY).ifPresent(handler ->
+            stack.getCapability(ForgeCapabilities.FLUID_HANDLER_ITEM).ifPresent(handler ->
             {
                 FluidStack fluidStack = handler.getFluidInTank(0);
                 if(!fluidStack.isEmpty())
                 {
-                    tooltip.add(new TranslationTextComponent(fluidStack.getTranslationKey()).withStyle(TextFormatting.BLUE));
-                    tooltip.add(new StringTextComponent(this.getCurrentFuel(stack) + " / " + this.capacitySupplier.get() + "mb").withStyle(TextFormatting.GRAY));
+                    tooltip.add(Component.translatable(fluidStack.getTranslationKey()).withStyle(ChatFormatting.BLUE));
+                    tooltip.add(Component.literal(this.getCurrentFuel(stack) + " / " + this.capacitySupplier.get() + "mb").withStyle(ChatFormatting.GRAY));
                 }
                 else
                 {
-                    tooltip.add(new TranslationTextComponent("item.vehicle.jerry_can.empty").withStyle(TextFormatting.RED));
+                    tooltip.add(Component.translatable("item.vehicle.jerry_can.empty").withStyle(ChatFormatting.RED));
                 }
             });
-            tooltip.add(new StringTextComponent(TextFormatting.YELLOW + I18n.get("vehicle.info_help")));
+            tooltip.add(Component.literal(ChatFormatting.YELLOW + I18n.get("vehicle.info_help")));
         }
     }
 
     @Override
-    public ActionResultType onItemUseFirst(ItemStack stack, ItemUseContext context)
+    public InteractionResult onItemUseFirst(ItemStack stack, UseOnContext context)
     {
         // This is such ugly code
-        TileEntity tileEntity = context.getLevel().getBlockEntity(context.getClickedPos());
+        BlockEntity tileEntity = context.getLevel().getBlockEntity(context.getClickedPos());
         if(tileEntity != null && context.getPlayer() != null)
         {
-            LazyOptional<IFluidHandler> lazyOptional = tileEntity.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, context.getClickedFace());
+            LazyOptional<IFluidHandler> lazyOptional = tileEntity.getCapability(ForgeCapabilities.FLUID_HANDLER, context.getClickedFace());
             if(lazyOptional.isPresent())
             {
                 Optional<IFluidHandler> optional = lazyOptional.resolve();
                 if(optional.isPresent())
                 {
                     IFluidHandler source = optional.get();
-                    Optional<IFluidHandlerItem> itemOptional = stack.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY).resolve();
+                    Optional<IFluidHandlerItem> itemOptional = stack.getCapability(ForgeCapabilities.FLUID_HANDLER_ITEM).resolve();
                     if(itemOptional.isPresent())
                     {
                         if(context.getPlayer().isCrouching())
@@ -109,7 +96,7 @@ public class JerryCanItem extends Item
                         {
                             FluidUtils.transferFluid(itemOptional.get(), source, this.getFillRate());
                         }
-                        return ActionResultType.SUCCESS;
+                        return InteractionResult.SUCCESS;
                     }
                 }
             }
@@ -119,7 +106,7 @@ public class JerryCanItem extends Item
 
     public int getCurrentFuel(ItemStack stack)
     {
-        Optional<IFluidHandlerItem> optional = stack.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY).resolve();
+        Optional<IFluidHandlerItem> optional = stack.getCapability(ForgeCapabilities.FLUID_HANDLER_ITEM).resolve();
         return optional.map(handler -> handler.getFluidInTank(0).getAmount()).orElse(0);
     }
 
@@ -134,23 +121,24 @@ public class JerryCanItem extends Item
     }
 
     @Override
-    public boolean showDurabilityBar(ItemStack stack)
+    public boolean isBarVisible(ItemStack stack)
     {
         return this.getCurrentFuel(stack) > 0;
     }
 
+    // FIXME
     @Override
-    public double getDurabilityForDisplay(ItemStack stack)
+    public int getBarWidth(ItemStack stack)
     {
-        return 1.0 - (this.getCurrentFuel(stack) / (double) this.capacitySupplier.get());
+        return 1 - (this.getCurrentFuel(stack) / this.capacitySupplier.get());
     }
 
     @Override
-    public int getRGBDurabilityForDisplay(ItemStack stack)
+    public int getBarColor(ItemStack stack)
     {
-        Optional<IFluidHandlerItem> optional = stack.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY).resolve();
+        Optional<IFluidHandlerItem> optional = stack.getCapability(ForgeCapabilities.FLUID_HANDLER_ITEM).resolve();
         return optional.map(handler -> {
-            int color = handler.getFluidInTank(0).getFluid().getAttributes().getColor();
+            int color = IClientFluidTypeExtensions.of(handler.getFluidInTank(0).getFluid()).getTintColor();
             if(color == 0xFFFFFFFF) color = FluidUtils.getAverageFluidColor(handler.getFluidInTank(0).getFluid());
             return color;
         }).orElse(0);
@@ -164,7 +152,7 @@ public class JerryCanItem extends Item
 
     @Nullable
     @Override
-    public ICapabilityProvider initCapabilities(ItemStack stack, @Nullable CompoundNBT nbt)
+    public ICapabilityProvider initCapabilities(ItemStack stack, @Nullable CompoundTag nbt)
     {
         return new FluidHandlerItemStack(stack, this.capacitySupplier.get());
     }

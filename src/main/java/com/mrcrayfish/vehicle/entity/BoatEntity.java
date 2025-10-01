@@ -1,13 +1,13 @@
 package com.mrcrayfish.vehicle.entity;
 
-import net.minecraft.entity.EntityType;
-import net.minecraft.fluid.FluidState;
+import net.minecraft.core.BlockPos;
 import net.minecraft.tags.FluidTags;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.world.World;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
 
@@ -20,7 +20,7 @@ public abstract class BoatEntity extends PoweredVehicleEntity
     protected State previousState;
     private double waterLevel;
 
-    public BoatEntity(EntityType<?> entityType, World worldIn)
+    public BoatEntity(EntityType<?> entityType, Level worldIn)
     {
         super(entityType, worldIn);
         this.setMaxTurnAngle(65);
@@ -53,8 +53,8 @@ public abstract class BoatEntity extends PoweredVehicleEntity
                 this.setDeltaMovement(this.getDeltaMovement().multiply(1.0, 0.75, 1.0));
             }
 
-            float f1 = MathHelper.sin(this.yRot * 0.017453292F) / 20F;
-            float f2 = MathHelper.cos(this.yRot * 0.017453292F) / 20F;
+            float f1 = Mth.sin(this.getYRot() * 0.017453292F) / 20F;
+            float f2 = Mth.cos(this.getYRot() * 0.017453292F) / 20F;
             this.vehicleMotionX = (-currentSpeed * f1);
             this.vehicleMotionZ = (currentSpeed * f2);
             this.setDeltaMovement(this.getDeltaMovement().multiply(0.5, 1.0, 0.5));
@@ -64,7 +64,7 @@ public abstract class BoatEntity extends PoweredVehicleEntity
             this.setDeltaMovement(this.getDeltaMovement().add(0, -0.08, 0));
             if(this.previousState == State.UNDER_WATER || this.previousState == State.IN_WATER)
             {
-                this.setDeltaMovement(new Vector3d(this.vehicleMotionX, this.getDeltaMovement().y, this.vehicleMotionZ));
+                this.setDeltaMovement(new Vec3(this.vehicleMotionX, this.getDeltaMovement().y, this.vehicleMotionZ));
                 this.vehicleMotionX = 0;
                 this.vehicleMotionZ = 0;
             }
@@ -89,17 +89,17 @@ public abstract class BoatEntity extends PoweredVehicleEntity
 
     private boolean checkInWater()
     {
-        AxisAlignedBB boundingBox = this.getBoundingBox();
-        int minX = MathHelper.floor(boundingBox.minX);
-        int maxX = MathHelper.ceil(boundingBox.maxX);
-        int minY = MathHelper.floor(boundingBox.minY);
-        int maxY = MathHelper.ceil(boundingBox.minY + 0.001D);
-        int minZ = MathHelper.floor(boundingBox.minZ);
-        int maxZ = MathHelper.ceil(boundingBox.maxZ);
+        AABB boundingBox = this.getBoundingBox();
+        int minX = Mth.floor(boundingBox.minX);
+        int maxX = Mth.ceil(boundingBox.maxX);
+        int minY = Mth.floor(boundingBox.minY);
+        int maxY = Mth.ceil(boundingBox.minY + 0.001D);
+        int minZ = Mth.floor(boundingBox.minZ);
+        int maxZ = Mth.ceil(boundingBox.maxZ);
         boolean inWater = false;
         this.waterLevel = Double.MIN_VALUE;
 
-        BlockPos.Mutable pooledMutable = new BlockPos.Mutable();
+        BlockPos.MutableBlockPos pooledMutable = new BlockPos.MutableBlockPos();
         for(int x = minX; x < maxX; x++)
         {
             for(int y = minY; y < maxY; y++)
@@ -107,10 +107,10 @@ public abstract class BoatEntity extends PoweredVehicleEntity
                 for(int z = minZ; z < maxZ; z++)
                 {
                     pooledMutable.set(x, y, z);
-                    FluidState fluidState = this.level.getFluidState(pooledMutable);
+                    FluidState fluidState = this.level().getFluidState(pooledMutable);
                     if(fluidState.is(FluidTags.WATER))
                     {
-                        float waterLevel = (float) y + fluidState.getHeight(this.level, pooledMutable);
+                        float waterLevel = (float) y + fluidState.getHeight(this.level(), pooledMutable);
                         this.waterLevel = Math.max((double) waterLevel, this.waterLevel);
                         inWater |= boundingBox.minY < (double) waterLevel;
                     }
@@ -124,17 +124,17 @@ public abstract class BoatEntity extends PoweredVehicleEntity
     @Nullable
     private State getUnderwaterState()
     {
-        AxisAlignedBB axisalignedbb = this.getBoundingBox();
+        AABB axisalignedbb = this.getBoundingBox();
         double height = axisalignedbb.maxY + 0.001D;
-        int minX = MathHelper.floor(axisalignedbb.minX);
-        int maxX = MathHelper.ceil(axisalignedbb.maxX);
-        int minY = MathHelper.floor(axisalignedbb.maxY);
-        int maxY = MathHelper.ceil(height);
-        int minZ = MathHelper.floor(axisalignedbb.minZ);
-        int maxZ = MathHelper.ceil(axisalignedbb.maxZ);
+        int minX = Mth.floor(axisalignedbb.minX);
+        int maxX = Mth.ceil(axisalignedbb.maxX);
+        int minY = Mth.floor(axisalignedbb.maxY);
+        int maxY = Mth.ceil(height);
+        int minZ = Mth.floor(axisalignedbb.minZ);
+        int maxZ = Mth.ceil(axisalignedbb.maxZ);
         boolean underWater = false;
 
-        BlockPos.Mutable pooledMutable = new BlockPos.Mutable();
+        BlockPos.MutableBlockPos pooledMutable = new BlockPos.MutableBlockPos();
         for(int x = minX; x < maxX; x++)
         {
             for(int y = minY; y < maxY; y++)
@@ -142,8 +142,8 @@ public abstract class BoatEntity extends PoweredVehicleEntity
                 for(int z = minZ; z < maxZ; z++)
                 {
                     pooledMutable.set(x, y, z);
-                    FluidState fluidState = this.level.getFluidState(pooledMutable);
-                    if(fluidState.is(FluidTags.WATER) && height < (double) ((float) pooledMutable.getY() + fluidState.getHeight(this.level, pooledMutable)))
+                    FluidState fluidState = this.level().getFluidState(pooledMutable);
+                    if(fluidState.is(FluidTags.WATER) && height < (double) ((float) pooledMutable.getY() + fluidState.getHeight(this.level(), pooledMutable)))
                     {
                         if(!fluidState.isSource())
                         {
@@ -169,7 +169,7 @@ public abstract class BoatEntity extends PoweredVehicleEntity
         {
             return State.IN_WATER;
         }
-        else if(this.onGround)
+        else if(this.onGround())
         {
             return State.ON_LAND;
         }

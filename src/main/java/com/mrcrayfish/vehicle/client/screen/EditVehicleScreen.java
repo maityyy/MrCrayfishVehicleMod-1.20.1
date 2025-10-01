@@ -1,27 +1,26 @@
 package com.mrcrayfish.vehicle.client.screen;
 
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.math.Axis;
 import com.mrcrayfish.vehicle.client.render.AbstractVehicleRenderer;
-import com.mrcrayfish.vehicle.client.render.Axis;
 import com.mrcrayfish.vehicle.client.render.CachedVehicle;
 import com.mrcrayfish.vehicle.common.entity.PartPosition;
 import com.mrcrayfish.vehicle.entity.EngineType;
 import com.mrcrayfish.vehicle.inventory.container.EditVehicleContainer;
 import com.mrcrayfish.vehicle.util.CommonUtils;
 import com.mrcrayfish.vehicle.util.RenderUtil;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screen.inventory.ContainerScreen;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
-import net.minecraft.client.resources.I18n;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.vector.Quaternion;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.resources.language.I18n;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.Container;
+import net.minecraft.world.entity.player.Inventory;
+import org.joml.Quaternionf;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 
@@ -31,12 +30,12 @@ import java.util.Collections;
 /**
  * Author: MrCrayfish
  */
-public class EditVehicleScreen extends ContainerScreen<EditVehicleContainer>
+public class EditVehicleScreen extends AbstractContainerScreen<EditVehicleContainer>
 {
     private static final ResourceLocation GUI_TEXTURES = new ResourceLocation("vehicle:textures/gui/edit_vehicle.png");
 
-    private final PlayerInventory playerInventory;
-    private final IInventory vehicleInventory;
+    private final Inventory playerInventory;
+    private final Container vehicleInventory;
     private final CachedVehicle cachedVehicle;
 
     private boolean showHelp = true;
@@ -47,7 +46,7 @@ public class EditVehicleScreen extends ContainerScreen<EditVehicleContainer>
     private int mouseGrabbedButton;
     private int mouseClickedX, mouseClickedY;
 
-    public EditVehicleScreen(EditVehicleContainer container, PlayerInventory playerInventory, ITextComponent title)
+    public EditVehicleScreen(EditVehicleContainer container, Inventory playerInventory, Component title)
     {
         super(container, playerInventory, title);
         this.playerInventory = playerInventory;
@@ -57,47 +56,43 @@ public class EditVehicleScreen extends ContainerScreen<EditVehicleContainer>
     }
 
     @Override
-    protected void renderBg(MatrixStack matrixStack, float partialTicks, int mouseX, int mouseY)
+    protected void renderBg(GuiGraphics matrixStack, float partialTicks, int mouseX, int mouseY)
     {
-        RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
-        Minecraft minecraft = Minecraft.getInstance();
-        minecraft.getTextureManager().bind(GUI_TEXTURES);
         int left = (this.width - this.imageWidth) / 2;
         int top = (this.height - this.imageHeight) / 2;
-        this.blit(matrixStack, left, top, 0, 0, this.imageWidth, this.imageHeight);
+        matrixStack.blit(GUI_TEXTURES, left, top, 0, 0, this.imageWidth, this.imageHeight);
 
         if(this.cachedVehicle.getProperties().getEngineType() != EngineType.NONE)
         {
             if(this.vehicleInventory.getItem(0).isEmpty())
             {
-                this.blit(matrixStack, left + 8, top + 17, 176, 0, 16, 16);
+                matrixStack.blit(GUI_TEXTURES, left + 8, top + 17, 176, 0, 16, 16);
             }
         }
         else if(this.vehicleInventory.getItem(0).isEmpty())
         {
-            this.blit(matrixStack, left + 8, top + 17, 176, 32, 16, 16);
+            matrixStack.blit(GUI_TEXTURES, left + 8, top + 17, 176, 32, 16, 16);
         }
 
         if(this.cachedVehicle.getProperties().canChangeWheels())
         {
             if(this.vehicleInventory.getItem(1).isEmpty())
             {
-                this.blit(matrixStack, left + 8, top + 35, 176, 16, 16, 16);
+                matrixStack.blit(GUI_TEXTURES, left + 8, top + 35, 176, 16, 16, 16);
             }
         }
         else if(this.vehicleInventory.getItem(1).isEmpty())
         {
-            this.blit(matrixStack, left + 8, top + 35, 176, 32, 16, 16);
+            matrixStack.blit(GUI_TEXTURES, left + 8, top + 35, 176, 32, 16, 16);
         }
     }
 
     @Override
     @SuppressWarnings({"unchecked", "rawtypes"})
-    protected void renderLabels(MatrixStack matrixStack, int mouseX, int mouseY)
+    protected void renderLabels(GuiGraphics matrixStack, int mouseX, int mouseY)
     {
-        Minecraft minecraft = Minecraft.getInstance();
-        minecraft.font.draw(matrixStack, this.title.getString(), 8, 6, 4210752);
-        minecraft.font.draw(matrixStack, this.playerInventory.getDisplayName().getString(), 8, this.imageHeight - 96 + 2, 4210752);
+        matrixStack.drawString(this.font, this.title.getString(), 8, 6, 4210752);
+        matrixStack.drawString(this.font, this.playerInventory.getDisplayName().getString(), 8, this.imageHeight - 96 + 2, 4210752);
 
         AbstractVehicleRenderer renderer = this.cachedVehicle.getRenderer();
         if(renderer != null)
@@ -105,50 +100,52 @@ public class EditVehicleScreen extends ContainerScreen<EditVehicleContainer>
             int startX = (this.width - this.imageWidth) / 2;
             int startY = (this.height - this.imageHeight) / 2;
 
-            RenderSystem.pushMatrix();
-            RenderSystem.translatef(96, 78, 1050.0F);
-            RenderSystem.scalef(-1.0F, -1.0F, -1.0F);
+            RenderSystem.getModelViewStack().pushPose();
+            RenderSystem.getModelViewStack().translate(96, 78, 1050.0F);
+            RenderSystem.getModelViewStack().scale(-1.0F, -1.0F, -1.0F);
 
             GL11.glEnable(GL11.GL_SCISSOR_TEST);
             RenderUtil.scissor(startX + 26, startY + 17, 142, 70);
 
-            matrixStack.pushPose();
-            matrixStack.translate(0.0, 0.0, 1000.0);
-            matrixStack.translate(this.windowX - (this.mouseGrabbed && this.mouseGrabbedButton == 0 ? mouseX - this.mouseClickedX : 0), 0, 0);
-            matrixStack.translate(0, this.windowY - (this.mouseGrabbed && this.mouseGrabbedButton == 0 ? mouseY - this.mouseClickedY : 0), 0);
+            matrixStack.pose().pushPose();
+            matrixStack.pose().translate(0.0, 0.0, 1000.0);
+            matrixStack.pose().translate(this.windowX - (this.mouseGrabbed && this.mouseGrabbedButton == 0 ? mouseX - this.mouseClickedX : 0), 0, 0);
+            matrixStack.pose().translate(0, this.windowY - (this.mouseGrabbed && this.mouseGrabbedButton == 0 ? mouseY - this.mouseClickedY : 0), 0);
 
-            Quaternion quaternion = Axis.POSITIVE_X.rotationDegrees(-10F);
-            quaternion.mul(Axis.POSITIVE_X.rotationDegrees(this.windowRotationY - (this.mouseGrabbed && this.mouseGrabbedButton == 1 ? mouseY - this.mouseClickedY : 0)));
-            quaternion.mul(Axis.POSITIVE_Y.rotationDegrees(this.windowRotationX + (this.mouseGrabbed && this.mouseGrabbedButton == 1 ? mouseX - this.mouseClickedX : 0)));
-            quaternion.mul(Axis.POSITIVE_Y.rotationDegrees(135F));
-            matrixStack.mulPose(quaternion);
+            Quaternionf quaternion = Axis.XP.rotationDegrees(-10F);
+            quaternion.mul(Axis.XP.rotationDegrees(this.windowRotationY - (this.mouseGrabbed && this.mouseGrabbedButton == 1 ? mouseY - this.mouseClickedY : 0)));
+            quaternion.mul(Axis.YP.rotationDegrees(this.windowRotationX + (this.mouseGrabbed && this.mouseGrabbedButton == 1 ? mouseX - this.mouseClickedX : 0)));
+            quaternion.mul(Axis.YP.rotationDegrees(135F));
+            matrixStack.pose().mulPose(quaternion);
 
-            matrixStack.scale(this.windowZoom / 10F, this.windowZoom / 10F, this.windowZoom / 10F);
-            matrixStack.scale(22F, 22F, 22F);
+            matrixStack.pose().scale(this.windowZoom / 10F, this.windowZoom / 10F, this.windowZoom / 10F);
+            matrixStack.pose().scale(22F, 22F, 22F);
 
             PartPosition position = this.cachedVehicle.getProperties().getDisplayPosition();
-            matrixStack.scale((float) position.getScale(), (float) position.getScale(), (float) position.getScale());
-            matrixStack.mulPose(Axis.POSITIVE_X.rotationDegrees((float) position.getRotX()));
-            matrixStack.mulPose(Axis.POSITIVE_Y.rotationDegrees((float) position.getRotY()));
-            matrixStack.mulPose(Axis.POSITIVE_Z.rotationDegrees((float) position.getRotZ()));
-            matrixStack.translate(position.getX(), position.getY(), position.getZ());
+            matrixStack.pose().scale((float) position.getScale(), (float) position.getScale(), (float) position.getScale());
+            matrixStack.pose().mulPose(Axis.XP.rotationDegrees((float) position.getRotX()));
+            matrixStack.pose().mulPose(Axis.YP.rotationDegrees((float) position.getRotY()));
+            matrixStack.pose().mulPose(Axis.ZP.rotationDegrees((float) position.getRotZ()));
+            matrixStack.pose().translate(position.getX(), position.getY(), position.getZ());
 
-            IRenderTypeBuffer.Impl renderTypeBuffer = Minecraft.getInstance().renderBuffers().bufferSource();
-            renderer.setupTransformsAndRender(this.menu.getVehicle(), matrixStack, renderTypeBuffer, Minecraft.getInstance().getFrameTime(), 15728880);
+            MultiBufferSource.BufferSource renderTypeBuffer = Minecraft.getInstance().renderBuffers().bufferSource();
+            renderer.setupTransformsAndRender(this.menu.getVehicle(), matrixStack.pose(), renderTypeBuffer, Minecraft.getInstance().getFrameTime(), 15728880);
             renderTypeBuffer.endBatch();
 
-            matrixStack.popPose();
+            matrixStack.pose().popPose();
 
             GL11.glDisable(GL11.GL_SCISSOR_TEST);
-            RenderSystem.popMatrix();
+            RenderSystem.getModelViewStack().popPose();
+            RenderSystem.applyModelViewMatrix();
         }
 
         if(this.showHelp)
         {
-            RenderSystem.pushMatrix();
-            RenderSystem.scalef(0.5F, 0.5F, 0.5F);
-            minecraft.font.draw(matrixStack, I18n.get("container.edit_vehicle.window_help"), 56, 38, 0xFFFFFF);
-            RenderSystem.popMatrix();
+            RenderSystem.getModelViewStack().pushPose();
+            RenderSystem.getModelViewStack().scale(0.5F, 0.5F, 0.5F);
+            matrixStack.drawString(this.font, I18n.get("container.edit_vehicle.window_help"), 56, 38, 0xFFFFFF);
+            RenderSystem.getModelViewStack().popPose();
+            RenderSystem.applyModelViewMatrix();
         }
     }
 
@@ -216,7 +213,7 @@ public class EditVehicleScreen extends ContainerScreen<EditVehicleContainer>
     }
 
     @Override
-    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
+    public void render(GuiGraphics matrixStack, int mouseX, int mouseY, float partialTicks)
     {
         this.renderBackground(matrixStack);
         super.render(matrixStack, mouseX, mouseY, partialTicks);
@@ -231,11 +228,11 @@ public class EditVehicleScreen extends ContainerScreen<EditVehicleContainer>
             {
                 if(this.cachedVehicle.getProperties().getEngineType() != EngineType.NONE)
                 {
-                    this.renderTooltip(matrixStack, Lists.transform(Collections.singletonList(new StringTextComponent("Engine")), ITextComponent::getVisualOrderText), mouseX, mouseY); //TODO localise
+                    matrixStack.renderTooltip(this.font, Lists.transform(Collections.singletonList(Component.literal("Engine")), Component::getVisualOrderText), mouseX, mouseY); //TODO localise
                 }
                 else
                 {
-                    this.renderTooltip(matrixStack, Lists.transform(Arrays.asList(new StringTextComponent("Engine"), new StringTextComponent(TextFormatting.GRAY + "Not applicable")), ITextComponent::getVisualOrderText), mouseX, mouseY); //TODO localise
+                    matrixStack.renderTooltip(this.font, Lists.transform(Arrays.asList(Component.literal("Engine"), Component.literal(ChatFormatting.GRAY + "Not applicable")), Component::getVisualOrderText), mouseX, mouseY); //TODO localise
                 }
             }
         }
@@ -246,11 +243,11 @@ public class EditVehicleScreen extends ContainerScreen<EditVehicleContainer>
             {
                 if(this.cachedVehicle.getProperties().canChangeWheels())
                 {
-                    this.renderTooltip(matrixStack, Lists.transform(Collections.singletonList(new StringTextComponent("Wheels")), ITextComponent::getVisualOrderText), mouseX, mouseY);
+                    matrixStack.renderTooltip(this.font, Lists.transform(Collections.singletonList(Component.literal("Wheels")), Component::getVisualOrderText), mouseX, mouseY);
                 }
                 else
                 {
-                    this.renderTooltip(matrixStack, Lists.transform(Arrays.asList(new StringTextComponent("Wheels"), new StringTextComponent(TextFormatting.GRAY + "Not applicable")), ITextComponent::getVisualOrderText), mouseX, mouseY);
+                    matrixStack.renderTooltip(this.font, Lists.transform(Arrays.asList(Component.literal("Wheels"), Component.literal(ChatFormatting.GRAY + "Not applicable")), Component::getVisualOrderText), mouseX, mouseY);
                 }
             }
         }

@@ -2,21 +2,23 @@ package com.mrcrayfish.vehicle.crafting;
 
 import com.google.common.collect.ImmutableList;
 import com.mrcrayfish.vehicle.init.ModRecipeSerializers;
+import com.mrcrayfish.vehicle.init.ModRecipeTypes;
 import com.mrcrayfish.vehicle.tileentity.WorkstationTileEntity;
 import com.mrcrayfish.vehicle.util.InventoryUtil;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.IRecipe;
-import net.minecraft.item.crafting.IRecipeSerializer;
-import net.minecraft.item.crafting.IRecipeType;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.World;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.level.Level;
 
 /**
  * Author: MrCrayfish
  */
-public class WorkstationRecipe implements IRecipe<WorkstationTileEntity>
+public class WorkstationRecipe implements Recipe<WorkstationTileEntity>
 {
     private ResourceLocation id;
     private EntityType<?> vehicle;
@@ -40,13 +42,13 @@ public class WorkstationRecipe implements IRecipe<WorkstationTileEntity>
     }
 
     @Override
-    public boolean matches(WorkstationTileEntity inv, World worldIn)
+    public boolean matches(WorkstationTileEntity inv, Level worldIn)
     {
         return false;
     }
 
     @Override
-    public ItemStack assemble(WorkstationTileEntity inv)
+    public ItemStack assemble(WorkstationTileEntity inv, RegistryAccess registries)
     {
         return ItemStack.EMPTY;
     }
@@ -58,7 +60,7 @@ public class WorkstationRecipe implements IRecipe<WorkstationTileEntity>
     }
 
     @Override
-    public ItemStack getResultItem()
+    public ItemStack getResultItem(RegistryAccess registries)
     {
         return ItemStack.EMPTY;
     }
@@ -70,18 +72,18 @@ public class WorkstationRecipe implements IRecipe<WorkstationTileEntity>
     }
 
     @Override
-    public IRecipeSerializer<?> getSerializer()
+    public RecipeSerializer<?> getSerializer()
     {
         return ModRecipeSerializers.WORKSTATION.get();
     }
 
     @Override
-    public IRecipeType<?> getType()
+    public RecipeType<?> getType()
     {
-        return RecipeType.WORKSTATION;
+        return ModRecipeTypes.WORKSTATION.get();
     }
 
-    public boolean hasMaterials(PlayerEntity player)
+    public boolean hasMaterials(Player player)
     {
         for(WorkstationIngredient ingredient : this.getMaterials())
         {
@@ -93,7 +95,7 @@ public class WorkstationRecipe implements IRecipe<WorkstationTileEntity>
         return true;
     }
 
-    public void consumeMaterials(PlayerEntity player)
+    public void consumeMaterials(Player player)
     {
         for(WorkstationIngredient ingredient : this.getMaterials())
         {

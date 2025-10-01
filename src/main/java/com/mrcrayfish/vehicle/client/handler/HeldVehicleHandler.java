@@ -1,21 +1,17 @@
 package com.mrcrayfish.vehicle.client.handler;
 
-import com.mrcrayfish.obfuscate.client.event.PlayerModelEvent;
 import com.mrcrayfish.vehicle.client.render.layer.LayerHeldVehicle;
 import com.mrcrayfish.vehicle.common.entity.HeldVehicleDataHandler;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.player.AbstractClientPlayerEntity;
-import net.minecraft.client.renderer.entity.LivingRenderer;
-import net.minecraft.client.renderer.entity.PlayerRenderer;
-import net.minecraft.client.renderer.entity.layers.LayerRenderer;
-import net.minecraft.client.renderer.entity.model.PlayerModel;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.client.model.EntityModel;
+import net.minecraft.client.model.PlayerModel;
+import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.client.renderer.entity.LivingEntityRenderer;
+import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -31,29 +27,33 @@ public class HeldVehicleHandler
     {
         if(!setupExtraLayers)
         {
-            Map<String, PlayerRenderer> skinMap = Minecraft.getInstance().getEntityRenderDispatcher().getSkinMap();
+            Map<String, EntityRenderer<? extends Player>> skinMap = Minecraft.getInstance().getEntityRenderDispatcher().getSkinMap();
             this.patchPlayerRender(skinMap.get("default"));
             this.patchPlayerRender(skinMap.get("slim"));
             setupExtraLayers = true;
         }
     }
 
-    private void patchPlayerRender(PlayerRenderer player)
+    private void patchPlayerRender(EntityRenderer<? extends Player> player)
     {
-        List<LayerRenderer<AbstractClientPlayerEntity, PlayerModel<AbstractClientPlayerEntity>>> layers = ObfuscationReflectionHelper.getPrivateValue(LivingRenderer.class, player, "layers");
-        if(layers != null)
+        if(player instanceof LivingEntityRenderer<?,?>)
         {
-            layers.add(new LayerHeldVehicle(player));
+            var renderer = (LivingEntityRenderer<Player, EntityModel<Player>>) player;
+
+            if(!renderer.layers.isEmpty())
+            {
+                renderer.layers.add(new LayerHeldVehicle(renderer));
+            }
         }
     }
 
     public static final Map<UUID, AnimationCounter> idToCounter = new HashMap<>();
 
     @SubscribeEvent
-    public void onSetupAngles(PlayerModelEvent.SetupAngles.Post event)
+    public void onSetupAngles(RenderPlayerEvent.Post event) // FIXME
     {
-        PlayerModel model = event.getModelPlayer();
-        PlayerEntity player = event.getPlayer();
+        PlayerModel model = event.getRenderer().getModel();
+        Player player = event.getEntity();
 
         boolean holdingVehicle = HeldVehicleDataHandler.isHoldingVehicle(player);
         if(holdingVehicle && !idToCounter.containsKey(player.getUUID()))
@@ -62,7 +62,7 @@ public class HeldVehicleHandler
         }
         else if(idToCounter.containsKey(player.getUUID()))
         {
-            if(idToCounter.get(player.getUUID()).getProgress(event.getPartialTicks()) == 0F)
+            if(idToCounter.get(player.getUUID()).getProgress(event.getPartialTick()) == 0F)
             {
                 idToCounter.remove(player.getUUID());
                 return;
@@ -70,7 +70,7 @@ public class HeldVehicleHandler
             if(!holdingVehicle)
             {
                 AnimationCounter counter = idToCounter.get(player.getUUID());
-                player.yBodyRot = player.getYHeadRot() - (player.getYHeadRot() - player.yBodyRotO) * counter.getProgress(event.getPartialTicks());
+                player.yBodyRot = player.getYHeadRot() - (player.getYHeadRot() - player.yBodyRotO) * counter.getProgress(event.getPartialTick());
             }
         }
         else
@@ -80,7 +80,7 @@ public class HeldVehicleHandler
 
         AnimationCounter counter = idToCounter.get(player.getUUID());
         counter.update(holdingVehicle);
-        float progress = counter.getProgress(event.getPartialTicks());
+        float progress = counter.getProgress(event.getPartialTick());
         model.rightArm.xRot = (float) Math.toRadians(-180F * progress);
         model.rightArm.zRot = (float) Math.toRadians(-5F * progress);
         model.rightArm.y = (player.isCrouching() ? 3.0F : -0.5F) * progress;

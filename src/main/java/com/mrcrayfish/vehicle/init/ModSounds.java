@@ -1,11 +1,11 @@
 package com.mrcrayfish.vehicle.init;
 
 import com.mrcrayfish.vehicle.Reference;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.SoundEvent;
-import net.minecraftforge.fml.RegistryObject;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegistryObject;
 
 /**
  * Author: MrCrayfish
@@ -46,6 +46,6 @@ public class ModSounds
 
     private static RegistryObject<SoundEvent> register(String id)
     {
-        return ModSounds.REGISTER.register(id, () -> new SoundEvent(new ResourceLocation(Reference.MOD_ID, id)));
+        return ModSounds.REGISTER.register(id, () -> SoundEvent.createVariableRangeEvent(new ResourceLocation(Reference.MOD_ID, id)));
     }
 }

@@ -1,17 +1,17 @@
 package com.mrcrayfish.vehicle.common.inventory;
 
 import com.mrcrayfish.vehicle.inventory.container.StorageContainer;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.inventory.container.INamedContainerProvider;
-import net.minecraft.inventory.container.SimpleNamedContainerProvider;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.text.ITextComponent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.Container;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.SimpleMenuProvider;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 
 /**
  * Author: MrCrayfish
  */
-public interface IStorage extends IInventory
+public interface IStorage extends Container
 {
     StorageInventory getInventory();
 
@@ -87,19 +87,19 @@ public interface IStorage extends IInventory
     }
 
     @Override
-    default boolean stillValid(PlayerEntity player)
+    default boolean stillValid(Player player)
     {
         return this.getInventory().stillValid(player);
     }
 
     @Override
-    default void startOpen(PlayerEntity player)
+    default void startOpen(Player player)
     {
         this.getInventory().startOpen(player);
     }
 
     @Override
-    default void stopOpen(PlayerEntity player)
+    default void stopOpen(Player player)
     {
         this.getInventory().startOpen(player);
     }
@@ -121,10 +121,10 @@ public interface IStorage extends IInventory
         return true;
     }
 
-    ITextComponent getStorageName();
+    Component getStorageName();
 
-    default INamedContainerProvider getStorageContainerProvider()
+    default MenuProvider getStorageContainerProvider()
     {
-        return new SimpleNamedContainerProvider((windowId, playerInventory, playerEntity) -> new StorageContainer(windowId, playerInventory, this, playerEntity), this.getStorageName());
+        return new SimpleMenuProvider((windowId, playerInventory, playerEntity) -> new StorageContainer(windowId, playerInventory, this, playerEntity), this.getStorageName());
     }
 }

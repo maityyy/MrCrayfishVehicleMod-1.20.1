@@ -1,20 +1,20 @@
 package com.mrcrayfish.vehicle.entity.vehicle;
 
 import com.mrcrayfish.vehicle.entity.LandVehicleEntity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.World;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 
 /**
  * Author: MrCrayfish
  */
 public class ShoppingCartEntity extends LandVehicleEntity
 {
-    private PlayerEntity pusher;
+    private Player pusher;
 
-    public ShoppingCartEntity(EntityType<? extends ShoppingCartEntity> type, World worldIn)
+    public ShoppingCartEntity(EntityType<? extends ShoppingCartEntity> type, Level worldIn)
     {
         super(type, worldIn);
         this.setMaxTurnAngle(90);
@@ -28,17 +28,17 @@ public class ShoppingCartEntity extends LandVehicleEntity
     {
         if(this.pusher != null)
         {
-            this.yRotO = this.yRot;
+            this.yRotO = this.getYRot();
             this.xo = this.getX();
             this.yo = this.getY();
             this.zo = this.getZ();
-            float x = MathHelper.sin(-pusher.yRot * 0.017453292F) * 1.3F;
-            float z = MathHelper.cos(-pusher.yRot * 0.017453292F) * 1.3F;
+            float x = Mth.sin(-pusher.getYRot() * 0.017453292F) * 1.3F;
+            float z = Mth.cos(-pusher.getYRot() * 0.017453292F) * 1.3F;
             this.setPos(pusher.getX() + x, pusher.getY(), pusher.getZ() + z);
             this.xOld = this.getX();
             this.yOld = this.getY();
             this.zOld = this.getZ();
-            this.yRot = pusher.yRot;
+            this.setYRot(pusher.getYRot());
         }
         else
         {

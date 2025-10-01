@@ -2,9 +2,10 @@ package com.mrcrayfish.vehicle.client.audio;
 
 import com.mrcrayfish.vehicle.entity.PoweredVehicleEntity;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.TickableSound;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.SoundCategory;
+import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
+import net.minecraft.client.resources.sounds.SoundInstance;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -14,17 +15,17 @@ import java.lang.ref.WeakReference;
  * Author: MrCrayfish
  */
 @OnlyIn(Dist.CLIENT)
-public class MovingSoundVehicleRiding extends TickableSound
+public class MovingSoundVehicleRiding extends AbstractTickableSoundInstance
 {
-    private final WeakReference<PlayerEntity> playerRef;
+    private final WeakReference<Player> playerRef;
     private final WeakReference<PoweredVehicleEntity> vehicleRef;
 
-    public MovingSoundVehicleRiding(PlayerEntity player, PoweredVehicleEntity vehicle)
+    public MovingSoundVehicleRiding(Player player, PoweredVehicleEntity vehicle)
     {
-        super(vehicle.getEngineSound(), SoundCategory.NEUTRAL);
+        super(vehicle.getEngineSound(), SoundSource.NEUTRAL, SoundInstance.createUnseededRandom());
         this.playerRef = new WeakReference<>(player);
         this.vehicleRef = new WeakReference<>(vehicle);
-        this.attenuation = AttenuationType.NONE;
+        this.attenuation = Attenuation.NONE;
         this.relative = true;
         this.looping = true;
         this.delay = 0;
@@ -35,7 +36,7 @@ public class MovingSoundVehicleRiding extends TickableSound
     public void tick()
     {
         PoweredVehicleEntity vehicle = this.vehicleRef.get();
-        PlayerEntity player = this.playerRef.get();
+        Player player = this.playerRef.get();
         if(vehicle == null || player == null)
         {
             this.stop();

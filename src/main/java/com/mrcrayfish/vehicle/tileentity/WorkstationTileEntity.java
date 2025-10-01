@@ -3,17 +3,17 @@ package com.mrcrayfish.vehicle.tileentity;
 import com.mrcrayfish.vehicle.init.ModTileEntities;
 import com.mrcrayfish.vehicle.inventory.IStorageBlock;
 import com.mrcrayfish.vehicle.inventory.container.WorkstationContainer;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.ItemStackHelper;
-import net.minecraft.inventory.container.Container;
-import net.minecraft.item.DyeItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.NonNullList;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.NonNullList;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.DyeItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.state.BlockState;
 
 import javax.annotation.Nullable;
 
@@ -24,9 +24,9 @@ public class WorkstationTileEntity extends TileEntitySynced implements IStorageB
 {
     private NonNullList<ItemStack> inventory = NonNullList.withSize(3, ItemStack.EMPTY);
 
-    public WorkstationTileEntity()
+    public WorkstationTileEntity(BlockPos pos, BlockState state)
     {
-        super(ModTileEntities.WORKSTATION.get());
+        super(ModTileEntities.WORKSTATION.get(), pos, state);
     }
 
     @Override
@@ -36,17 +36,17 @@ public class WorkstationTileEntity extends TileEntitySynced implements IStorageB
     }
 
     @Override
-    public void load(BlockState state, CompoundNBT compound)
+    public void load(CompoundTag compound)
     {
-        super.load(state, compound);
-        ItemStackHelper.loadAllItems(compound, this.inventory);
+        super.load(compound);
+        ContainerHelper.loadAllItems(compound, this.inventory);
     }
 
     @Override
-    public CompoundNBT save(CompoundNBT compound)
+    public void saveAdditional(CompoundTag compound)
     {
-        ItemStackHelper.saveAllItems(compound, this.inventory);
-        return super.save(compound);
+        super.saveAdditional(compound);
+        ContainerHelper.saveAllItems(compound, this.inventory);
     }
 
     @Override
@@ -56,14 +56,14 @@ public class WorkstationTileEntity extends TileEntitySynced implements IStorageB
     }
 
     @Override
-    public ITextComponent getDisplayName()
+    public Component getDisplayName()
     {
-        return new TranslationTextComponent("container.vehicle.workstation");
+        return Component.translatable("container.vehicle.workstation");
     }
 
     @Nullable
     @Override
-    public Container createMenu(int windowId, PlayerInventory playerInventory, PlayerEntity playerEntity)
+    public AbstractContainerMenu createMenu(int windowId, Inventory playerInventory, Player playerEntity)
     {
         return new WorkstationContainer(windowId, playerInventory, this);
     }

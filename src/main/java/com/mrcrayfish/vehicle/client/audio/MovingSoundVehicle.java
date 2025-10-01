@@ -2,9 +2,10 @@ package com.mrcrayfish.vehicle.client.audio;
 
 import com.mrcrayfish.vehicle.entity.PoweredVehicleEntity;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.TickableSound;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.SoundCategory;
+import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
+import net.minecraft.client.resources.sounds.SoundInstance;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -14,13 +15,13 @@ import java.lang.ref.WeakReference;
  * Author: MrCrayfish
  */
 @OnlyIn(Dist.CLIENT)
-public class MovingSoundVehicle extends TickableSound
+public class MovingSoundVehicle extends AbstractTickableSoundInstance
 {
     private final WeakReference<PoweredVehicleEntity> vehicleRef;
 
     public MovingSoundVehicle(PoweredVehicleEntity vehicle)
     {
-        super(vehicle.getEngineSound(), SoundCategory.NEUTRAL);
+        super(vehicle.getEngineSound(), SoundSource.NEUTRAL, SoundInstance.createUnseededRandom());
         this.vehicleRef = new WeakReference<>(vehicle);
         this.looping = true;
         this.delay = 0;
@@ -39,7 +40,7 @@ public class MovingSoundVehicle extends TickableSound
         this.volume = (vehicle.isEnginePowered() && !vehicle.equals(Minecraft.getInstance().player.getVehicle())) ? 1.0F : 0.0F;
         if(vehicle.isAlive() && vehicle.getPassengers().size() > 0)
         {
-            PlayerEntity localPlayer = Minecraft.getInstance().player;
+            Player localPlayer = Minecraft.getInstance().player;
             this.x = (float) (vehicle.getX() + (localPlayer.getX() - vehicle.getX()) * 0.65);
             this.y = (float) (vehicle.getY() + (localPlayer.getY() - vehicle.getY()) * 0.65);
             this.z = (float) (vehicle.getZ() + (localPlayer.getZ() - vehicle.getZ()) * 0.65);

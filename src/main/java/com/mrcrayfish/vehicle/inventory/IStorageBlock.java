@@ -1,16 +1,16 @@
 package com.mrcrayfish.vehicle.inventory;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.inventory.ItemStackHelper;
-import net.minecraft.inventory.container.INamedContainerProvider;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.NonNullList;
+import net.minecraft.core.NonNullList;
+import net.minecraft.world.Container;
+import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 
 /**
  * Author: MrCrayfish
  */
-public interface IStorageBlock extends IInventory, INamedContainerProvider
+public interface IStorageBlock extends Container, MenuProvider
 {
     NonNullList<ItemStack> getInventory();
 
@@ -42,7 +42,7 @@ public interface IStorageBlock extends IInventory, INamedContainerProvider
     @Override
     default ItemStack removeItem(int index, int count)
     {
-        ItemStack stack = ItemStackHelper.removeItem(this.getInventory(), index, count);
+        ItemStack stack = ContainerHelper.removeItem(this.getInventory(), index, count);
         if (!stack.isEmpty())
         {
             this.setChanged();
@@ -77,7 +77,7 @@ public interface IStorageBlock extends IInventory, INamedContainerProvider
     }
 
     @Override
-    default boolean stillValid(PlayerEntity player)
+    default boolean stillValid(Player player)
     {
         return false;
     }

@@ -1,10 +1,10 @@
 package com.mrcrayfish.vehicle.network.message;
 
 import com.mrcrayfish.vehicle.entity.PoweredVehicleEntity;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraftforge.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
@@ -20,13 +20,13 @@ public class MessageAccelerating implements IMessage<MessageAccelerating>
 	}
 
 	@Override
-	public void encode(MessageAccelerating message, PacketBuffer buffer)
+	public void encode(MessageAccelerating message, FriendlyByteBuf buffer)
 	{
 		buffer.writeEnum(message.acceleration);
 	}
 
 	@Override
-	public MessageAccelerating decode(PacketBuffer buffer)
+	public MessageAccelerating decode(FriendlyByteBuf buffer)
 	{
 		return new MessageAccelerating(buffer.readEnum(PoweredVehicleEntity.AccelerationDirection.class));
 	}
@@ -36,7 +36,7 @@ public class MessageAccelerating implements IMessage<MessageAccelerating>
 	{
 		supplier.get().enqueueWork(() ->
 		{
-			ServerPlayerEntity player = supplier.get().getSender();
+			ServerPlayer player = supplier.get().getSender();
 			if(player != null)
 			{
 				Entity riding = player.getVehicle();

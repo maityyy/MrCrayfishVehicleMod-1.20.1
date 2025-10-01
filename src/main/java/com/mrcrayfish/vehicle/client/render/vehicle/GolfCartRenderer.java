@@ -1,16 +1,17 @@
 package com.mrcrayfish.vehicle.client.render.vehicle;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
 import com.mrcrayfish.vehicle.client.EntityRayTracer;
 import com.mrcrayfish.vehicle.client.model.SpecialModels;
 import com.mrcrayfish.vehicle.client.render.AbstractLandVehicleRenderer;
-import com.mrcrayfish.vehicle.client.render.Axis;
 import com.mrcrayfish.vehicle.entity.VehicleProperties;
 import com.mrcrayfish.vehicle.entity.vehicle.GolfCartEntity;
 import com.mrcrayfish.vehicle.init.ModEntities;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
-import net.minecraft.client.renderer.entity.model.PlayerModel;
-import net.minecraft.entity.player.PlayerEntity;
+import com.mrcrayfish.vehicle.util.Vector3fAxis;
+import net.minecraft.client.model.PlayerModel;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.world.entity.player.Player;
 
 import javax.annotation.Nullable;
 
@@ -25,7 +26,7 @@ public class GolfCartRenderer extends AbstractLandVehicleRenderer<GolfCartEntity
     }
 
     @Override
-    protected void render(@Nullable GolfCartEntity vehicle, MatrixStack matrixStack, IRenderTypeBuffer renderTypeBuffer, float partialTicks, int light)
+    protected void render(@Nullable GolfCartEntity vehicle, PoseStack matrixStack, MultiBufferSource renderTypeBuffer, float partialTicks, int light)
     {
         //Render the body
         this.renderDamagedPart(vehicle, SpecialModels.GOLF_CART_BODY.getModel(), matrixStack, renderTypeBuffer, light);
@@ -35,7 +36,7 @@ public class GolfCartRenderer extends AbstractLandVehicleRenderer<GolfCartEntity
 
         // Positions the steering wheel in the correct position
         matrixStack.translate(-0.345, 0.425, 0.1);
-        matrixStack.mulPose(Axis.POSITIVE_X.rotationDegrees(-45F));
+        matrixStack.mulPose(Axis.XP.rotationDegrees(-45F));
         matrixStack.translate(0, -0.02, 0);
         matrixStack.scale(0.95F, 0.95F, 0.95F);
 
@@ -45,7 +46,7 @@ public class GolfCartRenderer extends AbstractLandVehicleRenderer<GolfCartEntity
             float wheelAngle = vehicle.prevWheelAngle + (vehicle.wheelAngle - vehicle.prevWheelAngle) * partialTicks;
             float wheelAngleNormal = wheelAngle / 45F;
             float turnRotation = wheelAngleNormal * 25F;
-            matrixStack.mulPose(Axis.POSITIVE_Y.rotationDegrees(turnRotation));
+            matrixStack.mulPose(Axis.YP.rotationDegrees(turnRotation));
         }
 
         this.renderDamagedPart(vehicle, SpecialModels.GO_KART_STEERING_WHEEL.getModel(), matrixStack, renderTypeBuffer, light);
@@ -54,7 +55,7 @@ public class GolfCartRenderer extends AbstractLandVehicleRenderer<GolfCartEntity
     }
 
     @Override
-    public void applyPlayerModel(GolfCartEntity entity, PlayerEntity player, PlayerModel model, float partialTicks)
+    public void applyPlayerModel(GolfCartEntity entity, Player player, PlayerModel model, float partialTicks)
     {
         model.rightLeg.xRot = (float) Math.toRadians(-80F);
         model.rightLeg.yRot = (float) Math.toRadians(15F);
@@ -82,7 +83,7 @@ public class GolfCartRenderer extends AbstractLandVehicleRenderer<GolfCartEntity
             EntityRayTracer.createTransformListForPart(SpecialModels.GOLF_CART_BODY, parts, transforms);
             EntityRayTracer.createTransformListForPart(SpecialModels.GO_KART_STEERING_WHEEL, parts, transforms,
                     EntityRayTracer.MatrixTransformation.createTranslation(-0.345F, 0.425F, 0.1F),
-                    EntityRayTracer.MatrixTransformation.createRotation(Axis.POSITIVE_X, -45F),
+                    EntityRayTracer.MatrixTransformation.createRotation(Vector3fAxis.POSITIVE_X, -45F),
                     EntityRayTracer.MatrixTransformation.createTranslation(0.0F, -0.02F, 0.0F),
                     EntityRayTracer.MatrixTransformation.createScale(0.95F));
             EntityRayTracer.createFuelPartTransforms(ModEntities.GOLF_CART.get(), SpecialModels.FUEL_DOOR_CLOSED, parts, transforms);

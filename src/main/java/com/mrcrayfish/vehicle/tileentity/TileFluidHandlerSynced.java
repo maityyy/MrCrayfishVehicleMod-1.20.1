@@ -1,24 +1,26 @@
 package com.mrcrayfish.vehicle.tileentity;
 
 import com.mrcrayfish.vehicle.util.TileEntityUtil;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.NetworkManager;
-import net.minecraft.network.play.server.SUpdateTileEntityPacket;
-import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.capability.TileFluidHandler;
+import net.minecraftforge.fluids.capability.FluidHandlerBlockEntity;
 import net.minecraftforge.fluids.capability.templates.FluidTank;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.function.Predicate;
 
-public class TileFluidHandlerSynced extends TileFluidHandler
+public class TileFluidHandlerSynced extends FluidHandlerBlockEntity
 {
-    public TileFluidHandlerSynced(@Nonnull TileEntityType<?> tileEntityTypeIn, int capacity)
+    public TileFluidHandlerSynced(@Nonnull BlockEntityType<?> tileEntityTypeIn, BlockPos pos, BlockState state, int capacity)
     {
-        super(tileEntityTypeIn);
+        super(tileEntityTypeIn, pos, state);
         this.tank = new FluidTank(capacity)
         {
             @Override
@@ -29,9 +31,9 @@ public class TileFluidHandlerSynced extends TileFluidHandler
         };
     }
 
-    public TileFluidHandlerSynced(@Nonnull TileEntityType<?> tileEntityTypeIn, int capacity, Predicate<FluidStack> validator)
+    public TileFluidHandlerSynced(@Nonnull BlockEntityType<?> tileEntityTypeIn, BlockPos pos, BlockState state, int capacity, Predicate<FluidStack> validator)
     {
-        super(tileEntityTypeIn);
+        super(tileEntityTypeIn, pos, state);
         this.tank = new FluidTank(capacity, validator)
         {
             @Override
@@ -46,39 +48,43 @@ public class TileFluidHandlerSynced extends TileFluidHandler
     {
         if(this.level != null && !this.level.isClientSide)
         {
-            CompoundNBT compound = new CompoundNBT();
-            super.save(compound);
+            CompoundTag compound = new CompoundTag();
+            super.saveAdditional(compound);
             TileEntityUtil.sendUpdatePacket(this, compound);
         }
     }
 
-    public void syncFluidToPlayer(ServerPlayerEntity player)
+    public void syncFluidToPlayer(ServerPlayer player)
     {
         if(this.level != null && !this.level.isClientSide)
         {
-            CompoundNBT compound = new CompoundNBT();
-            super.save(compound);
+            CompoundTag compound = new CompoundTag();
+            super.saveAdditional(compound);
             TileEntityUtil.sendUpdatePacket(this, compound);
         }
     }
 
     @Override
-    public CompoundNBT getUpdateTag()
+    public CompoundTag getUpdateTag()
     {
-        return this.save(new CompoundNBT());
+        return this.saveWithId();
     }
 
     @Nullable
     @Override
-    public SUpdateTileEntityPacket getUpdatePacket()
+    public ClientboundBlockEntityDataPacket getUpdatePacket()
     {
-        return new SUpdateTileEntityPacket(this.worldPosition, 0, this.getUpdateTag());
+        return ClientboundBlockEntityDataPacket.create(this);
     }
 
     @Override
-    public void onDataPacket(NetworkManager net, SUpdateTileEntityPacket pkt)
+    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt)
     {
-        this.load(null, pkt.getTag());
+        CompoundTag nbt = pkt.getTag();
+        if(nbt != null)
+        {
+            this.load(nbt);
+        }
     }
 
     public FluidTank getFluidTank()

@@ -2,16 +2,16 @@ package com.mrcrayfish.vehicle.entity.vehicle;
 
 import com.mrcrayfish.vehicle.entity.LandVehicleEntity;
 import com.mrcrayfish.vehicle.init.ModSounds;
-import net.minecraft.entity.EntityType;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.world.World;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.level.Level;
 
 /**
  * Author: MrCrayfish
  */
 public class GolfCartEntity extends LandVehicleEntity
 {
-    public GolfCartEntity(EntityType<? extends GolfCartEntity> type, World worldIn)
+    public GolfCartEntity(EntityType<? extends GolfCartEntity> type, Level worldIn)
     {
         super(type, worldIn);
         //TODO figure out electric vehicles

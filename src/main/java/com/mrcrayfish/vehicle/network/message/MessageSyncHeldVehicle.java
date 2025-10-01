@@ -1,10 +1,10 @@
 package com.mrcrayfish.vehicle.network.message;
 
 import com.mrcrayfish.vehicle.client.network.ClientPlayHandler;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.fml.network.NetworkDirection;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraftforge.network.NetworkDirection;
+import net.minecraftforge.network.NetworkEvent.Context;
 
 import java.util.function.Supplier;
 
@@ -14,31 +14,31 @@ import java.util.function.Supplier;
 public class MessageSyncHeldVehicle implements IMessage<MessageSyncHeldVehicle>
 {
     private int entityId;
-    private CompoundNBT vehicleTag;
+    private CompoundTag vehicleTag;
 
     public MessageSyncHeldVehicle() {}
 
-    public MessageSyncHeldVehicle(int entityId, CompoundNBT vehicleTag)
+    public MessageSyncHeldVehicle(int entityId, CompoundTag vehicleTag)
     {
         this.entityId = entityId;
         this.vehicleTag = vehicleTag;
     }
 
     @Override
-    public void encode(MessageSyncHeldVehicle message, PacketBuffer buffer)
+    public void encode(MessageSyncHeldVehicle message, FriendlyByteBuf buffer)
     {
         buffer.writeVarInt(message.entityId);
         buffer.writeNbt(message.vehicleTag);
     }
 
     @Override
-    public MessageSyncHeldVehicle decode(PacketBuffer buffer)
+    public MessageSyncHeldVehicle decode(FriendlyByteBuf buffer)
     {
         return new MessageSyncHeldVehicle(buffer.readVarInt(), buffer.readNbt());
     }
 
     @Override
-    public void handle(MessageSyncHeldVehicle message, Supplier<NetworkEvent.Context> supplier)
+    public void handle(MessageSyncHeldVehicle message, Supplier<Context> supplier)
     {
         if(supplier.get().getDirection() == NetworkDirection.PLAY_TO_CLIENT)
         {
@@ -51,7 +51,7 @@ public class MessageSyncHeldVehicle implements IMessage<MessageSyncHeldVehicle>
         return this.entityId;
     }
 
-    public CompoundNBT getVehicleTag()
+    public CompoundTag getVehicleTag()
     {
         return this.vehicleTag;
     }

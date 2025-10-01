@@ -1,10 +1,10 @@
 package com.mrcrayfish.vehicle.network.message;
 
 import com.mrcrayfish.vehicle.entity.PoweredVehicleEntity;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraftforge.network.NetworkEvent.Context;
 
 import java.util.function.Supplier;
 
@@ -20,23 +20,23 @@ public class MessageHorn implements IMessage<MessageHorn>
 	}
 
 	@Override
-	public void encode(MessageHorn message, PacketBuffer buffer)
+	public void encode(MessageHorn message, FriendlyByteBuf buffer)
 	{
 		buffer.writeBoolean(message.horn);
 	}
 
 	@Override
-	public MessageHorn decode(PacketBuffer buffer)
+	public MessageHorn decode(FriendlyByteBuf buffer)
 	{
 		return new MessageHorn(buffer.readBoolean());
 	}
 
 	@Override
-	public void handle(MessageHorn message, Supplier<NetworkEvent.Context> supplier)
+	public void handle(MessageHorn message, Supplier<Context> supplier)
 	{
 		supplier.get().enqueueWork(() ->
 		{
-			ServerPlayerEntity player = supplier.get().getSender();
+			ServerPlayer player = supplier.get().getSender();
 			if(player != null)
 			{
 				Entity riding = player.getVehicle();

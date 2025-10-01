@@ -1,10 +1,10 @@
 package com.mrcrayfish.vehicle.network.message;
 
 import com.mrcrayfish.vehicle.entity.PlaneEntity;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraftforge.network.NetworkEvent.Context;
 
 import java.util.function.Supplier;
 
@@ -20,23 +20,23 @@ public class MessageFlaps implements IMessage<MessageFlaps>
 	}
 
 	@Override
-	public void encode(MessageFlaps message, PacketBuffer buffer)
+	public void encode(MessageFlaps message, FriendlyByteBuf buffer)
 	{
 		buffer.writeEnum(message.flapDirection);
 	}
 
 	@Override
-	public MessageFlaps decode(PacketBuffer buffer)
+	public MessageFlaps decode(FriendlyByteBuf buffer)
 	{
 		return new MessageFlaps(buffer.readEnum(PlaneEntity.FlapDirection.class));
 	}
 
 	@Override
-	public void handle(MessageFlaps message, Supplier<NetworkEvent.Context> supplier)
+	public void handle(MessageFlaps message, Supplier<Context> supplier)
 	{
 		supplier.get().enqueueWork(() ->
 		{
-			ServerPlayerEntity player = supplier.get().getSender();
+			ServerPlayer player = supplier.get().getSender();
 			if(player != null)
 			{
 				Entity riding = player.getVehicle();

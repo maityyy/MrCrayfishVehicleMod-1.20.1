@@ -3,14 +3,14 @@ package com.mrcrayfish.vehicle.network.message;
 import com.mrcrayfish.vehicle.common.inventory.IAttachableChest;
 import com.mrcrayfish.vehicle.common.inventory.IStorage;
 import com.mrcrayfish.vehicle.init.ModItems;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.world.World;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.common.ForgeMod;
-import net.minecraftforge.fml.network.NetworkEvent;
-import net.minecraftforge.fml.network.NetworkHooks;
+import net.minecraftforge.network.NetworkEvent.Context;
+import net.minecraftforge.network.NetworkHooks;
 
 import java.util.function.Supplier;
 
@@ -29,32 +29,32 @@ public class MessageOpenStorage implements IMessage<MessageOpenStorage>
     }
 
     @Override
-    public void encode(MessageOpenStorage message, PacketBuffer buffer)
+    public void encode(MessageOpenStorage message, FriendlyByteBuf buffer)
     {
         buffer.writeInt(message.entityId);
     }
 
     @Override
-    public MessageOpenStorage decode(PacketBuffer buffer)
+    public MessageOpenStorage decode(FriendlyByteBuf buffer)
     {
         return new MessageOpenStorage(buffer.readInt());
     }
 
     @SuppressWarnings("ConstantConditions")
     @Override
-    public void handle(MessageOpenStorage message, Supplier<NetworkEvent.Context> supplier)
+    public void handle(MessageOpenStorage message, Supplier<Context> supplier)
     {
         supplier.get().enqueueWork(() ->
         {
-            ServerPlayerEntity player = supplier.get().getSender();
+            ServerPlayer player = supplier.get().getSender();
             if(player != null)
             {
-                World world = player.level;
+                Level world = player.level();
                 Entity targetEntity = world.getEntity(message.entityId);
                 if(targetEntity instanceof IStorage)
                 {
                     IStorage storage = (IStorage) targetEntity;
-                    float reachDistance = (float) player.getAttribute(ForgeMod.REACH_DISTANCE.get()).getValue();
+                    float reachDistance = (float) player.getAttribute(ForgeMod.ENTITY_REACH.get()).getValue(); // FIXME
                     if(player.distanceTo(targetEntity) < reachDistance)
                     {
                         if(targetEntity instanceof IAttachableChest)
@@ -62,20 +62,20 @@ public class MessageOpenStorage implements IMessage<MessageOpenStorage>
                             IAttachableChest attachableChest = (IAttachableChest) targetEntity;
                             if(attachableChest.hasChest())
                             {
-                                ItemStack stack = player.inventory.getSelected();
+                                ItemStack stack = player.getInventory().getSelected();
                                 if(stack.getItem() == ModItems.WRENCH.get())
                                 {
                                     ((IAttachableChest) targetEntity).removeChest();
                                 }
                                 else
                                 {
-                                    NetworkHooks.openGui(player, storage.getStorageContainerProvider(), buffer -> buffer.writeVarInt(message.entityId));
+                                    NetworkHooks.openScreen(player, storage.getStorageContainerProvider(), buffer -> buffer.writeVarInt(message.entityId));
                                 }
                             }
                         }
                         else
                         {
-                            NetworkHooks.openGui(player, storage.getStorageContainerProvider(), buffer -> buffer.writeVarInt(message.entityId));
+                            NetworkHooks.openScreen(player, storage.getStorageContainerProvider(), buffer -> buffer.writeVarInt(message.entityId));
                         }
                     }
                 }

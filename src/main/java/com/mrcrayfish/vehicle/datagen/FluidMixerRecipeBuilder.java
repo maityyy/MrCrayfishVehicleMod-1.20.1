@@ -4,10 +4,10 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.mrcrayfish.vehicle.crafting.FluidEntry;
 import com.mrcrayfish.vehicle.init.ModRecipeSerializers;
-import net.minecraft.data.IFinishedRecipe;
-import net.minecraft.item.crafting.IRecipeSerializer;
-import net.minecraft.item.crafting.Ingredient;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.data.recipes.FinishedRecipe;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeSerializer;
 
 import javax.annotation.Nullable;
 import java.util.function.Consumer;
@@ -17,12 +17,12 @@ import java.util.function.Consumer;
  */
 public class FluidMixerRecipeBuilder
 {
-    private final IRecipeSerializer<?> serializer;
+    private final RecipeSerializer<?> serializer;
     private final FluidEntry[] input;
     private final Ingredient ingredient;
     private final FluidEntry output;
 
-    public FluidMixerRecipeBuilder(IRecipeSerializer<?> serializer, FluidEntry inputOne, FluidEntry inputTwo, Ingredient ingredient, FluidEntry output)
+    public FluidMixerRecipeBuilder(RecipeSerializer<?> serializer, FluidEntry inputOne, FluidEntry inputTwo, Ingredient ingredient, FluidEntry output)
     {
         this.serializer = serializer;
         this.input = new FluidEntry[]{inputOne, inputTwo};
@@ -35,25 +35,25 @@ public class FluidMixerRecipeBuilder
         return new FluidMixerRecipeBuilder(ModRecipeSerializers.FLUID_MIXER.get(), inputOne, inputTwo, ingredient, output);
     }
 
-    public void save(Consumer<IFinishedRecipe> consumer, String name)
+    public void save(Consumer<FinishedRecipe> consumer, String name)
     {
         this.save(consumer, new ResourceLocation(name));
     }
 
-    public void save(Consumer<IFinishedRecipe> consumer, ResourceLocation id)
+    public void save(Consumer<FinishedRecipe> consumer, ResourceLocation id)
     {
         consumer.accept(new Result(id, this.serializer, this.input, this.ingredient, this.output));
     }
 
-    public static class Result implements IFinishedRecipe
+    public static class Result implements FinishedRecipe
     {
         private final ResourceLocation id;
-        private final IRecipeSerializer<?> serializer;
+        private final RecipeSerializer<?> serializer;
         private final FluidEntry[] input;
         private final Ingredient ingredient;
         private final FluidEntry output;
 
-        private Result(ResourceLocation id, IRecipeSerializer<?> serializer, FluidEntry[] input, Ingredient ingredient, FluidEntry output)
+        private Result(ResourceLocation id, RecipeSerializer<?> serializer, FluidEntry[] input, Ingredient ingredient, FluidEntry output)
         {
             this.id = id;
             this.serializer = serializer;
@@ -80,7 +80,7 @@ public class FluidMixerRecipeBuilder
         }
 
         @Override
-        public IRecipeSerializer<?> getType()
+        public RecipeSerializer<?> getType()
         {
             return this.serializer;
         }

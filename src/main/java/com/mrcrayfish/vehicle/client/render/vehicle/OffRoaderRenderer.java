@@ -1,19 +1,20 @@
 package com.mrcrayfish.vehicle.client.render.vehicle;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
 import com.mrcrayfish.vehicle.client.EntityRayTracer;
 import com.mrcrayfish.vehicle.client.model.SpecialModels;
 import com.mrcrayfish.vehicle.client.render.AbstractLandVehicleRenderer;
-import com.mrcrayfish.vehicle.client.render.Axis;
 import com.mrcrayfish.vehicle.entity.VehicleProperties;
 import com.mrcrayfish.vehicle.entity.vehicle.OffRoaderEntity;
 import com.mrcrayfish.vehicle.init.ModEntities;
 import com.mrcrayfish.vehicle.util.RenderUtil;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
-import net.minecraft.client.renderer.entity.model.PlayerModel;
-import net.minecraft.client.renderer.model.ItemCameraTransforms;
+import com.mrcrayfish.vehicle.util.Vector3fAxis;
+import net.minecraft.client.model.PlayerModel;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemDisplayContext;
 
 import javax.annotation.Nullable;
 
@@ -28,7 +29,7 @@ public class OffRoaderRenderer extends AbstractLandVehicleRenderer<OffRoaderEnti
     }
 
     @Override
-    protected void render(@Nullable OffRoaderEntity vehicle, MatrixStack matrixStack, IRenderTypeBuffer renderTypeBuffer, float partialTicks, int light)
+    protected void render(@Nullable OffRoaderEntity vehicle, PoseStack matrixStack, MultiBufferSource renderTypeBuffer, float partialTicks, int light)
     {
         this.renderDamagedPart(vehicle, SpecialModels.OFF_ROADER_BODY.getModel(), matrixStack, renderTypeBuffer, light);
 
@@ -36,7 +37,7 @@ public class OffRoaderRenderer extends AbstractLandVehicleRenderer<OffRoaderEnti
         matrixStack.pushPose();
             // Positions the steering wheel in the correct position
         matrixStack.translate(-0.3125, 0.35, 0.2);
-        matrixStack.mulPose(Axis.POSITIVE_X.rotationDegrees(-45F));
+        matrixStack.mulPose(Axis.XP.rotationDegrees(-45F));
         matrixStack.translate(0, -0.02, 0);
         matrixStack.scale(0.75F, 0.75F, 0.75F);
 
@@ -46,16 +47,16 @@ public class OffRoaderRenderer extends AbstractLandVehicleRenderer<OffRoaderEnti
             float wheelAngle = vehicle.prevWheelAngle + (vehicle.wheelAngle - vehicle.prevWheelAngle) * partialTicks;
             float wheelAngleNormal = wheelAngle / 45F;
             float turnRotation = wheelAngleNormal * 25F;
-            matrixStack.mulPose(Axis.POSITIVE_Y.rotationDegrees(turnRotation));
+            matrixStack.mulPose(Axis.YP.rotationDegrees(turnRotation));
         }
 
-        RenderUtil.renderColoredModel(SpecialModels.GO_KART_STEERING_WHEEL.getModel(), ItemCameraTransforms.TransformType.NONE, false, matrixStack, renderTypeBuffer, -1, light, OverlayTexture.NO_OVERLAY);
+        RenderUtil.renderColoredModel(SpecialModels.GO_KART_STEERING_WHEEL.getModel(), ItemDisplayContext.NONE, false, matrixStack, renderTypeBuffer, -1, light, OverlayTexture.NO_OVERLAY);
 
         matrixStack.popPose();
     }
 
     @Override
-    public void applyPlayerModel(OffRoaderEntity entity, PlayerEntity player, PlayerModel model, float partialTicks)
+    public void applyPlayerModel(OffRoaderEntity entity, Player player, PlayerModel model, float partialTicks)
     {
         int index = entity.getSeatTracker().getSeatIndex(player.getUUID());
         if(index < 2) //Sitting in the front
@@ -123,7 +124,7 @@ public class OffRoaderRenderer extends AbstractLandVehicleRenderer<OffRoaderEnti
             EntityRayTracer.createTransformListForPart(SpecialModels.OFF_ROADER_BODY, parts, transforms);
             EntityRayTracer.createTransformListForPart(SpecialModels.GO_KART_STEERING_WHEEL, parts, transforms,
                     EntityRayTracer.MatrixTransformation.createTranslation(-0.3125F, 0.35F, 0.2F),
-                    EntityRayTracer.MatrixTransformation.createRotation(Axis.POSITIVE_X, -45F),
+                    EntityRayTracer.MatrixTransformation.createRotation(Vector3fAxis.POSITIVE_X, -45F),
                     EntityRayTracer.MatrixTransformation.createTranslation(0.0F, -0.02F, 0.0F),
                     EntityRayTracer.MatrixTransformation.createScale(0.75F));
             EntityRayTracer.createFuelPartTransforms(ModEntities.OFF_ROADER.get(), SpecialModels.FUEL_DOOR_CLOSED, parts, transforms);

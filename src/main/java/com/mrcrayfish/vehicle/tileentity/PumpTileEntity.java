@@ -10,16 +10,16 @@ import com.mrcrayfish.vehicle.common.FluidNetworkHandler;
 import com.mrcrayfish.vehicle.init.ModTileEntities;
 import com.mrcrayfish.vehicle.util.FluidUtils;
 import com.mrcrayfish.vehicle.util.TileEntityUtil;
-import net.minecraft.block.BlockState;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.tileentity.ITickableTileEntity;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraftforge.common.util.Constants;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -31,7 +31,7 @@ import java.util.function.Function;
 /**
  * Author: MrCrayfish
  */
-public class PumpTileEntity extends PipeTileEntity implements ITickableTileEntity
+public class PumpTileEntity extends PipeTileEntity
 {
     private int lastHandlerIndex;
     private boolean validatedNetwork;
@@ -39,23 +39,22 @@ public class PumpTileEntity extends PipeTileEntity implements ITickableTileEntit
     private List<Pair<BlockPos, Direction>> fluidHandlers = new ArrayList<>();
     private PowerMode powerMode = PowerMode.ALWAYS_ACTIVE;
 
-    public PumpTileEntity()
+    public PumpTileEntity(BlockPos pos, BlockState state)
     {
-        super(ModTileEntities.FLUID_PUMP.get());
+        super(ModTileEntities.FLUID_PUMP.get(), pos, state);
     }
 
-    @Override
-    public void tick()
+    public static void serverTick(Level level, BlockPos pos, BlockState state, PumpTileEntity blockEntity)
     {
-        if(this.level != null && !this.level.isClientSide())
+        if(blockEntity.level != null && !blockEntity.level.isClientSide())
         {
-            if(!this.validatedNetwork)
+            if(!blockEntity.validatedNetwork)
             {
-                this.validatedNetwork = true;
-                this.generatePipeNetwork();
+                blockEntity.validatedNetwork = true;
+                blockEntity.generatePipeNetwork();
             }
 
-            this.pumpFluid();
+            blockEntity.pumpFluid();
         }
     }
 
@@ -82,24 +81,24 @@ public class PumpTileEntity extends PipeTileEntity implements ITickableTileEntit
         if(!this.powerMode.test(this))
             return;
 
-        List<IFluidHandler> handlers = this.getFluidHandlersOnNetwork(this.level);
+        List<IFluidHandler> handlers = this.getFluidInteractionHandlersOnNetwork(this.level);
         if(handlers.isEmpty())
             return;
 
-        Optional<IFluidHandler> source = this.getSourceFluidHandler(this.level);
+        Optional<IFluidHandler> source = this.getSourceFluidInteractionHandler(this.level);
         if(!source.isPresent())
             return;
 
-        IFluidHandler sourceHandler = source.get();
+        IFluidHandler sourceInteractionHandler = source.get();
         int outputCount = handlers.size();
-        int remainingAmount = Math.min(sourceHandler.getFluidInTank(0).getAmount(), Config.SERVER.pumpTransferAmount.get());
+        int remainingAmount = Math.min(sourceInteractionHandler.getFluidInTank(0).getAmount(), Config.SERVER.pumpTransferAmount.get());
         int splitAmount = remainingAmount / outputCount;
         if(splitAmount > 0)
         {
             Iterator<IFluidHandler> it = handlers.listIterator();
             while(it.hasNext())
             {
-                int transferredAmount = FluidUtils.transferFluid(sourceHandler, it.next(), splitAmount);
+                int transferredAmount = FluidUtils.transferFluid(sourceInteractionHandler, it.next(), splitAmount);
                 remainingAmount -= transferredAmount;
                 if(transferredAmount < splitAmount)
                 {
@@ -115,7 +114,7 @@ public class PumpTileEntity extends PipeTileEntity implements ITickableTileEntit
         // If only one fluid handler left, just transfer the maximum amount of remaining fluid
         if(handlers.size() == 1)
         {
-            FluidUtils.transferFluid(sourceHandler, handlers.get(0), remainingAmount);
+            FluidUtils.transferFluid(sourceInteractionHandler, handlers.get(0), remainingAmount);
             return;
         }
 
@@ -123,7 +122,7 @@ public class PumpTileEntity extends PipeTileEntity implements ITickableTileEntit
         while(remainingAmount > 0 && !handlers.isEmpty())
         {
             int index = this.lastHandlerIndex++ % handlers.size();
-            int transferred = FluidUtils.transferFluid(sourceHandler, handlers.get(index), 1);
+            int transferred = FluidUtils.transferFluid(sourceInteractionHandler, handlers.get(index), 1);
             remainingAmount -= transferred;
             if(transferred == 0)
             {
@@ -201,7 +200,7 @@ public class PumpTileEntity extends PipeTileEntity implements ITickableTileEntit
             {
                 if(state.getValue(FluidPipeBlock.CONNECTED_PIPES[direction.get3DDataValue()]))
                 {
-                    TileEntity selfTileEntity = this.level.getBlockEntity(pos);
+                    BlockEntity selfTileEntity = this.level.getBlockEntity(pos);
                     if(selfTileEntity instanceof PipeTileEntity)
                     {
                         PipeTileEntity pipeTileEntity = (PipeTileEntity) selfTileEntity;
@@ -217,8 +216,8 @@ public class PumpTileEntity extends PipeTileEntity implements ITickableTileEntit
                         continue;
 
                     BlockPos relativePos = pos.relative(direction);
-                    TileEntity relativeTileEntity = this.level.getBlockEntity(relativePos);
-                    if(relativeTileEntity != null && relativeTileEntity.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, direction.getOpposite()).isPresent())
+                    BlockEntity relativeTileEntity = this.level.getBlockEntity(relativePos);
+                    if(relativeTileEntity != null && relativeTileEntity.getCapability(ForgeCapabilities.FLUID_HANDLER, direction.getOpposite()).isPresent())
                     {
                         this.fluidHandlers.add(Pair.of(relativePos, direction.getOpposite()));
                     }
@@ -234,8 +233,8 @@ public class PumpTileEntity extends PipeTileEntity implements ITickableTileEntit
                 continue;
 
             BlockPos relativePos = this.worldPosition.relative(direction);
-            TileEntity relativeTileEntity = this.level.getBlockEntity(relativePos);
-            if(relativeTileEntity != null && relativeTileEntity.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, direction.getOpposite()).isPresent())
+            BlockEntity relativeTileEntity = this.level.getBlockEntity(relativePos);
+            if(relativeTileEntity != null && relativeTileEntity.getCapability(ForgeCapabilities.FLUID_HANDLER, direction.getOpposite()).isPresent())
             {
                 this.fluidHandlers.add(Pair.of(relativePos, direction.getOpposite()));
             }
@@ -255,17 +254,17 @@ public class PumpTileEntity extends PipeTileEntity implements ITickableTileEntit
         });
     }
 
-    public List<IFluidHandler> getFluidHandlersOnNetwork(World world)
+    public List<IFluidHandler> getFluidInteractionHandlersOnNetwork(Level world)
     {
         List<IFluidHandler> handlers = new ArrayList<>();
         this.fluidHandlers.forEach(pair ->
         {
             if(world.isLoaded(pair.getLeft()))
             {
-                TileEntity tileEntity = world.getBlockEntity(pair.getLeft());
+                BlockEntity tileEntity = world.getBlockEntity(pair.getLeft());
                 if(tileEntity != null)
                 {
-                    LazyOptional<IFluidHandler> lazyOptional = tileEntity.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, pair.getRight());
+                    LazyOptional<IFluidHandler> lazyOptional = tileEntity.getCapability(ForgeCapabilities.FLUID_HANDLER, pair.getRight());
                     if(lazyOptional.isPresent())
                     {
                         Optional<IFluidHandler> handler = lazyOptional.resolve();
@@ -277,13 +276,13 @@ public class PumpTileEntity extends PipeTileEntity implements ITickableTileEntit
         return handlers;
     }
 
-    public Optional<IFluidHandler> getSourceFluidHandler(World world)
+    public Optional<IFluidHandler> getSourceFluidInteractionHandler(Level world)
     {
         Direction direction = this.getBlockState().getValue(FluidPumpBlock.DIRECTION);
-        TileEntity tileEntity = world.getBlockEntity(this.worldPosition.relative(direction.getOpposite()));
+        BlockEntity tileEntity = world.getBlockEntity(this.worldPosition.relative(direction.getOpposite()));
         if(tileEntity != null)
         {
-            LazyOptional<IFluidHandler> lazyOptional = tileEntity.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, direction);
+            LazyOptional<IFluidHandler> lazyOptional = tileEntity.getCapability(ForgeCapabilities.FLUID_HANDLER, direction);
             if(lazyOptional.isPresent())
             {
                 return lazyOptional.resolve();
@@ -297,33 +296,33 @@ public class PumpTileEntity extends PipeTileEntity implements ITickableTileEntit
         this.powerMode = PowerMode.values()[(this.powerMode.ordinal() + 1) % PowerMode.values().length];
         if(this.level != null && !this.level.isClientSide())
         {
-            CompoundNBT compound = new CompoundNBT();
-            this.writePowerMode(compound);
-            TileEntityUtil.sendUpdatePacket(this, super.save(compound));
+            CompoundTag compound = new CompoundTag();
+            this.saveAdditional(compound);
+            TileEntityUtil.sendUpdatePacket(this, compound);
             BlockState state = this.getBlockState();
             state = ((FluidPumpBlock) state.getBlock()).getDisabledState(state, this.level, this.worldPosition);
-            this.level.setBlock(this.worldPosition, state, Constants.BlockFlags.BLOCK_UPDATE | Constants.BlockFlags.RERENDER_MAIN_THREAD);
+            this.level.setBlock(this.worldPosition, state, Block.UPDATE_CLIENTS | Block.UPDATE_IMMEDIATE);
         }
     }
 
     @Override
-    public void load(BlockState state, CompoundNBT compound)
+    public void load(CompoundTag compound)
     {
-        super.load(state, compound);
-        if(compound.contains("PowerMode", Constants.NBT.TAG_INT))
+        super.load(compound);
+        if(compound.contains("PowerMode", Tag.TAG_INT))
         {
             this.powerMode = PowerMode.fromOrdinal(compound.getInt("PowerMode"));
         }
     }
 
     @Override
-    public CompoundNBT save(CompoundNBT compound)
+    public void saveAdditional(CompoundTag compound)
     {
+        super.saveAdditional(compound);
         compound.putInt("PowerMode", this.powerMode.ordinal());
-        return super.save(compound);
     }
 
-    private void writePowerMode(CompoundNBT compound)
+    private void writePowerMode(CompoundTag compound)
     {
         compound.putInt("PowerMode", this.powerMode.ordinal());
     }

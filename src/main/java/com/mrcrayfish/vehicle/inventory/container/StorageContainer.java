@@ -1,24 +1,24 @@
 package com.mrcrayfish.vehicle.inventory.container;
 
 import com.mrcrayfish.vehicle.common.inventory.IStorage;
-import com.mrcrayfish.vehicle.common.slot.SlotStorage;
 import com.mrcrayfish.vehicle.init.ModContainers;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.inventory.container.Container;
-import net.minecraft.inventory.container.Slot;
-import net.minecraft.item.ItemStack;
+import com.mrcrayfish.vehicle.inventory.container.slot.SlotStorage;
+import net.minecraft.world.Container;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
 
 /**
  * Author: MrCrayfish
  */
-public class StorageContainer extends Container
+public class StorageContainer extends AbstractContainerMenu
 {
     private final IStorage storageInventory;
     private final int numRows;
 
-    public StorageContainer(int windowId, IInventory playerInventory, IStorage storageInventory, PlayerEntity player)
+    public StorageContainer(int windowId, Container playerInventory, IStorage storageInventory, Player player)
     {
         super(ModContainers.STORAGE.get(), windowId);
         this.storageInventory = storageInventory;
@@ -49,7 +49,7 @@ public class StorageContainer extends Container
     }
 
     @Override
-    public boolean stillValid(PlayerEntity playerIn)
+    public boolean stillValid(Player playerIn)
     {
         if(this.storageInventory instanceof Entity)
         {
@@ -63,7 +63,7 @@ public class StorageContainer extends Container
     }
 
     @Override
-    public ItemStack quickMoveStack(PlayerEntity playerIn, int index)
+    public ItemStack quickMoveStack(Player playerIn, int index)
     {
         ItemStack itemstack = ItemStack.EMPTY;
         Slot slot = this.slots.get(index);
@@ -99,13 +99,13 @@ public class StorageContainer extends Container
     }
 
     @Override
-    public void removed(PlayerEntity playerIn)
+    public void removed(Player playerIn)
     {
         super.removed(playerIn);
         this.storageInventory.stopOpen(playerIn);
     }
 
-    public IInventory getStorageInventory()
+    public Container getStorageInventory()
     {
         return this.storageInventory;
     }

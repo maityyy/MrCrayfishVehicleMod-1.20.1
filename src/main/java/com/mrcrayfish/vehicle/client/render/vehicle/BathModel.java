@@ -1,20 +1,19 @@
 package com.mrcrayfish.vehicle.client.render.vehicle;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
-import com.mojang.blaze3d.vertex.IVertexBuilder;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
 import com.mrcrayfish.vehicle.client.EntityRayTracer;
 import com.mrcrayfish.vehicle.client.model.SpecialModels;
 import com.mrcrayfish.vehicle.client.render.AbstractPlaneRenderer;
-import com.mrcrayfish.vehicle.client.render.Axis;
 import com.mrcrayfish.vehicle.common.Seat;
 import com.mrcrayfish.vehicle.entity.VehicleProperties;
 import com.mrcrayfish.vehicle.entity.vehicle.BathEntity;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
-import net.minecraft.client.renderer.entity.model.PlayerModel;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.math.vector.Vector3f;
+import com.mrcrayfish.vehicle.util.Vector3fAxis;
+import net.minecraft.client.model.PlayerModel;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
@@ -30,21 +29,21 @@ public class BathModel extends AbstractPlaneRenderer<BathEntity>
     }
 
     @Override
-    protected void render(@Nullable BathEntity vehicle, MatrixStack matrixStack, IRenderTypeBuffer renderTypeBuffer, float partialTicks, int light)
+    protected void render(@Nullable BathEntity vehicle, PoseStack matrixStack, MultiBufferSource renderTypeBuffer, float partialTicks, int light)
     {
-        matrixStack.mulPose(Vector3f.YP.rotationDegrees(90F));
+        matrixStack.mulPose(Axis.YP.rotationDegrees(90F));
         this.renderDamagedPart(vehicle, SpecialModels.ATV_BODY.getModel(), matrixStack, renderTypeBuffer, light);
     }
 
     @Override
-    public void applyPlayerRender(BathEntity entity, PlayerEntity player, float partialTicks, MatrixStack matrixStack, IVertexBuilder builder)
+    public void applyPlayerRender(BathEntity entity, Player player, float partialTicks, PoseStack matrixStack)
     {
         int index = entity.getSeatTracker().getSeatIndex(player.getUUID());
         if(index != -1)
         {
             VehicleProperties properties = entity.getProperties();
             Seat seat = properties.getSeats().get(index);
-            Vector3d seatVec = seat.getPosition().add(0, properties.getAxleOffset() + properties.getWheelOffset(), 0).scale(properties.getBodyPosition().getScale()).scale(0.0625);
+            Vec3 seatVec = seat.getPosition().add(0, properties.getAxleOffset() + properties.getWheelOffset(), 0).scale(properties.getBodyPosition().getScale()).scale(0.0625);
             double scale = 32.0 / 30.0;
             double offsetX = seatVec.x * scale;
             double offsetY = (seatVec.y + player.getMyRidingOffset() - 0.5) * scale + 24 * 0.0625; //Player is 2 blocks high tall but renders at 1.8 blocks tall
@@ -52,14 +51,14 @@ public class BathModel extends AbstractPlaneRenderer<BathEntity>
             matrixStack.translate(offsetX, offsetY, offsetZ);
             float bodyPitch = entity.prevBodyRotationX + (entity.bodyRotationX - entity.prevBodyRotationX) * partialTicks;
             float bodyRoll = entity.prevBodyRotationZ + (entity.bodyRotationZ - entity.prevBodyRotationZ) * partialTicks;
-            matrixStack.mulPose(Axis.POSITIVE_Z.rotationDegrees(bodyRoll));
-            matrixStack.mulPose(Axis.POSITIVE_X.rotationDegrees(-bodyPitch));
+            matrixStack.mulPose(Axis.ZP.rotationDegrees(bodyRoll));
+            matrixStack.mulPose(Axis.XP.rotationDegrees(-bodyPitch));
             matrixStack.translate(-offsetX, -offsetY, -offsetX);
         }
     }
 
     @Override
-    public void applyPlayerModel(BathEntity entity, PlayerEntity player, PlayerModel model, float partialTicks)
+    public void applyPlayerModel(BathEntity entity, Player player, PlayerModel model, float partialTicks)
     {
         model.rightLeg.xRot = (float) Math.toRadians(-85F);
         model.rightLeg.yRot = (float) Math.toRadians(10F);
@@ -80,7 +79,7 @@ public class BathModel extends AbstractPlaneRenderer<BathEntity>
         return (tracer, transforms, parts) ->
         {
             EntityRayTracer.createTransformListForPart(ForgeRegistries.ITEMS.getValue(new ResourceLocation("cfm:bath")), parts, transforms,
-                    EntityRayTracer.MatrixTransformation.createRotation(Axis.POSITIVE_Y, 90F));
+                    EntityRayTracer.MatrixTransformation.createRotation(Vector3fAxis.POSITIVE_Y, 90F));
         };
     }
 }

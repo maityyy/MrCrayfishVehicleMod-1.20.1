@@ -2,17 +2,17 @@ package com.mrcrayfish.vehicle.entity.vehicle;
 
 import com.mrcrayfish.vehicle.entity.MotorcycleEntity;
 import com.mrcrayfish.vehicle.init.ModSounds;
-import net.minecraft.entity.EntityType;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.world.World;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * Author: MrCrayfish
  */
 public class DirtBikeEntity extends MotorcycleEntity
 {
-    public DirtBikeEntity(EntityType<? extends DirtBikeEntity> type, World worldIn)
+    public DirtBikeEntity(EntityType<? extends DirtBikeEntity> type, Level worldIn)
     {
         super(type, worldIn);
         this.setMaxSpeed(18F);
@@ -46,9 +46,9 @@ public class DirtBikeEntity extends MotorcycleEntity
     }
 
     @Override
-    public Vector3d getEngineSmokePosition()
+    public Vec3 getEngineSmokePosition()
     {
-        return new Vector3d(-0.0625, 1.25, -1);
+        return new Vec3(-0.0625, 1.25, -1);
     }
 
     @Override

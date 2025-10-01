@@ -3,12 +3,12 @@ package com.mrcrayfish.vehicle.network.message;
 import com.mrcrayfish.vehicle.entity.PoweredVehicleEntity;
 import com.mrcrayfish.vehicle.init.ModItems;
 import com.mrcrayfish.vehicle.util.CommonUtils;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.inventory.EquipmentSlotType;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.network.NetworkEvent.Context;
 
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -35,27 +35,27 @@ public class MessageInteractKey implements IMessage<MessageInteractKey>
     }
 
     @Override
-    public void encode(MessageInteractKey message, PacketBuffer buffer)
+    public void encode(MessageInteractKey message, FriendlyByteBuf buffer)
     {
         buffer.writeInt(message.entityId);
     }
 
     @Override
-    public MessageInteractKey decode(PacketBuffer buffer)
+    public MessageInteractKey decode(FriendlyByteBuf buffer)
     {
         return new MessageInteractKey(buffer.readInt());
     }
 
     @SuppressWarnings("ConstantConditions")
     @Override
-    public void handle(MessageInteractKey message, Supplier<NetworkEvent.Context> supplier)
+    public void handle(MessageInteractKey message, Supplier<Context> supplier)
     {
         supplier.get().enqueueWork(() ->
         {
-            ServerPlayerEntity player = supplier.get().getSender();
+            ServerPlayer player = supplier.get().getSender();
             if(player != null)
             {
-                Entity targetEntity = player.level.getEntity(message.entityId);
+                Entity targetEntity = player.level().getEntity(message.entityId);
                 if(targetEntity instanceof PoweredVehicleEntity)
                 {
                     PoweredVehicleEntity poweredVehicle = (PoweredVehicleEntity) targetEntity;
@@ -84,7 +84,7 @@ public class MessageInteractKey implements IMessage<MessageInteractKey>
                                 if(poweredVehicle.getUUID().equals(keyUuid))
                                 {
                                     poweredVehicle.setKeyStack(stack.copy());
-                                    player.setItemSlot(EquipmentSlotType.MAINHAND, ItemStack.EMPTY);
+                                    player.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
                                 }
                                 else
                                 {

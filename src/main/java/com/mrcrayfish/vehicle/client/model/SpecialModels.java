@@ -2,13 +2,12 @@ package com.mrcrayfish.vehicle.client.model;
 
 import com.mrcrayfish.vehicle.Reference;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.model.IBakedModel;
-import net.minecraft.client.renderer.model.ModelResourceLocation;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.event.ModelRegistryEvent;
-import net.minecraftforge.client.model.ModelLoader;
+import net.minecraftforge.client.event.ModelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -66,8 +65,8 @@ public enum SpecialModels implements ISpecialModel
     SOFA_HELICOPTER_SKID("sofa_helicopter_skid"),
 
     /* Mod dependent models */
-    RED_SOFA(new ModelResourceLocation("cfm:red_sofa", "inventory"), false),
-    RAINBOW_SOFA(new ModelResourceLocation("cfm:rainbow_sofa", "inventory"), false);
+    RED_SOFA(new ModelResourceLocation(new ResourceLocation("cfm:red_sofa"), "inventory"), false),
+    RAINBOW_SOFA(new ModelResourceLocation(new ResourceLocation("cfm:rainbow_sofa"), "inventory"), false);
 
     // Add spray can lid
     /**
@@ -84,7 +83,7 @@ public enum SpecialModels implements ISpecialModel
      * Cached model
      */
     @OnlyIn(Dist.CLIENT)
-    private IBakedModel cachedModel;
+    private BakedModel cachedModel;
 
     /**
      * Sets the model's location
@@ -114,11 +113,11 @@ public enum SpecialModels implements ISpecialModel
      */
     @Override
     @OnlyIn(Dist.CLIENT)
-    public IBakedModel getModel()
+    public BakedModel getModel()
     {
         if(this.cachedModel == null)
         {
-            IBakedModel model = Minecraft.getInstance().getModelManager().getModel(this.modelLocation);
+            BakedModel model = Minecraft.getInstance().getModelManager().getModel(this.modelLocation);
             if(model == Minecraft.getInstance().getModelManager().getMissingModel())
             {
                 return model;
@@ -130,13 +129,13 @@ public enum SpecialModels implements ISpecialModel
 
     @SubscribeEvent
     @OnlyIn(Dist.CLIENT)
-    public static void register(ModelRegistryEvent event)
+    public static void register(ModelEvent.RegisterAdditional event)
     {
         for(SpecialModels model : values())
         {
             if(model.specialModel)
             {
-                ModelLoader.addSpecialModel(model.modelLocation);
+                event.register(model.modelLocation);
             }
         }
     }

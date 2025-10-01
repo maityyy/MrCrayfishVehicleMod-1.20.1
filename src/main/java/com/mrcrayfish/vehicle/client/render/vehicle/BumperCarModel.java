@@ -1,20 +1,20 @@
 package com.mrcrayfish.vehicle.client.render.vehicle;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
 import com.mrcrayfish.vehicle.client.EntityRayTracer;
 import com.mrcrayfish.vehicle.client.model.SpecialModels;
 import com.mrcrayfish.vehicle.client.render.AbstractLandVehicleRenderer;
-import com.mrcrayfish.vehicle.client.render.Axis;
 import com.mrcrayfish.vehicle.entity.VehicleProperties;
 import com.mrcrayfish.vehicle.entity.vehicle.BumperCarEntity;
 import com.mrcrayfish.vehicle.init.ModEntities;
 import com.mrcrayfish.vehicle.util.RenderUtil;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
-import net.minecraft.client.renderer.entity.model.PlayerModel;
-import net.minecraft.client.renderer.model.ItemCameraTransforms;
+import com.mrcrayfish.vehicle.util.Vector3fAxis;
+import net.minecraft.client.model.PlayerModel;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.math.vector.Vector3f;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemDisplayContext;
 
 import javax.annotation.Nullable;
 
@@ -29,7 +29,7 @@ public class BumperCarModel extends AbstractLandVehicleRenderer<BumperCarEntity>
     }
 
     @Override
-    protected void render(@Nullable BumperCarEntity vehicle, MatrixStack matrixStack, IRenderTypeBuffer renderTypeBuffer, float partialTicks, int light)
+    protected void render(@Nullable BumperCarEntity vehicle, PoseStack matrixStack, MultiBufferSource renderTypeBuffer, float partialTicks, int light)
     {
         //Render body
         this.renderDamagedPart(vehicle, SpecialModels.BUMPER_CAR_BODY.getModel(), matrixStack, renderTypeBuffer, light);
@@ -37,7 +37,7 @@ public class BumperCarModel extends AbstractLandVehicleRenderer<BumperCarEntity>
         //Render the handles bars
         matrixStack.pushPose();
         matrixStack.translate(0, 0.2, 0);
-        matrixStack.mulPose(Vector3f.XP.rotationDegrees(-45F));
+        matrixStack.mulPose(Axis.XP.rotationDegrees(-45F));
         matrixStack.translate(0, -0.02, 0);
         matrixStack.scale(0.9F, 0.9F, 0.9F);
 
@@ -46,16 +46,16 @@ public class BumperCarModel extends AbstractLandVehicleRenderer<BumperCarEntity>
             float wheelAngle = vehicle.prevWheelAngle + (vehicle.wheelAngle - vehicle.prevWheelAngle) * partialTicks;
             float wheelAngleNormal = wheelAngle / 45F;
             float turnRotation = wheelAngleNormal * 25F;
-            matrixStack.mulPose(Vector3f.YP.rotationDegrees(turnRotation));
+            matrixStack.mulPose(Axis.YP.rotationDegrees(turnRotation));
         }
 
-        RenderUtil.renderColoredModel(SpecialModels.GO_KART_STEERING_WHEEL.getModel(), ItemCameraTransforms.TransformType.NONE, false, matrixStack, renderTypeBuffer, this.colorProperty.get(vehicle), light, OverlayTexture.NO_OVERLAY);
+        RenderUtil.renderColoredModel(SpecialModels.GO_KART_STEERING_WHEEL.getModel(), ItemDisplayContext.NONE, false, matrixStack, renderTypeBuffer, this.colorProperty.get(vehicle), light, OverlayTexture.NO_OVERLAY);
 
         matrixStack.popPose();
     }
 
     @Override
-    public void applyPlayerModel(BumperCarEntity entity, PlayerEntity player, PlayerModel model, float partialTicks)
+    public void applyPlayerModel(BumperCarEntity entity, Player player, PlayerModel model, float partialTicks)
     {
         model.rightLeg.xRot = (float) Math.toRadians(-85F);
         model.rightLeg.yRot = (float) Math.toRadians(10F);
@@ -81,7 +81,7 @@ public class BumperCarModel extends AbstractLandVehicleRenderer<BumperCarEntity>
             EntityRayTracer.createTransformListForPart(SpecialModels.BUMPER_CAR_BODY, parts, transforms);
             EntityRayTracer.createTransformListForPart(SpecialModels.GO_KART_STEERING_WHEEL, parts, transforms,
                     EntityRayTracer.MatrixTransformation.createTranslation(0.0F, 0.2F, 0.0F),
-                    EntityRayTracer.MatrixTransformation.createRotation(Axis.POSITIVE_X, -45F),
+                    EntityRayTracer.MatrixTransformation.createRotation(Vector3fAxis.POSITIVE_X, -45F),
                     EntityRayTracer.MatrixTransformation.createTranslation(0.0F, -0.02F, 0.0F),
                     EntityRayTracer.MatrixTransformation.createScale(0.9F));
             EntityRayTracer.createFuelPartTransforms(ModEntities.BUMPER_CAR.get(), SpecialModels.FUEL_DOOR_CLOSED, parts, transforms);

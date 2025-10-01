@@ -46,20 +46,15 @@ minecraft {
             }
         }
 
-        client {
-            property 'mixin.env.remapRefMap', 'true'
-            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
-        }
-        server {
-            property 'mixin.env.remapRefMap', 'true'
-            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
-        }
         data {
-            property 'mixin.env.remapRefMap', 'true'
-            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
-            args '--mod', 'vehicle', '--all', '--output', file('src/generated/resources/')
+            args "--mod", "vehicle", "--all", "--output", file("src/generated/resources/")
         }
     }
+}
+
+mixin {
+    add sourceSets.main, "vehicle.refmap.json"
+    config "vehicle.mixins.json"
 }
 
 repositories {

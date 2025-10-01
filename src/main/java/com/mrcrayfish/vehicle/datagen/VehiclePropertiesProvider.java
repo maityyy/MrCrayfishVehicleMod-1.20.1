@@ -4,42 +4,42 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.mrcrayfish.vehicle.entity.VehicleEntity;
 import com.mrcrayfish.vehicle.entity.VehicleProperties;
-import net.minecraft.data.DataGenerator;
-import net.minecraft.data.DirectoryCache;
-import net.minecraft.data.IDataProvider;
-import net.minecraft.entity.EntityType;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.data.CachedOutput;
+import net.minecraft.data.DataProvider;
+import net.minecraft.data.PackOutput;
+import net.minecraft.data.PackOutput.Target;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EntityType;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nonnull;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Author: MrCrayfish
  */
-public abstract class VehiclePropertiesProvider implements IDataProvider
+public abstract class VehiclePropertiesProvider implements DataProvider
 {
     private static final Logger LOGGER = LogManager.getLogger();
     private static final Gson GSON = new GsonBuilder().registerTypeAdapter(VehicleProperties.class, new VehicleProperties.Serializer()).create();
 
-    private final DataGenerator generator;
+    private final PackOutput.PathProvider pathProvider;
     private final Map<ResourceLocation, VehicleProperties> vehiclePropertiesMap = new HashMap<>();
 
-    protected VehiclePropertiesProvider(DataGenerator generator)
+    protected VehiclePropertiesProvider(PackOutput generator)
     {
-        this.generator = generator;
+        this.pathProvider = generator.createPathProvider(Target.RESOURCE_PACK, "vehicles");
     }
 
     protected final void add(EntityType<? extends VehicleEntity> type, VehicleProperties.Builder builder)
     {
-        this.add(type.getRegistryName(), builder);
+        this.add(ForgeRegistries.ENTITY_TYPES.getKey(type), builder); // FIXME
     }
 
     protected final void add(ResourceLocation id, VehicleProperties.Builder builder)
@@ -50,34 +50,16 @@ public abstract class VehiclePropertiesProvider implements IDataProvider
     protected abstract void registerProperties();
 
     @Override
-    public void run(DirectoryCache cache) throws IOException
+    public CompletableFuture<?> run(CachedOutput cache)
     {
         this.vehiclePropertiesMap.clear();
         this.registerProperties();
-        this.vehiclePropertiesMap.forEach((id, properties) ->
-        {
-            String modId = id.getNamespace();
-            String vehicleId = id.getPath();
-            Path path = this.generator.getOutputFolder().resolve("assets/" + modId + "/vehicles/" + vehicleId + ".json");
-            try
-            {
-                String rawJson = GSON.toJson(properties);
-                String hash = SHA1.hashUnencodedChars(rawJson).toString();
-                if(!Objects.equals(cache.getHash(path), hash) || !Files.exists(path))
-                {
-                    Files.createDirectories(path.getParent());
-                    try(BufferedWriter writer = Files.newBufferedWriter(path))
-                    {
-                        writer.write(rawJson);
-                    }
-                }
-                cache.putNew(path, hash);
-            }
-            catch(IOException e)
-            {
-                LOGGER.error("Couldn't save vehicle properties to {}", path, e);
-            }
-        });
+
+        List<CompletableFuture<?>> futures = new ArrayList<>();
+
+        this.vehiclePropertiesMap.forEach((id, properties) -> futures.add(DataProvider.saveStable(cache, GSON.toJsonTree(properties), pathProvider.json(id))));
+
+        return CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new));
     }
 
     @Nonnull

@@ -17,18 +17,18 @@ description="A mod that adds vehicles into Minecraft!"
 [[dependencies.vehicle]]
     modId="forge"
     mandatory=true
-    versionRange="[36.2.0,)"
+    versionRange="[47,)"
     ordering="NONE"
     side="BOTH"
 [[dependencies.vehicle]]
     modId="minecraft"
     mandatory=true
-    versionRange="[1.16.5,1.17)"
+    versionRange="[1.20.1,)"
     ordering="NONE"
     side="BOTH"
 [[dependencies.vehicle]]
-    modId="obfuscate"
+    modId="framework"
     mandatory=true
-    versionRange="[0.4.0,)"
+    versionRange="[0.7.15,)"
     ordering="AFTER"
     side="BOTH"

@@ -13,17 +13,17 @@ import com.mrcrayfish.vehicle.inventory.container.WorkstationContainer;
 import com.mrcrayfish.vehicle.item.EngineItem;
 import com.mrcrayfish.vehicle.item.WheelItem;
 import com.mrcrayfish.vehicle.tileentity.WorkstationTileEntity;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.item.ItemEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.item.DyeItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.DyeItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraftforge.network.NetworkEvent.Context;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.function.Supplier;
@@ -45,28 +45,28 @@ public class MessageCraftVehicle implements IMessage<MessageCraftVehicle>
     }
 
     @Override
-    public void encode(MessageCraftVehicle message, PacketBuffer buffer)
+    public void encode(MessageCraftVehicle message, FriendlyByteBuf buffer)
     {
         buffer.writeUtf(message.vehicleId, 128);
         buffer.writeBlockPos(message.pos);
     }
 
     @Override
-    public MessageCraftVehicle decode(PacketBuffer buffer)
+    public MessageCraftVehicle decode(FriendlyByteBuf buffer)
     {
         return new MessageCraftVehicle(buffer.readUtf(128), buffer.readBlockPos());
     }
 
     @Override
-    public void handle(MessageCraftVehicle message, Supplier<NetworkEvent.Context> supplier)
+    public void handle(MessageCraftVehicle message, Supplier<Context> supplier)
     {
         supplier.get().enqueueWork(() ->
         {
-            ServerPlayerEntity player = supplier.get().getSender();
+            ServerPlayer player = supplier.get().getSender();
             if(player == null)
                 return;
 
-            World world = player.level;
+            Level world = player.level();
             if(!(player.containerMenu instanceof WorkstationContainer))
                 return;
 
@@ -78,7 +78,7 @@ public class MessageCraftVehicle implements IMessage<MessageCraftVehicle>
             if(Config.SERVER.disabledVehicles.get().contains(entityId.toString()))
                 return;
 
-            EntityType<?> entityType = ForgeRegistries.ENTITIES.getValue(entityId);
+            EntityType<?> entityType = ForgeRegistries.ENTITY_TYPES.getValue(entityId);
             if(entityType == null)
                 return;
 
@@ -131,7 +131,7 @@ public class MessageCraftVehicle implements IMessage<MessageCraftVehicle>
                 if(workstationDyeStack.getItem() instanceof DyeItem)
                 {
                     DyeItem dyeItem = (DyeItem) workstationDyeStack.getItem();
-                    color = dyeItem.getDyeColor().getColorValue();
+                    color = dyeItem.getDyeColor().getTextColor();
                     workstationTileEntity.getInventory().set(0, ItemStack.EMPTY);
                 }
             }

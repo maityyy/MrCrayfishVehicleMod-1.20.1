@@ -1,16 +1,16 @@
 package com.mrcrayfish.vehicle.network.message;
 
 import com.mrcrayfish.vehicle.common.inventory.IAttachableChest;
-import net.minecraft.block.SoundType;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.world.World;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraftforge.common.ForgeMod;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraftforge.network.NetworkEvent.Context;
 
 import java.util.function.Supplier;
 
@@ -29,40 +29,40 @@ public class MessageAttachChest implements IMessage<MessageAttachChest>
     }
 
     @Override
-    public void encode(MessageAttachChest message, PacketBuffer buffer)
+    public void encode(MessageAttachChest message, FriendlyByteBuf buffer)
     {
         buffer.writeInt(message.entityId);
     }
 
     @Override
-    public MessageAttachChest decode(PacketBuffer buffer)
+    public MessageAttachChest decode(FriendlyByteBuf buffer)
     {
         return new MessageAttachChest(buffer.readInt());
     }
 
     @Override
-    public void handle(MessageAttachChest message, Supplier<NetworkEvent.Context> supplier)
+    public void handle(MessageAttachChest message, Supplier<Context> supplier)
     {
         supplier.get().enqueueWork(() ->
         {
-            ServerPlayerEntity player = supplier.get().getSender();
+            ServerPlayer player = supplier.get().getSender();
             if(player != null)
             {
-                World world = player.level;
+                Level world = player.level();
                 Entity targetEntity = world.getEntity(message.entityId);
                 if(targetEntity instanceof IAttachableChest)
                 {
-                    float reachDistance = (float) player.getAttribute(ForgeMod.REACH_DISTANCE.get()).getValue();
+                    float reachDistance = (float) player.getAttribute(ForgeMod.ENTITY_REACH.get()).getValue(); // FIXME
                     if(player.distanceTo(targetEntity) < reachDistance)
                     {
                         IAttachableChest attachableChest = (IAttachableChest) targetEntity;
                         if(!attachableChest.hasChest())
                         {
-                            ItemStack stack = player.inventory.getSelected();
+                            ItemStack stack = player.getInventory().getSelected();
                             if(!stack.isEmpty() && stack.getItem() == Items.CHEST)
                             {
                                 attachableChest.attachChest(stack);
-                                world.playSound(null, targetEntity.getX(), targetEntity.getY(), targetEntity.getZ(), SoundType.WOOD.getPlaceSound(), SoundCategory.BLOCKS, 1.0F, 1.0F);
+                                world.playSound(null, targetEntity.getX(), targetEntity.getY(), targetEntity.getZ(), SoundType.WOOD.getPlaceSound(), SoundSource.BLOCKS, 1.0F, 1.0F);
                             }
                         }
                     }

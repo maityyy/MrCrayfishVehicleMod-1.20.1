@@ -1,15 +1,15 @@
 package com.mrcrayfish.vehicle.client.render;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
 import com.mrcrayfish.vehicle.client.EntityRayTracer;
 import com.mrcrayfish.vehicle.entity.EntityJack;
 import com.mrcrayfish.vehicle.entity.VehicleEntity;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderer;
-import net.minecraft.client.renderer.entity.EntityRendererManager;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.vector.Vector3f;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 
 /**
  * Author: MrCrayfish
@@ -18,7 +18,7 @@ public class EntityVehicleRenderer<T extends VehicleEntity & EntityRayTracer.IEn
 {
     private final AbstractVehicleRenderer<T> wrapper;
 
-    public EntityVehicleRenderer(EntityRendererManager renderManager, AbstractVehicleRenderer<T> wrapper)
+    public EntityVehicleRenderer(EntityRendererProvider.Context renderManager, AbstractVehicleRenderer<T> wrapper)
     {
         super(renderManager);
         this.wrapper = wrapper;
@@ -31,7 +31,7 @@ public class EntityVehicleRenderer<T extends VehicleEntity & EntityRayTracer.IEn
     }
 
     @Override
-    public void render(T entity, float entityYaw, float partialTicks, MatrixStack matrixStack, IRenderTypeBuffer renderTypeBuffer, int light)
+    public void render(T entity, float entityYaw, float partialTicks, PoseStack matrixStack, MultiBufferSource renderTypeBuffer, int light)
     {
         if(!entity.isAlive())
             return;
@@ -41,7 +41,7 @@ public class EntityVehicleRenderer<T extends VehicleEntity & EntityRayTracer.IEn
 
         matrixStack.pushPose();
         wrapper.applyPreRotations(entity, matrixStack, partialTicks);
-        matrixStack.mulPose(Vector3f.YP.rotationDegrees(-entityYaw));
+        matrixStack.mulPose(Axis.YP.rotationDegrees(-entityYaw));
         this.setupBreakAnimation(entity, matrixStack, partialTicks);
         wrapper.setupTransformsAndRender(entity, matrixStack, renderTypeBuffer, partialTicks, light);
         matrixStack.popPose();
@@ -49,12 +49,12 @@ public class EntityVehicleRenderer<T extends VehicleEntity & EntityRayTracer.IEn
         EntityRayTracer.instance().renderRayTraceElements(entity, matrixStack, renderTypeBuffer, entityYaw);
     }
 
-    private void setupBreakAnimation(VehicleEntity vehicle, MatrixStack matrixStack, float partialTicks)
+    private void setupBreakAnimation(VehicleEntity vehicle, PoseStack matrixStack, float partialTicks)
     {
         float timeSinceHit = (float) vehicle.getTimeSinceHit() - partialTicks;
         if(timeSinceHit > 0.0F)
         {
-            matrixStack.mulPose(Vector3f.ZP.rotationDegrees(MathHelper.sin(timeSinceHit) * timeSinceHit));
+            matrixStack.mulPose(Axis.ZP.rotationDegrees(Mth.sin(timeSinceHit) * timeSinceHit));
         }
     }
 }

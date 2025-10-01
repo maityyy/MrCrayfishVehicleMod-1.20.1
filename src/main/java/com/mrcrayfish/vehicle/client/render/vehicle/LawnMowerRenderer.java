@@ -1,16 +1,17 @@
 package com.mrcrayfish.vehicle.client.render.vehicle;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
 import com.mrcrayfish.vehicle.client.EntityRayTracer;
 import com.mrcrayfish.vehicle.client.model.SpecialModels;
 import com.mrcrayfish.vehicle.client.render.AbstractLandVehicleRenderer;
-import com.mrcrayfish.vehicle.client.render.Axis;
 import com.mrcrayfish.vehicle.entity.VehicleProperties;
 import com.mrcrayfish.vehicle.entity.vehicle.LawnMowerEntity;
 import com.mrcrayfish.vehicle.init.ModEntities;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
-import net.minecraft.client.renderer.entity.model.PlayerModel;
-import net.minecraft.entity.player.PlayerEntity;
+import com.mrcrayfish.vehicle.util.Vector3fAxis;
+import net.minecraft.client.model.PlayerModel;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.world.entity.player.Player;
 
 import javax.annotation.Nullable;
 
@@ -25,7 +26,7 @@ public class LawnMowerRenderer extends AbstractLandVehicleRenderer<LawnMowerEnti
     }
 
     @Override
-    protected void render(@Nullable LawnMowerEntity vehicle, MatrixStack matrixStack, IRenderTypeBuffer renderTypeBuffer, float partialTicks, int light)
+    protected void render(@Nullable LawnMowerEntity vehicle, PoseStack matrixStack, MultiBufferSource renderTypeBuffer, float partialTicks, int light)
     {
         //Body
         this.renderDamagedPart(vehicle, SpecialModels.LAWN_MOWER_BODY.getModel(), matrixStack, renderTypeBuffer, light);
@@ -34,7 +35,7 @@ public class LawnMowerRenderer extends AbstractLandVehicleRenderer<LawnMowerEnti
         matrixStack.pushPose();
 
         matrixStack.translate(0, 0.4, -0.15);
-        matrixStack.mulPose(Axis.POSITIVE_X.rotationDegrees(-45F));
+        matrixStack.mulPose(Axis.XP.rotationDegrees(-45F));
         matrixStack.scale(0.9F, 0.9F, 0.9F);
 
         if(vehicle != null)
@@ -42,7 +43,7 @@ public class LawnMowerRenderer extends AbstractLandVehicleRenderer<LawnMowerEnti
             float wheelAngle = vehicle.prevWheelAngle + (vehicle.wheelAngle - vehicle.prevWheelAngle) * partialTicks;
             float wheelAngleNormal = wheelAngle / 45F;
             float turnRotation = wheelAngleNormal * 25F;
-            matrixStack.mulPose(Axis.POSITIVE_Y.rotationDegrees(turnRotation));
+            matrixStack.mulPose(Axis.YP.rotationDegrees(turnRotation));
         }
 
         this.renderDamagedPart(vehicle, SpecialModels.GO_KART_STEERING_WHEEL.getModel(), matrixStack, renderTypeBuffer, light);
@@ -51,7 +52,7 @@ public class LawnMowerRenderer extends AbstractLandVehicleRenderer<LawnMowerEnti
     }
 
     @Override
-    public void applyPlayerModel(LawnMowerEntity entity, PlayerEntity player, PlayerModel model, float partialTicks)
+    public void applyPlayerModel(LawnMowerEntity entity, Player player, PlayerModel model, float partialTicks)
     {
         float wheelAngle = entity.prevRenderWheelAngle + (entity.renderWheelAngle - entity.prevRenderWheelAngle) * partialTicks;
         float wheelAngleNormal = wheelAngle / 45F;
@@ -75,10 +76,10 @@ public class LawnMowerRenderer extends AbstractLandVehicleRenderer<LawnMowerEnti
             EntityRayTracer.createTransformListForPart(SpecialModels.LAWN_MOWER_BODY, parts, transforms);
             EntityRayTracer.createTransformListForPart(SpecialModels.GO_KART_STEERING_WHEEL, parts, transforms,
                     EntityRayTracer.MatrixTransformation.createTranslation(0.0F, 0.4F, -0.15F),
-                    EntityRayTracer.MatrixTransformation.createRotation(Axis.POSITIVE_X, -45F),
+                    EntityRayTracer.MatrixTransformation.createRotation(Vector3fAxis.POSITIVE_X, -45F),
                     EntityRayTracer.MatrixTransformation.createScale(0.9F));
             EntityRayTracer.createTransformListForPart(SpecialModels.TOW_BAR, parts,
-                    EntityRayTracer.MatrixTransformation.createRotation(Axis.POSITIVE_Y, 180F),
+                    EntityRayTracer.MatrixTransformation.createRotation(Vector3fAxis.POSITIVE_Y, 180F),
                     EntityRayTracer.MatrixTransformation.createTranslation(0.0F, 0.5F, 0.6F));
             EntityRayTracer.createFuelPartTransforms(ModEntities.LAWN_MOWER.get(), SpecialModels.FUEL_DOOR_CLOSED, parts, transforms);
         };

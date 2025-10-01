@@ -1,29 +1,27 @@
 package com.mrcrayfish.vehicle.util;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.IVertexBuilder;
+import com.mojang.blaze3d.vertex.*;
+import com.mojang.blaze3d.vertex.VertexFormat.Mode;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.texture.AtlasTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.fluid.Fluid;
-import net.minecraft.util.Direction;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Matrix4f;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.material.Fluid;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.ForgeHooksClient;
+import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.templates.FluidTank;
-import org.lwjgl.opengl.GL11;
+import net.minecraftforge.registries.ForgeRegistries;
+import org.joml.Matrix4f;
 
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -46,7 +44,7 @@ public class FluidUtils
     @OnlyIn(Dist.CLIENT)
     public static int getAverageFluidColor(Fluid fluid)
     {
-        Integer cachedColor = CACHE_FLUID_COLOR.get(fluid.getRegistryName());
+        Integer cachedColor = CACHE_FLUID_COLOR.get(ForgeRegistries.FLUIDS.getKey(fluid));
         if(cachedColor != null)
         {
             return cachedColor;
@@ -54,17 +52,17 @@ public class FluidUtils
         else
         {
             int fluidColor = -1;
-            TextureAtlasSprite sprite = Minecraft.getInstance().getTextureAtlas(AtlasTexture.LOCATION_BLOCKS).apply(fluid.getFluid().getAttributes().getStillTexture());
+            TextureAtlasSprite sprite = Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(IClientFluidTypeExtensions.of(fluid).getStillTexture());
             if(sprite != null)
             {
                 long totalRed = 0;
                 long totalGreen = 0;
                 long totalBlue = 0;
-                int pixelCount = sprite.getWidth() * sprite.getHeight();
+                int pixelCount = sprite.contents().width() * sprite.contents().height();
                 int red, green, blue;
-                for(int i = 0; i < sprite.getHeight(); i++)
+                for(int i = 0; i < sprite.contents().height(); i++)
                 {
-                    for(int j = 0; j < sprite.getWidth(); j++)
+                    for(int j = 0; j < sprite.contents().width(); j++)
                     {
                         int color = sprite.getPixelRGBA(0, j, i);
                         red = color & 255;
@@ -77,7 +75,7 @@ public class FluidUtils
                 }
                 fluidColor = (((int) Math.sqrt(totalRed / pixelCount) & 255) << 16) | (((int) Math.sqrt(totalGreen / pixelCount) & 255) << 8) | (((int) Math.sqrt(totalBlue / pixelCount) & 255));
             }
-            CACHE_FLUID_COLOR.put(fluid.getRegistryName(), fluidColor);
+            CACHE_FLUID_COLOR.put(ForgeRegistries.FLUIDS.getKey(fluid), fluidColor);
             return fluidColor;
         }
     }
@@ -103,7 +101,7 @@ public class FluidUtils
         if(fluid == null || fluid.isEmpty())
             return;
 
-        TextureAtlasSprite sprite = Minecraft.getInstance().getTextureAtlas(AtlasTexture.LOCATION_BLOCKS).apply(fluid.getFluid().getAttributes().getStillTexture());
+        TextureAtlasSprite sprite = Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(IClientFluidTypeExtensions.of(fluid.getFluid()).getStillTexture());
         if(sprite != null)
         {
             float minU = sprite.getU0();
@@ -113,7 +111,7 @@ public class FluidUtils
             float deltaV = maxV - minV;
             double tankLevel = percent * height;
 
-            Minecraft.getInstance().getTextureManager().bind(AtlasTexture.LOCATION_BLOCKS);
+            RenderSystem.setShaderTexture(0, InventoryMenu.BLOCK_ATLAS);
 
             RenderSystem.enableBlend();
             int count = 1 + ((int) Math.ceil(tankLevel)) / 16;
@@ -130,9 +128,9 @@ public class FluidUtils
     @OnlyIn(Dist.CLIENT)
     private static void drawQuad(double x, double y, double width, double height, float minU, float minV, float maxU, float maxV)
     {
-        Tessellator tessellator = Tessellator.getInstance();
+        Tesselator tessellator = Tesselator.getInstance();
         BufferBuilder buffer = tessellator.getBuilder();
-        buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
+        buffer.begin(Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
         buffer.vertex(x, y + height, 0).uv(minU, maxV).endVertex();
         buffer.vertex(x + width, y + height, 0).uv(maxU, maxV).endVertex();
         buffer.vertex(x + width, y, 0).uv(maxU, minV).endVertex();
@@ -141,13 +139,13 @@ public class FluidUtils
     }
 
     @OnlyIn(Dist.CLIENT)
-    public static void drawFluidInWorld(FluidTank tank, World world, BlockPos pos, MatrixStack matrixStack, IRenderTypeBuffer renderTypeBuffer, float x, float y, float z, float width, float height, float depth, int light, FluidSides sides)
+    public static void drawFluidInLevel(FluidTank tank, Level world, BlockPos pos, PoseStack matrixStack, MultiBufferSource renderTypeBuffer, float x, float y, float z, float width, float height, float depth, int light, FluidSides sides)
     {
         if(tank.isEmpty())
             return;
 
         TextureAtlasSprite sprite = ForgeHooksClient.getFluidSprites(world, pos, tank.getFluid().getFluid().defaultFluidState())[0];
-        int waterColor = tank.getFluid().getFluid().getAttributes().getColor(world, pos);
+        int waterColor = IClientFluidTypeExtensions.of(tank.getFluid().getFluid()).getTintColor(world.getFluidState(pos), world, pos);
         float red = (float) (waterColor >> 16 & 255) / 255.0F;
         float green = (float) (waterColor >> 8 & 255) / 255.0F;
         float blue = (float) (waterColor & 255) / 255.0F;
@@ -157,7 +155,7 @@ public class FluidUtils
         float minV = sprite.getV0();
         float maxV = Math.min(minV + (sprite.getV1() - minV) * height, sprite.getV1());
 
-        IVertexBuilder buffer = renderTypeBuffer.getBuffer(RenderType.translucent());
+        VertexConsumer buffer = renderTypeBuffer.getBuffer(RenderType.translucent());
         Matrix4f matrix = matrixStack.last().pose();
 
         //left side

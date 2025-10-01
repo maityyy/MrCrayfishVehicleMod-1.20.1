@@ -1,12 +1,12 @@
 package com.mrcrayfish.vehicle.client.render;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
 import com.mrcrayfish.vehicle.client.EntityRayTracer;
 import com.mrcrayfish.vehicle.common.entity.PartPosition;
 import com.mrcrayfish.vehicle.entity.HelicopterEntity;
 import com.mrcrayfish.vehicle.entity.VehicleProperties;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
-import net.minecraft.util.math.vector.Vector3f;
+import net.minecraft.client.renderer.MultiBufferSource;
 
 /**
  * Author: MrCrayfish
@@ -19,15 +19,15 @@ public abstract class AbstractHelicopterRenderer<T extends HelicopterEntity & En
     }
 
     @Override
-    public void setupTransformsAndRender(T vehicle, MatrixStack matrixStack, IRenderTypeBuffer renderTypeBuffer, float partialTicks, int light)
+    public void setupTransformsAndRender(T vehicle, PoseStack matrixStack, MultiBufferSource renderTypeBuffer, float partialTicks, int light)
     {
         matrixStack.pushPose();
 
         VehicleProperties properties = this.vehiclePropertiesProperty.get(vehicle);
         PartPosition bodyPosition = properties.getBodyPosition();
-        matrixStack.mulPose(Vector3f.XP.rotationDegrees((float) bodyPosition.getRotX()));
-        matrixStack.mulPose(Vector3f.YP.rotationDegrees((float) bodyPosition.getRotY()));
-        matrixStack.mulPose(Vector3f.ZP.rotationDegrees((float) bodyPosition.getRotZ()));
+        matrixStack.mulPose(Axis.XP.rotationDegrees((float) bodyPosition.getRotX()));
+        matrixStack.mulPose(Axis.YP.rotationDegrees((float) bodyPosition.getRotY()));
+        matrixStack.mulPose(Axis.ZP.rotationDegrees((float) bodyPosition.getRotZ()));
 
         //Translate the body
         matrixStack.translate(bodyPosition.getX(), bodyPosition.getY(), bodyPosition.getZ());
@@ -53,9 +53,9 @@ public abstract class AbstractHelicopterRenderer<T extends HelicopterEntity & En
     }
 
     @Override
-    public void applyPreRotations(T entity, MatrixStack matrixStack, float partialTicks)
+    public void applyPreRotations(T entity, PoseStack matrixStack, float partialTicks)
     {
-        matrixStack.mulPose(Vector3f.ZP.rotationDegrees(entity.prevBodyRotationX + (entity.bodyRotationX - entity.prevBodyRotationX) * partialTicks));
-        matrixStack.mulPose(Vector3f.XP.rotationDegrees(entity.prevBodyRotationZ + (entity.bodyRotationZ - entity.prevBodyRotationZ) * partialTicks));
+        matrixStack.mulPose(Axis.ZP.rotationDegrees(entity.prevBodyRotationX + (entity.bodyRotationX - entity.prevBodyRotationX) * partialTicks));
+        matrixStack.mulPose(Axis.XP.rotationDegrees(entity.prevBodyRotationZ + (entity.bodyRotationZ - entity.prevBodyRotationZ) * partialTicks));
     }
 }

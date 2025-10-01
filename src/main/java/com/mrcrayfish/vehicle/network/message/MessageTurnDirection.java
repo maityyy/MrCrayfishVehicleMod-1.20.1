@@ -1,10 +1,10 @@
 package com.mrcrayfish.vehicle.network.message;
 
 import com.mrcrayfish.vehicle.entity.PoweredVehicleEntity;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraftforge.network.NetworkEvent.Context;
 
 import java.util.function.Supplier;
 
@@ -20,23 +20,23 @@ public class MessageTurnDirection implements IMessage<MessageTurnDirection>
 	}
 
 	@Override
-	public void encode(MessageTurnDirection message, PacketBuffer buffer)
+	public void encode(MessageTurnDirection message, FriendlyByteBuf buffer)
 	{
 		buffer.writeEnum(message.direction);
 	}
 
 	@Override
-	public MessageTurnDirection decode(PacketBuffer buffer)
+	public MessageTurnDirection decode(FriendlyByteBuf buffer)
 	{
 		return new MessageTurnDirection(buffer.readEnum(PoweredVehicleEntity.TurnDirection.class));
 	}
 
 	@Override
-	public void handle(MessageTurnDirection message, Supplier<NetworkEvent.Context> supplier)
+	public void handle(MessageTurnDirection message, Supplier<Context> supplier)
 	{
 		supplier.get().enqueueWork(() ->
 		{
-			ServerPlayerEntity player = supplier.get().getSender();
+			ServerPlayer player = supplier.get().getSender();
 			if(player != null)
 			{
 				Entity riding = player.getVehicle();

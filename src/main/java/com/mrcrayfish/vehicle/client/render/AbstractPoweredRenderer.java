@@ -1,16 +1,16 @@
 package com.mrcrayfish.vehicle.client.render;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mrcrayfish.vehicle.client.EntityRayTracer;
 import com.mrcrayfish.vehicle.client.RayTraceFunction;
 import com.mrcrayfish.vehicle.entity.PoweredVehicleEntity;
 import com.mrcrayfish.vehicle.entity.VehicleProperties;
 import com.mrcrayfish.vehicle.util.RenderUtil;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
-import net.minecraft.client.renderer.model.IBakedModel;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.HitResult;
 
 import javax.annotation.Nullable;
 
@@ -56,7 +56,7 @@ public abstract class AbstractPoweredRenderer<T extends PoweredVehicleEntity & E
         this.wheelStackProperty.setDefaultValue(wheel);
     }
 
-    protected void renderEngine(@Nullable T vehicle, MatrixStack matrixStack, IRenderTypeBuffer renderTypeBuffer, int light)
+    protected void renderEngine(@Nullable T vehicle, PoseStack matrixStack, MultiBufferSource renderTypeBuffer, int light)
     {
         if(this.renderEngineProperty.get(vehicle) && this.hasEngineProperty.get(vehicle))
         {
@@ -64,20 +64,20 @@ public abstract class AbstractPoweredRenderer<T extends PoweredVehicleEntity & E
             if(!engine.isEmpty())
             {
                 VehicleProperties properties = this.vehiclePropertiesProperty.get(vehicle);
-                IBakedModel engineModel = RenderUtil.getModel(this.engineStackProperty.get(vehicle));
+                BakedModel engineModel = RenderUtil.getModel(this.engineStackProperty.get(vehicle));
                 this.renderEngine(vehicle, properties.getEnginePosition(), engineModel, matrixStack, renderTypeBuffer, light);
             }
         }
     }
 
-    protected void renderFuelPort(@Nullable T vehicle, MatrixStack matrixStack, IRenderTypeBuffer renderTypeBuffer, int light)
+    protected void renderFuelPort(@Nullable T vehicle, PoseStack matrixStack, MultiBufferSource renderTypeBuffer, int light)
     {
         if(vehicle != null && vehicle.shouldRenderFuelPort() && vehicle.requiresFuel())
         {
             VehicleProperties properties = this.vehiclePropertiesProperty.get(vehicle);
             PoweredVehicleEntity.FuelPortType fuelPortType = vehicle.getFuelPortType();
             EntityRayTracer.RayTraceResultRotated result = EntityRayTracer.instance().getContinuousInteraction();
-            if(result != null && result.getType() == RayTraceResult.Type.ENTITY && result.getEntity() == vehicle && result.equalsContinuousInteraction(RayTraceFunction.FUNCTION_FUELING))
+            if(result != null && result.getType() == HitResult.Type.ENTITY && result.getEntity() == vehicle && result.equalsContinuousInteraction(RayTraceFunction.FUNCTION_FUELING))
             {
                 this.renderPart(properties.getFuelPortPosition(), fuelPortType.getOpenModel().getModel(), matrixStack, renderTypeBuffer, vehicle.getColor(), light, OverlayTexture.NO_OVERLAY);
                 if(this.shouldRenderFuelLid())
@@ -94,7 +94,7 @@ public abstract class AbstractPoweredRenderer<T extends PoweredVehicleEntity & E
         }
     }
 
-    protected void renderKeyPort(@Nullable T vehicle, MatrixStack matrixStack, IRenderTypeBuffer renderTypeBuffer, int light)
+    protected void renderKeyPort(@Nullable T vehicle, PoseStack matrixStack, MultiBufferSource renderTypeBuffer, int light)
     {
         if(vehicle != null && vehicle.isKeyNeeded())
         {

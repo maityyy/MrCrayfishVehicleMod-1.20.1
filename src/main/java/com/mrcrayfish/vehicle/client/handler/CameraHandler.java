@@ -2,12 +2,12 @@ package com.mrcrayfish.vehicle.client.handler;
 
 import com.mrcrayfish.vehicle.Config;
 import com.mrcrayfish.vehicle.entity.VehicleEntity;
+import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.settings.PointOfView;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraftforge.client.event.FOVUpdateEvent;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.client.event.InputEvent;
+import net.minecraftforge.client.event.ViewportEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityMountEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -19,7 +19,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
  */
 public class CameraHandler
 {
-    private PointOfView originalPointOfView = null;
+    private CameraType originalCameraType = null;
 
     @SubscribeEvent
     public void onEntityMount(EntityMountEvent event)
@@ -27,7 +27,7 @@ public class CameraHandler
         if(!Config.CLIENT.autoPerspective.get())
             return;
 
-        if(!event.getWorldObj().isClientSide())
+        if(!event.getLevel().isClientSide())
             return;
 
         if(!event.getEntityMounting().equals(Minecraft.getInstance().player))
@@ -39,23 +39,23 @@ public class CameraHandler
             if(!(entity instanceof VehicleEntity))
                 return;
 
-            this.originalPointOfView = Minecraft.getInstance().options.getCameraType();
-            Minecraft.getInstance().options.setCameraType(PointOfView.THIRD_PERSON_BACK);
+            this.originalCameraType = Minecraft.getInstance().options.getCameraType();
+            Minecraft.getInstance().options.setCameraType(CameraType.THIRD_PERSON_BACK);
         }
-        else if(this.originalPointOfView != null)
+        else if(this.originalCameraType != null)
         {
-            Minecraft.getInstance().options.setCameraType(this.originalPointOfView);
-            this.originalPointOfView = null;
+            Minecraft.getInstance().options.setCameraType(this.originalCameraType);
+            this.originalCameraType = null;
         }
     }
 
     @SubscribeEvent
-    public void onKeyInput(InputEvent.KeyInputEvent event)
+    public void onKeyInput(InputEvent.Key event)
     {
         if(!Config.CLIENT.autoPerspective.get())
             return;
 
-        PlayerEntity player = Minecraft.getInstance().player;
+        Player player = Minecraft.getInstance().player;
         if(player == null)
             return;
 
@@ -66,33 +66,33 @@ public class CameraHandler
         if(!Minecraft.getInstance().options.keyTogglePerspective.isDown())
             return;
 
-        this.originalPointOfView = null;
+        this.originalCameraType = null;
     }
 
     @SubscribeEvent
     public void onClientTick(TickEvent.ClientTickEvent event)
     {
-        PlayerEntity player = Minecraft.getInstance().player;
+        Player player = Minecraft.getInstance().player;
         if(event.phase != TickEvent.Phase.END || player == null)
             return;
 
         if(player.getVehicle() != null)
             return;
 
-        this.originalPointOfView = null;
+        this.originalCameraType = null;
     }
 
     @SubscribeEvent
-    public void onFovUpdate(FOVUpdateEvent event)
+    public void onFovUpdate(ViewportEvent.ComputeFov event)
     {
-        PlayerEntity player = Minecraft.getInstance().player;
+        Player player = Minecraft.getInstance().player;
         if(player == null)
             return;
 
         Entity ridingEntity = player.getVehicle();
         if(ridingEntity instanceof VehicleEntity)
         {
-            event.setNewfov(1.0F);
+            event.setFOV(1.0F);
         }
     }
 }

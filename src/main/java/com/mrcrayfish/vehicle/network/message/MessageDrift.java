@@ -1,10 +1,10 @@
 package com.mrcrayfish.vehicle.network.message;
 
 import com.mrcrayfish.vehicle.entity.LandVehicleEntity;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraftforge.network.NetworkEvent.Context;
 
 import java.util.function.Supplier;
 
@@ -20,23 +20,23 @@ public class MessageDrift implements IMessage<MessageDrift>
 	}
 
 	@Override
-	public void encode(MessageDrift message, PacketBuffer buffer)
+	public void encode(MessageDrift message, FriendlyByteBuf buffer)
 	{
 		buffer.writeBoolean(message.drifting);
 	}
 
 	@Override
-	public MessageDrift decode(PacketBuffer buffer)
+	public MessageDrift decode(FriendlyByteBuf buffer)
 	{
 		return new MessageDrift(buffer.readBoolean());
 	}
 
 	@Override
-	public void handle(MessageDrift message, Supplier<NetworkEvent.Context> supplier)
+	public void handle(MessageDrift message, Supplier<Context> supplier)
 	{
 		supplier.get().enqueueWork(() ->
 		{
-			ServerPlayerEntity player = supplier.get().getSender();
+			ServerPlayer player = supplier.get().getSender();
 			if(player != null)
 			{
 				Entity riding = player.getVehicle();

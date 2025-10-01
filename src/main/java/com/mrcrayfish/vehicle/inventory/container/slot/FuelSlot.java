@@ -1,17 +1,17 @@
 package com.mrcrayfish.vehicle.inventory.container.slot;
 
-import net.minecraft.inventory.IInventory;
-import net.minecraft.inventory.container.Slot;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.tileentity.AbstractFurnaceTileEntity;
+import net.minecraft.world.Container;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
 
 /**
  * Author: MrCrayfish
  */
 public class FuelSlot extends Slot
 {
-    public FuelSlot(IInventory inventory, int index, int x, int y)
+    public FuelSlot(Container inventory, int index, int x, int y)
     {
         super(inventory, index, x, y);
     }
@@ -19,7 +19,7 @@ public class FuelSlot extends Slot
     @Override
     public boolean mayPlace(ItemStack stack)
     {
-        return AbstractFurnaceTileEntity.isFuel(stack) || isBucket(stack);
+        return AbstractFurnaceBlockEntity.isFuel(stack) || isBucket(stack);
     }
 
     @Override

@@ -5,13 +5,13 @@ import com.mrcrayfish.vehicle.entity.EntityJack;
 import com.mrcrayfish.vehicle.entity.trailer.*;
 import com.mrcrayfish.vehicle.entity.vehicle.*;
 import com.mrcrayfish.vehicle.util.VehicleUtil;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityClassification;
-import net.minecraft.entity.EntityType;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.RegistryObject;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegistryObject;
 
 import java.util.function.BiFunction;
 
@@ -20,7 +20,7 @@ import java.util.function.BiFunction;
  */
 public class ModEntities
 {
-    public static final DeferredRegister<EntityType<?>> REGISTER = DeferredRegister.create(ForgeRegistries.ENTITIES, Reference.MOD_ID);
+    public static final DeferredRegister<EntityType<?>> REGISTER = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, Reference.MOD_ID);
 
     public static final RegistryObject<EntityType<ATVEntity>> ATV = VehicleUtil.createEntityType(REGISTER, "atv", ATVEntity::new, 1.5F, 1.0F);
     public static final RegistryObject<EntityType<DuneBuggyEntity>> DUNE_BUGGY = VehicleUtil.createEntityType(REGISTER, "dune_buggy", DuneBuggyEntity::new, 0.75F, 0.75F);
@@ -56,9 +56,9 @@ public class ModEntities
     /* Other */
     public static final RegistryObject<EntityType<EntityJack>> JACK = registerEntity("jack", EntityJack::new, 0.0F, 0.0F);
 
-    private static <T extends Entity> RegistryObject<EntityType<T>> registerEntity(String id, BiFunction<EntityType<T>, World, T> function, float width, float height)
+    private static <T extends Entity> RegistryObject<EntityType<T>> registerEntity(String id, BiFunction<EntityType<T>, Level, T> function, float width, float height)
     {
-        EntityType<T> type = EntityType.Builder.of(function::apply, EntityClassification.MISC).sized(width, height).setTrackingRange(256).setUpdateInterval(1).noSummon().fireImmune().setShouldReceiveVelocityUpdates(true).build(id);
+        EntityType<T> type = EntityType.Builder.of(function::apply, MobCategory.MISC).sized(width, height).setTrackingRange(256).setUpdateInterval(1).noSummon().fireImmune().setShouldReceiveVelocityUpdates(true).build(id);
         return ModEntities.REGISTER.register(id, () -> type);
     }
 }

@@ -1,7 +1,7 @@
 package com.mrcrayfish.vehicle.entity;
 
-import net.minecraft.entity.EntityType;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.level.Level;
 
 /**
  * Author: MrCrayfish
@@ -11,7 +11,7 @@ public abstract class MotorcycleEntity extends LandVehicleEntity
     public float prevLeanAngle;
     public float leanAngle;
 
-    public MotorcycleEntity(EntityType<?> entityType, World worldIn)
+    public MotorcycleEntity(EntityType<?> entityType, Level worldIn)
     {
         super(entityType, worldIn);
     }

@@ -2,10 +2,10 @@ package com.mrcrayfish.vehicle.entity.vehicle;
 
 import com.mrcrayfish.vehicle.entity.PlaneEntity;
 import com.mrcrayfish.vehicle.init.ModSounds;
-import net.minecraft.entity.EntityType;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.world.World;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 
 /**
  * Author: MrCrayfish
@@ -20,7 +20,7 @@ public class SportsPlaneEntity extends PlaneEntity
     public float propellerRotation;
     public float prevPropellerRotation;
 
-    public SportsPlaneEntity(EntityType<? extends SportsPlaneEntity> type, World worldIn)
+    public SportsPlaneEntity(EntityType<? extends SportsPlaneEntity> type, Level worldIn)
     {
         super(type, worldIn);
         this.setAccelerationSpeed(0.5F);
@@ -32,7 +32,7 @@ public class SportsPlaneEntity extends PlaneEntity
     }
 
     @Override
-    public AxisAlignedBB getBoundingBoxForCulling()
+    public AABB getBoundingBoxForCulling()
     {
         return this.getBoundingBox().inflate(1.5);
     }
@@ -43,7 +43,7 @@ public class SportsPlaneEntity extends PlaneEntity
         prevWheelRotation = wheelRotation;
         prevPropellerRotation = propellerRotation;
 
-        if(this.onGround)
+        if(this.onGround())
         {
             wheelSpeed = currentSpeed / 30F;
         }

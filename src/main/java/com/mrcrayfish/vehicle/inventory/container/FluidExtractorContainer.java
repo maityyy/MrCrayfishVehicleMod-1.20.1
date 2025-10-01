@@ -3,17 +3,17 @@ package com.mrcrayfish.vehicle.inventory.container;
 import com.mrcrayfish.vehicle.init.ModContainers;
 import com.mrcrayfish.vehicle.inventory.container.slot.FuelSlot;
 import com.mrcrayfish.vehicle.tileentity.FluidExtractorTileEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.inventory.container.Container;
-import net.minecraft.inventory.container.Slot;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.Container;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.ForgeHooks;
 
 /**
  * Author: MrCrayfish
  */
-public class FluidExtractorContainer extends Container
+public class FluidExtractorContainer extends AbstractContainerMenu
 {
     private int extractionProgress;
     private int remainingFuel;
@@ -22,7 +22,7 @@ public class FluidExtractorContainer extends Container
 
     private FluidExtractorTileEntity fluidExtractor;
 
-    public FluidExtractorContainer(int windowId, IInventory playerInventory, FluidExtractorTileEntity fluidExtractor)
+    public FluidExtractorContainer(int windowId, Container playerInventory, FluidExtractorTileEntity fluidExtractor)
     {
         super(ModContainers.FLUID_EXTRACTOR.get(), windowId);
         this.fluidExtractor = fluidExtractor;
@@ -52,13 +52,13 @@ public class FluidExtractorContainer extends Container
     }
 
     @Override
-    public boolean stillValid(PlayerEntity playerIn)
+    public boolean stillValid(Player playerIn)
     {
         return true;
     }
 
     @Override
-    public ItemStack quickMoveStack(PlayerEntity playerIn, int index)
+    public ItemStack quickMoveStack(Player playerIn, int index)
     {
         ItemStack stack = ItemStack.EMPTY;
         Slot slot = this.slots.get(index);
@@ -84,7 +84,7 @@ public class FluidExtractorContainer extends Container
                         return ItemStack.EMPTY;
                     }
                 }
-                else if(ForgeHooks.getBurnTime(slotStack) > 0)
+                else if(ForgeHooks.getBurnTime(slotStack, null) > 0)
                 {
                     if(!this.moveItemStackTo(slotStack, 0, 1, false))
                     {

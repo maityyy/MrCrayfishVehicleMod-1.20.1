@@ -6,15 +6,15 @@ import com.mrcrayfish.vehicle.entity.EngineType;
 import com.mrcrayfish.vehicle.entity.VehicleProperties;
 import com.mrcrayfish.vehicle.entity.Wheel;
 import com.mrcrayfish.vehicle.init.ModEntities;
-import net.minecraft.data.DataGenerator;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.data.PackOutput;
+import net.minecraft.resources.ResourceLocation;
 
 /**
  * Author: MrCrayfish
  */
 public class VehiclePropertiesGen extends VehiclePropertiesProvider
 {
-    public VehiclePropertiesGen(DataGenerator generator)
+    public VehiclePropertiesGen(PackOutput generator)
     {
         super(generator);
     }

@@ -1,6 +1,6 @@
 package com.mrcrayfish.vehicle.entity;
 
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -9,8 +9,8 @@ import net.minecraftforge.api.distmarker.OnlyIn;
  */
 public class Wheel
 {
-    private Vector3d offset;
-    private Vector3d scale;
+    private Vec3 offset;
+    private Vec3 scale;
     private float width;
     private Side side;
     private Position position;
@@ -18,7 +18,7 @@ public class Wheel
     private boolean particles;
     private boolean render;
 
-    protected Wheel(Vector3d offset, Vector3d scale, float width, Side side, Position position, boolean autoScale, boolean particles, boolean render)
+    protected Wheel(Vec3 offset, Vec3 scale, float width, Side side, Position position, boolean autoScale, boolean particles, boolean render)
     {
         this.offset = offset;
         this.scale = scale;
@@ -40,12 +40,12 @@ public class Wheel
         return vehicle.prevFrontWheelRotation + (vehicle.frontWheelRotation - vehicle.prevFrontWheelRotation) * partialTicks;
     }
 
-    public Vector3d getOffset()
+    public Vec3 getOffset()
     {
         return this.offset;
     }
 
-    public Vector3d getScale()
+    public Vec3 getScale()
     {
         return this.scale;
     }
@@ -100,7 +100,7 @@ public class Wheel
         double xScale = this.scale.x != 0.0 ? this.scale.x : scale;
         double yScale = this.scale.y != 0.0 ? this.scale.y : scale;
         double zScale = this.scale.z != 0.0 ? this.scale.z : scale;
-        this.scale = new Vector3d(xScale, yScale, zScale);
+        this.scale = new Vec3(xScale, yScale, zScale);
     }
 
     /**
@@ -174,8 +174,8 @@ public class Wheel
 
     public static class Builder
     {
-        private Vector3d offset = Vector3d.ZERO;
-        private Vector3d scale = Vector3d.ZERO;
+        private Vec3 offset = Vec3.ZERO;
+        private Vec3 scale = Vec3.ZERO;
         private float width = 4.0F;
         private Side side = Side.NONE;
         private Position position = Position.NONE;
@@ -185,19 +185,19 @@ public class Wheel
 
         public Builder setOffset(double x, double y, double z)
         {
-            this.offset = new Vector3d(x, y, z);
+            this.offset = new Vec3(x, y, z);
             return this;
         }
 
         public Builder setScale(double scale)
         {
-            this.scale = new Vector3d(scale, scale, scale);
+            this.scale = new Vec3(scale, scale, scale);
             return this;
         }
 
         public Builder setScale(double scaleX, double scaleY, double scaleZ)
         {
-            this.scale = new Vector3d(scaleX, scaleY, scaleZ);
+            this.scale = new Vec3(scaleX, scaleY, scaleZ);
             return this;
         }
 

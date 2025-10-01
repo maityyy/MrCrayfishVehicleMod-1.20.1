@@ -2,14 +2,14 @@ package com.mrcrayfish.vehicle.crafting;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.Ingredient;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.tags.ITag;
-import net.minecraft.util.IItemProvider;
-import net.minecraft.util.JSONUtils;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
+import net.minecraft.util.GsonHelper;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.level.ItemLike;
 import net.minecraftforge.common.crafting.IIngredientSerializer;
 
 import java.util.Collection;
@@ -21,17 +21,17 @@ import java.util.stream.Stream;
  */
 public class WorkstationIngredient extends Ingredient
 {
-    private final IItemList itemList;
+    private final Ingredient.Value itemList;
     private final int count;
 
-    protected WorkstationIngredient(Stream<? extends IItemList> itemList, int count)
+    protected WorkstationIngredient(Stream<? extends Ingredient.Value> itemList, int count)
     {
         super(itemList);
         this.itemList = null;
         this.count = count;
     }
 
-    private WorkstationIngredient(IItemList itemList, int count)
+    private WorkstationIngredient(Ingredient.Value itemList, int count)
     {
         super(Stream.of(itemList));
         this.itemList = itemList;
@@ -51,8 +51,8 @@ public class WorkstationIngredient extends Ingredient
 
     public static WorkstationIngredient fromJson(JsonObject object)
     {
-        Ingredient.IItemList value = valueFromJson(object);
-        int count = JSONUtils.getAsInt(object, "count", 1);
+        Ingredient.Value value = valueFromJson(object);
+        int count = GsonHelper.getAsInt(object, "count", 1);
         return new WorkstationIngredient(Stream.of(value), count);
     }
 
@@ -64,19 +64,19 @@ public class WorkstationIngredient extends Ingredient
         return object;
     }
 
-    public static WorkstationIngredient of(IItemProvider provider, int count)
+    public static WorkstationIngredient of(ItemLike provider, int count)
     {
-        return new WorkstationIngredient(new Ingredient.SingleItemList(new ItemStack(provider)), count);
+        return new WorkstationIngredient(new Ingredient.ItemValue(new ItemStack(provider)), count);
     }
 
     public static WorkstationIngredient of(ItemStack stack, int count)
     {
-        return new WorkstationIngredient(new Ingredient.SingleItemList(stack), count);
+        return new WorkstationIngredient(new Ingredient.ItemValue(stack), count);
     }
 
-    public static WorkstationIngredient of(ITag<Item> tag, int count)
+    public static WorkstationIngredient of(TagKey<Item> tag, int count)
     {
-        return new WorkstationIngredient(new Ingredient.TagList(tag), count);
+        return new WorkstationIngredient(new Ingredient.TagValue(tag), count);
     }
 
     public static WorkstationIngredient of(ResourceLocation id, int count)
@@ -89,12 +89,12 @@ public class WorkstationIngredient extends Ingredient
         public static final WorkstationIngredient.Serializer INSTANCE = new WorkstationIngredient.Serializer();
 
         @Override
-        public WorkstationIngredient parse(PacketBuffer buffer)
+        public WorkstationIngredient parse(FriendlyByteBuf buffer)
         {
             int itemCount = buffer.readVarInt();
             int count = buffer.readVarInt();
-            Stream<Ingredient.SingleItemList> values = Stream.generate(() ->
-                    new SingleItemList(buffer.readItem())).limit(itemCount);
+            Stream<Ingredient.ItemValue> values = Stream.generate(() ->
+                    new ItemValue(buffer.readItem())).limit(itemCount);
             return new WorkstationIngredient(values, count);
         }
 
@@ -105,7 +105,7 @@ public class WorkstationIngredient extends Ingredient
         }
 
         @Override
-        public void write(PacketBuffer buffer, WorkstationIngredient ingredient)
+        public void write(FriendlyByteBuf buffer, WorkstationIngredient ingredient)
         {
             buffer.writeVarInt(ingredient.getItems().length);
             buffer.writeVarInt(ingredient.count);
@@ -120,9 +120,9 @@ public class WorkstationIngredient extends Ingredient
 
     /**
      * Allows ability to define an ingredient from another mod without depending. Serializes the data
-     * to be read by the regular {@link SingleItemList}. Only use this for generating data.
+     * to be read by the regular {@link ItemValue}. Only use this for generating data.
      */
-    public static class MissingSingleItemList implements Ingredient.IItemList
+    public static class MissingSingleItemList implements Ingredient.Value
     {
         private final ResourceLocation id;
 
