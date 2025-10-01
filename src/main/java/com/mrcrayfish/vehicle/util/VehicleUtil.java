@@ -30,10 +30,10 @@ public class VehicleUtil
     {
         String modId = ObfuscationReflectionHelper.getPrivateValue(DeferredRegister.class, deferredRegister, "modid");
         ResourceLocation id = new ResourceLocation(modId, name);
-        EntityType<T> type = VehicleUtil.buildVehicleType(id, function, width, height);
-        VehicleRegistry.registerVehicleType(type);
+        RegistryObject<EntityType<T>> type = deferredRegister.register(name, () -> VehicleUtil.buildVehicleType(id, function, width, height));
+        VehicleRegistry.registerVehicleType((RegistryObject<EntityType<? extends VehicleEntity>>) (Object) type); // FIXME
         if(includeCrate) VehicleCrateBlock.registerVehicle(id);
-        return deferredRegister.register(name, () -> type);
+        return type;
     }
 
     @Nullable

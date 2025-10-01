@@ -19,6 +19,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.loading.FMLLoader;
 import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegistryObject;
 import org.lwjgl.glfw.GLFW;
 
 import javax.annotation.Nullable;
@@ -28,6 +29,7 @@ import java.io.InputStreamReader;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -40,9 +42,17 @@ import java.util.stream.Stream;
 public class VehicleProperties
 {
     private static final double WHEEL_RADIUS = 8.0;
-    private static final DecimalFormat FORMAT = new DecimalFormat("#.###");
+    private static final DecimalFormat FORMAT;
     private static final Gson GSON = new GsonBuilder().registerTypeAdapter(VehicleProperties.class, new Serializer()).create();
     private static final Map<ResourceLocation, VehicleProperties> ID_TO_PROPERTIES = new HashMap<>();
+
+    static
+    {
+        // Always use dot
+        DecimalFormatSymbols s = new DecimalFormatSymbols();
+        s.setDecimalSeparator('.');
+        FORMAT = new DecimalFormat("#.###", s);
+    }
 
     private final float axleOffset;
     private final float wheelOffset;
@@ -191,9 +201,9 @@ public class VehicleProperties
 
     public static void loadProperties()
     {
-        for(EntityType<? extends VehicleEntity> entityType : VehicleRegistry.getRegisteredVehicleTypes())
+        for(RegistryObject<EntityType<? extends VehicleEntity>> entityType : VehicleRegistry.getRegisteredVehicleTypes())
         {
-            ID_TO_PROPERTIES.computeIfAbsent(ForgeRegistries.ENTITY_TYPES.getKey(entityType), VehicleProperties::loadProperties); // FIXME
+            ID_TO_PROPERTIES.computeIfAbsent(ForgeRegistries.ENTITY_TYPES.getKey(entityType.get()), VehicleProperties::loadProperties); // FIXME
         }
     }
 
@@ -246,9 +256,9 @@ public class VehicleProperties
 
         if(event.getKey() == GLFW.GLFW_KEY_RIGHT_BRACKET)
         {
-            for(EntityType<? extends VehicleEntity> entityType : VehicleRegistry.getRegisteredVehicleTypes())
+            for(RegistryObject<EntityType<? extends VehicleEntity>> entityType : VehicleRegistry.getRegisteredVehicleTypes())
             {
-                ResourceLocation id = ForgeRegistries.ENTITY_TYPES.getKey(entityType);
+                ResourceLocation id = ForgeRegistries.ENTITY_TYPES.getKey(entityType.get());
                 ID_TO_PROPERTIES.put(id, loadProperties(id)); // FIXME
             }
         }
