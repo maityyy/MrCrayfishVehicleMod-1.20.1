@@ -17,13 +17,14 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemDisplayContext;
 
 import javax.annotation.Nullable;
+import java.util.function.Supplier;
 
 /**
  * Author: MrCrayfish
  */
 public class BumperCarModel extends AbstractLandVehicleRenderer<BumperCarEntity>
 {
-    public BumperCarModel(VehicleProperties defaultProperties)
+    public BumperCarModel(Supplier<VehicleProperties> defaultProperties)
     {
         super(defaultProperties);
     }

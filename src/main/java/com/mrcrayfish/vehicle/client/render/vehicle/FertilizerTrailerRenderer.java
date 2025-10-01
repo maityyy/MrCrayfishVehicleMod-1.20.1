@@ -16,6 +16,7 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
 import javax.annotation.Nullable;
+import java.util.function.Supplier;
 
 /**
  * Author: MrCrayfish
@@ -24,7 +25,7 @@ public class FertilizerTrailerRenderer extends AbstractTrailerRenderer<Fertilize
 {
     protected final PropertyFunction<FertilizerTrailerEntity, StorageInventory> storageProperty = new PropertyFunction<>(FertilizerTrailerEntity::getInventory, null);
 
-    public FertilizerTrailerRenderer(VehicleProperties defaultProperties)
+    public FertilizerTrailerRenderer(Supplier<VehicleProperties> defaultProperties)
     {
         super(defaultProperties);
     }

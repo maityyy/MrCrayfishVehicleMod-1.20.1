@@ -16,13 +16,14 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
+import java.util.function.Supplier;
 
 /**
  * Author: MrCrayfish
  */
 public class SofaHelicopterRenderer extends AbstractHelicopterRenderer<SofacopterEntity>
 {
-    public SofaHelicopterRenderer(VehicleProperties defaultProperties)
+    public SofaHelicopterRenderer(Supplier<VehicleProperties> defaultProperties)
     {
         super(defaultProperties);
     }

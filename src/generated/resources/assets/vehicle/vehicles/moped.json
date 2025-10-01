@@ -1,52 +1,88 @@
 {
-    "general": {
-        "engineType": "vehicle:small_motor",
-        "canBeColored": true,
-        "canChangeWheels": true
+  "axles": {
+    "lengthToFront": 14.5,
+    "lengthToRear": -6.7,
+    "offsetToGround": -1.0
+  },
+  "display": {
+    "gui": {
+      "scale": 1.5,
+      "translate": [
+        0.0,
+        0.0,
+        -0.25
+      ]
     },
-    "axles": {
-        "offsetToGround": -1.0,
-        "lengthToFront": 14.5,
-        "lengthToRear": -6.7
-    },
-    "display": {
-        "held": [ 4.5, 2.0, 0.0 ],
-        "trailer": [ 0.0, -0.031, -0.65 ],
-        "gui": {
-            "translate": [ 0.0, 0.0, -0.25 ],
-            "scale": 1.5
-        }
-    },
-    "position": {
-        "body": {
-            "scale": 1.2
-        },
-        "fuelPort": {
-            "translate": [ -2.5, 4.2, -1.5 ],
-            "rotation": [ 0.0, -90.0, 0.0 ],
-            "scale": 0.2
-        }
-    },
-    "wheels": [
-        {
-            "side": "none",
-            "position": "front",
-            "offset": [ 0.0, 0.0, 14.088 ],
-            "scale": [ 0.6, 0.8, 0.8 ],
-            "particles": true,
-            "render": false
-        },
-        {
-            "side": "none",
-            "position": "rear",
-            "offset": [ 0.0, 0.0, -6.7 ],
-            "particles": true
-        }
+    "held": [
+      4.5,
+      2.0,
+      0.0
     ],
-    "seats": [
-        {
-            "position": [ 0.0, 4.0, -1.0 ],
-            "driver": true
-        }
+    "trailer": [
+      0.0,
+      -0.031,
+      -0.65
     ]
+  },
+  "general": {
+    "canBeColored": true,
+    "canChangeWheels": true,
+    "engineType": "vehicle:small_motor"
+  },
+  "position": {
+    "body": {
+      "scale": 1.2
+    },
+    "fuelPort": {
+      "rotation": [
+        0.0,
+        -90.0,
+        0.0
+      ],
+      "scale": 0.2,
+      "translate": [
+        -2.5,
+        4.2,
+        -1.5
+      ]
+    }
+  },
+  "seats": [
+    {
+      "driver": true,
+      "position": [
+        0.0,
+        4.0,
+        -1.0
+      ]
+    }
+  ],
+  "wheels": [
+    {
+      "offset": [
+        0.0,
+        0.0,
+        14.088
+      ],
+      "particles": true,
+      "position": "front",
+      "render": false,
+      "scale": [
+        0.6,
+        0.8,
+        0.8
+      ],
+      "side": "none"
+    },
+    {
+      "offset": [
+        0.0,
+        0.0,
+        -6.7
+      ],
+      "particles": true,
+      "position": "rear",
+      "side": "none"
+    }
+  ]
 }

@@ -1,10 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
-  "pattern": [
-    "O",
-    "W",
-    "O"
-  ],
+  "category": "misc",
   "key": {
     "O": {
       "item": "minecraft:orange_concrete"
@@ -13,8 +9,14 @@
       "item": "minecraft:white_concrete"
     }
   },
+  "pattern": [
+    "O",
+    "W",
+    "O"
+  ],
   "result": {
-    "item": "vehicle:traffic_cone",
-    "count": 8
-  }
+    "count": 8,
+    "item": "vehicle:traffic_cone"
+  },
+  "show_notification": true
 }

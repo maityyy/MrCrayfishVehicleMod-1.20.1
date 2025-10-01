@@ -16,13 +16,14 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.world.entity.player.Player;
 
 import javax.annotation.Nullable;
+import java.util.function.Supplier;
 
 /**
  * Author: MrCrayfish
  */
 public class GoKartRenderer extends AbstractLandVehicleRenderer<GoKartEntity>
 {
-    public GoKartRenderer(VehicleProperties defaultProperties)
+    public GoKartRenderer(Supplier<VehicleProperties> defaultProperties)
     {
         super(defaultProperties);
     }

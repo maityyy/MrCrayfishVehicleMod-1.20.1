@@ -1,9 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
-  "pattern": [
-    "IPI",
-    "IRI"
-  ],
+  "category": "misc",
   "key": {
     "I": {
       "tag": "forge:ingots/gold"
@@ -15,7 +12,12 @@
       "item": "minecraft:redstone"
     }
   },
+  "pattern": [
+    "IPI",
+    "IRI"
+  ],
   "result": {
     "item": "vehicle:jack"
-  }
+  },
+  "show_notification": true
 }

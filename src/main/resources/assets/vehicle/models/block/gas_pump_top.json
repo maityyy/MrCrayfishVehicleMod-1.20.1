@@ -1,5 +1,6 @@
 {
 	"credit": "Model by MrCrayfish (https://twitter.com/MrCrayfish) using Blockbench",
+	"render_type": "cutout",
 	"texture_size": [128, 128],
 	"textures": {
 		"1": "vehicle:model/gas_pump",

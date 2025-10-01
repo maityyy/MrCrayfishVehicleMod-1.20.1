@@ -1,14 +1,14 @@
 {
   "type": "vehicle:workstation",
-  "vehicle": "vehicle:jet_ski",
   "materials": [
     {
-      "tag": "forge:ingots/iron",
-      "count": 64
+      "count": 64,
+      "tag": "forge:ingots/iron"
     },
     {
-      "item": "vehicle:panel",
-      "count": 10
+      "count": 10,
+      "item": "vehicle:panel"
     }
-  ]
+  ],
+  "vehicle": "vehicle:jet_ski"
 }

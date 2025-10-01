@@ -9,6 +9,7 @@ import com.mrcrayfish.vehicle.entity.VehicleProperties;
 import net.minecraft.client.renderer.MultiBufferSource;
 
 import javax.annotation.Nullable;
+import java.util.function.Supplier;
 
 /**
  * Author: MrCrayfish
@@ -20,7 +21,7 @@ public abstract class AbstractPlaneRenderer<T extends PlaneEntity & EntityRayTra
     private final PropertyFunction<T, Float> bodyRotationZProperty = new PropertyFunction<>(t -> t.bodyRotationZ, 0F);
     private final PropertyFunction<T, Float> prevBodyRotationZProperty = new PropertyFunction<>(t -> t.prevBodyRotationZ, 0F);
 
-    public AbstractPlaneRenderer(VehicleProperties defaultProperties)
+    public AbstractPlaneRenderer(Supplier<VehicleProperties> defaultProperties)
     {
         super(defaultProperties);
     }

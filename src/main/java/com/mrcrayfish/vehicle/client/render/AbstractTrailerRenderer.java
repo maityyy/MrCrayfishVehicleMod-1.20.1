@@ -12,13 +12,14 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
 import javax.annotation.Nullable;
+import java.util.function.Supplier;
 
 /**
  * Author: MrCrayfish
  */
 public abstract class AbstractTrailerRenderer<T extends TrailerEntity> extends AbstractVehicleRenderer<T>
 {
-    public AbstractTrailerRenderer(VehicleProperties defaultProperties)
+    public AbstractTrailerRenderer(Supplier<VehicleProperties> defaultProperties)
     {
         super(defaultProperties);
     }

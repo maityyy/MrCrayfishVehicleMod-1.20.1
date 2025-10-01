@@ -1,14 +1,14 @@
 {
   "type": "vehicle:workstation",
-  "vehicle": "vehicle:seeder",
   "materials": [
     {
-      "tag": "forge:ingots/iron",
-      "count": 42
+      "count": 42,
+      "tag": "forge:ingots/iron"
     },
     {
-      "item": "vehicle:panel",
-      "count": 8
+      "count": 8,
+      "item": "vehicle:panel"
     }
-  ]
+  ],
+  "vehicle": "vehicle:seeder"
 }

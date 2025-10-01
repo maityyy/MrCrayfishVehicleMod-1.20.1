@@ -8,12 +8,14 @@ import com.mrcrayfish.vehicle.entity.HelicopterEntity;
 import com.mrcrayfish.vehicle.entity.VehicleProperties;
 import net.minecraft.client.renderer.MultiBufferSource;
 
+import java.util.function.Supplier;
+
 /**
  * Author: MrCrayfish
  */
 public abstract class AbstractHelicopterRenderer<T extends HelicopterEntity & EntityRayTracer.IEntityRayTraceable> extends AbstractPoweredRenderer<T>
 {
-    public AbstractHelicopterRenderer(VehicleProperties defaultProperties)
+    public AbstractHelicopterRenderer(Supplier<VehicleProperties> defaultProperties)
     {
         super(defaultProperties);
     }

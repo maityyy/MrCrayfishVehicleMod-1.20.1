@@ -79,9 +79,9 @@
     "block.vehicle.workstation": "工作站",
     "block.vehicle.jack": "千斤顶",
 
-    "fluid.vehicle.fuelium": "燃料",
-    "fluid.vehicle.ender_sap": "末影液",
-    "fluid.vehicle.blaze_juice": "烈焰液",
+    "fluid_type.vehicle.fuelium": "燃料",
+    "fluid_type.vehicle.ender_sap": "末影液",
+    "fluid_type.vehicle.blaze_juice": "烈焰液",
 
     "container.fluid_extractor": "流体提取机",
     "container.fluid_mixer": "流体混合器",

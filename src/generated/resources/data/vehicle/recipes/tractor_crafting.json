@@ -1,22 +1,22 @@
 {
   "type": "vehicle:workstation",
-  "vehicle": "vehicle:tractor",
   "materials": [
     {
-      "tag": "forge:ingots/iron",
-      "count": 128
+      "count": 128,
+      "tag": "forge:ingots/iron"
     },
     {
-      "item": "minecraft:black_wool",
-      "count": 4
+      "count": 4,
+      "item": "minecraft:black_wool"
     },
     {
-      "item": "minecraft:redstone",
-      "count": 8
+      "count": 8,
+      "item": "minecraft:redstone"
     },
     {
-      "item": "vehicle:panel",
-      "count": 16
+      "count": 16,
+      "item": "vehicle:panel"
     }
-  ]
+  ],
+  "vehicle": "vehicle:tractor"
 }

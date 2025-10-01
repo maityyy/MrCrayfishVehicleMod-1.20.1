@@ -58,9 +58,9 @@
     "block.vehicle.workstation": "工作站",
     "block.vehicle.jack": "千斤頂",
 
-    "fluid.fuelium": "燃油",
-    "fluid.ender_sap": "終界樹液",
-    "fluid.blaze_juice": "烈焰汁",
+    "fluid_type.fuelium": "燃油",
+    "fluid_type.ender_sap": "終界樹液",
+    "fluid_type.blaze_juice": "烈焰汁",
 
     "container.fluid_extractor": "流體抽取器",
     "container.fluid_mixer": "流體混合器",

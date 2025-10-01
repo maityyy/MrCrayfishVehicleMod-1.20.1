@@ -1,18 +1,18 @@
 {
   "type": "vehicle:workstation",
-  "vehicle": "vehicle:bumper_car",
   "materials": [
     {
-      "tag": "forge:ingots/iron",
-      "count": 36
+      "count": 36,
+      "tag": "forge:ingots/iron"
     },
     {
-      "item": "minecraft:redstone",
-      "count": 8
+      "count": 8,
+      "item": "minecraft:redstone"
     },
     {
-      "item": "vehicle:panel",
-      "count": 8
+      "count": 8,
+      "item": "vehicle:panel"
     }
-  ]
+  ],
+  "vehicle": "vehicle:bumper_car"
 }

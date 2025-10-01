@@ -1,7 +1,9 @@
 package com.mrcrayfish.vehicle.client.screen;
 
 import com.google.common.collect.Lists;
+import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import com.mrcrayfish.vehicle.client.render.AbstractVehicleRenderer;
 import com.mrcrayfish.vehicle.client.render.CachedVehicle;
@@ -15,6 +17,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -91,8 +94,9 @@ public class EditVehicleScreen extends AbstractContainerScreen<EditVehicleContai
     @SuppressWarnings({"unchecked", "rawtypes"})
     protected void renderLabels(GuiGraphics matrixStack, int mouseX, int mouseY)
     {
-        matrixStack.drawString(this.font, this.title.getString(), 8, 6, 4210752);
-        matrixStack.drawString(this.font, this.playerInventory.getDisplayName().getString(), 8, this.imageHeight - 96 + 2, 4210752);
+        // FIXME see super method
+        matrixStack.drawString(this.font, this.title, 8, 6, 4210752, false);
+        matrixStack.drawString(this.font, this.playerInventoryTitle, 8, this.imageHeight - 96 + 2, 4210752, false);
 
         AbstractVehicleRenderer renderer = this.cachedVehicle.getRenderer();
         if(renderer != null)
@@ -101,42 +105,52 @@ public class EditVehicleScreen extends AbstractContainerScreen<EditVehicleContai
             int startY = (this.height - this.imageHeight) / 2;
 
             RenderSystem.getModelViewStack().pushPose();
-            RenderSystem.getModelViewStack().translate(96, 78, 1050.0F);
+            RenderSystem.getModelViewStack().translate(startX + 96, startY + 78, 1050.0F);
             RenderSystem.getModelViewStack().scale(-1.0F, -1.0F, -1.0F);
+            RenderSystem.applyModelViewMatrix();
 
-            GL11.glEnable(GL11.GL_SCISSOR_TEST);
-            RenderUtil.scissor(startX + 26, startY + 17, 142, 70);
+            matrixStack.enableScissor(startX + 26, startY + 17, startX + 168, startY + 87);
 
-            matrixStack.pose().pushPose();
-            matrixStack.pose().translate(0.0, 0.0, 1000.0);
-            matrixStack.pose().translate(this.windowX - (this.mouseGrabbed && this.mouseGrabbedButton == 0 ? mouseX - this.mouseClickedX : 0), 0, 0);
-            matrixStack.pose().translate(0, this.windowY - (this.mouseGrabbed && this.mouseGrabbedButton == 0 ? mouseY - this.mouseClickedY : 0), 0);
+            PoseStack poseStack = new PoseStack();
+            poseStack.translate(0.0D, 0.0D, 1000.0D);
+
+            poseStack.translate(this.windowX - (this.mouseGrabbed && this.mouseGrabbedButton == 0 ? mouseX - this.mouseClickedX : 0), 0, 0);
+            poseStack.translate(0, this.windowY - (this.mouseGrabbed && this.mouseGrabbedButton == 0 ? mouseY - this.mouseClickedY : 0), 0);
 
             Quaternionf quaternion = Axis.XP.rotationDegrees(-10F);
             quaternion.mul(Axis.XP.rotationDegrees(this.windowRotationY - (this.mouseGrabbed && this.mouseGrabbedButton == 1 ? mouseY - this.mouseClickedY : 0)));
             quaternion.mul(Axis.YP.rotationDegrees(this.windowRotationX + (this.mouseGrabbed && this.mouseGrabbedButton == 1 ? mouseX - this.mouseClickedX : 0)));
             quaternion.mul(Axis.YP.rotationDegrees(135F));
-            matrixStack.pose().mulPose(quaternion);
+            poseStack.mulPose(quaternion);
 
-            matrixStack.pose().scale(this.windowZoom / 10F, this.windowZoom / 10F, this.windowZoom / 10F);
-            matrixStack.pose().scale(22F, 22F, 22F);
+            poseStack.scale(this.windowZoom / 10F, this.windowZoom / 10F, this.windowZoom / 10F);
+            poseStack.scale(22F, 22F, 22F);
 
             PartPosition position = this.cachedVehicle.getProperties().getDisplayPosition();
-            matrixStack.pose().scale((float) position.getScale(), (float) position.getScale(), (float) position.getScale());
-            matrixStack.pose().mulPose(Axis.XP.rotationDegrees((float) position.getRotX()));
-            matrixStack.pose().mulPose(Axis.YP.rotationDegrees((float) position.getRotY()));
-            matrixStack.pose().mulPose(Axis.ZP.rotationDegrees((float) position.getRotZ()));
-            matrixStack.pose().translate(position.getX(), position.getY(), position.getZ());
+            poseStack.scale((float) position.getScale(), (float) position.getScale(), (float) position.getScale());
+            poseStack.mulPose(Axis.XP.rotationDegrees((float) position.getRotX()));
+            poseStack.mulPose(Axis.YP.rotationDegrees((float) position.getRotY()));
+            poseStack.mulPose(Axis.ZP.rotationDegrees((float) position.getRotZ()));
+            poseStack.translate(position.getX(), position.getY(), position.getZ());
 
+            Lighting.setupForEntityInInventory();
+
+            EntityRenderDispatcher renderManager = Minecraft.getInstance().getEntityRenderDispatcher();
+            renderManager.setRenderShadow(false);
+            renderManager.overrideCameraOrientation(quaternion);
             MultiBufferSource.BufferSource renderTypeBuffer = Minecraft.getInstance().renderBuffers().bufferSource();
-            renderer.setupTransformsAndRender(this.menu.getVehicle(), matrixStack.pose(), renderTypeBuffer, Minecraft.getInstance().getFrameTime(), 15728880);
+            RenderSystem.runAsFancy(() -> renderer.setupTransformsAndRender(this.menu.getVehicle(), poseStack, renderTypeBuffer, Minecraft.getInstance().getFrameTime(), 15728880));
             renderTypeBuffer.endBatch();
+            renderManager.setRenderShadow(true);
 
-            matrixStack.pose().popPose();
+            poseStack.popPose();
 
-            GL11.glDisable(GL11.GL_SCISSOR_TEST);
+            matrixStack.disableScissor();
+
             RenderSystem.getModelViewStack().popPose();
             RenderSystem.applyModelViewMatrix();
+
+            Lighting.setupFor3DItems();
         }
 
         if(this.showHelp)

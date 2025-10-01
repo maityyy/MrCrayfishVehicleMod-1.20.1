@@ -742,7 +742,7 @@ public abstract class VehicleEntity extends Entity implements IEntityAdditionalS
     @Override
     public void positionRider(Entity passenger, MoveFunction moveFunction)
     {
-        super.positionRider(passenger);
+        super.positionRider(passenger, moveFunction);
         this.updatePassengerPosition(passenger, moveFunction);
     }
 

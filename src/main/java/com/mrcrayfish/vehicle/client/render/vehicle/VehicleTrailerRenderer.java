@@ -9,13 +9,14 @@ import com.mrcrayfish.vehicle.entity.trailer.VehicleEntityTrailer;
 import net.minecraft.client.renderer.MultiBufferSource;
 
 import javax.annotation.Nullable;
+import java.util.function.Supplier;
 
 /**
  * Author: MrCrayfish
  */
 public class VehicleTrailerRenderer extends AbstractTrailerRenderer<VehicleEntityTrailer>
 {
-    public VehicleTrailerRenderer(VehicleProperties defaultProperties)
+    public VehicleTrailerRenderer(Supplier<VehicleProperties> defaultProperties)
     {
         super(defaultProperties);
     }

@@ -79,9 +79,9 @@
 "block.vehicle.workstation": "Puesto de Trabajo Vehicular",
 "block.vehicle.jack": "Plataforma",
 
-"fluid.vehicle.fuelium": "Fuelium",
-"fluid.vehicle.ender_sap": "Ender Sap",
-"fluid.vehicle.blaze_juice": "Blaze Juice",
+"fluid_type.vehicle.fuelium": "Fuelium",
+"fluid_type.vehicle.ender_sap": "Ender Sap",
+"fluid_type.vehicle.blaze_juice": "Blaze Juice",
 
 "container.fluid_extractor": "Extractor Líquido",
 "container.fluid_mixer": "Mezclador Líquido",

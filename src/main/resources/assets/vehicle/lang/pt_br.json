@@ -79,9 +79,9 @@
     "block.vehicle.workstation": "Estação de trabalho",
     "block.vehicle.jack": "Macaco Hidráulico",
 
-    "fluid.vehicle.fuelium": "Combustível",
-    "fluid.vehicle.ender_sap": "Seiva de Ender",
-    "fluid.vehicle.blaze_juice": "Suco de Blaze",
+    "fluid_type.vehicle.fuelium": "Combustível",
+    "fluid_type.vehicle.ender_sap": "Seiva de Ender",
+    "fluid_type.vehicle.blaze_juice": "Suco de Blaze",
 
     "container.fluid_extractor": "Extrator de Fluido",
     "container.fluid_mixer": "Misturador de Fluido",

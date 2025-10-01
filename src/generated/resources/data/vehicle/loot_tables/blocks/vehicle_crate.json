@@ -2,51 +2,53 @@
   "type": "minecraft:block",
   "pools": [
     {
-      "rolls": 1,
+      "bonus_rolls": 0.0,
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        }
+      ],
       "entries": [
         {
           "type": "minecraft:item",
           "functions": [
             {
               "function": "minecraft:copy_nbt",
-              "source": "block_entity",
               "ops": [
                 {
+                  "op": "replace",
                   "source": "Vehicle",
-                  "target": "BlockEntityTag.Vehicle",
-                  "op": "replace"
+                  "target": "BlockEntityTag.Vehicle"
                 },
                 {
+                  "op": "replace",
                   "source": "Color",
-                  "target": "BlockEntityTag.Color",
-                  "op": "replace"
+                  "target": "BlockEntityTag.Color"
                 },
                 {
+                  "op": "replace",
                   "source": "EngineStack",
-                  "target": "BlockEntityTag.EngineStack",
-                  "op": "replace"
+                  "target": "BlockEntityTag.EngineStack"
                 },
                 {
+                  "op": "replace",
                   "source": "Creative",
-                  "target": "BlockEntityTag.Creative",
-                  "op": "replace"
+                  "target": "BlockEntityTag.Creative"
                 },
                 {
+                  "op": "replace",
                   "source": "WheelStack",
-                  "target": "BlockEntityTag.WheelStack",
-                  "op": "replace"
+                  "target": "BlockEntityTag.WheelStack"
                 }
-              ]
+              ],
+              "source": "block_entity"
             }
           ],
           "name": "vehicle:vehicle_crate"
         }
       ],
-      "conditions": [
-        {
-          "condition": "minecraft:survives_explosion"
-        }
-      ]
+      "rolls": 1.0
     }
-  ]
+  ],
+  "random_sequence": "vehicle:blocks/vehicle_crate"
 }

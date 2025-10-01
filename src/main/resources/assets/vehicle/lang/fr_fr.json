@@ -54,9 +54,9 @@
     "block.vehicle.workstation": "Station de Travail",
     "block.vehicle.jack": "Cric",
 
-    "fluid.fuelium": "Fuelium",
-    "fluid.ender_sap": "Sève d'Ender",
-    "fluid.blaze_juice": "Jus de Blaze",
+    "fluid_type.fuelium": "Fuelium",
+    "fluid_type.ender_sap": "Sève d'Ender",
+    "fluid_type.blaze_juice": "Jus de Blaze",
 
     "container.fluid_extractor": "Extracteur de Fluide",
     "container.fluid_mixer": "Mélangeur de Fluide",

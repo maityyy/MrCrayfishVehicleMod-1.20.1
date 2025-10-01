@@ -11,6 +11,7 @@ import com.mrcrayfish.vehicle.entity.VehicleProperties;
 import com.mrcrayfish.vehicle.init.ModDataKeys;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -28,21 +29,19 @@ public class PlayerModelHandler
     /**
      * Applies transformations to the player model when riding a vehicle and performing a wheelie
      */
-    @SubscribeEvent
-    public void onPreRender(RenderPlayerEvent.Pre event) // FIXME
+    public static <T extends Entity> void onPreRender(Player player, PoseStack matrixStack, float partialTicks)
     {
-        Player player = event.getEntity();
         Entity ridingEntity = player.getVehicle();
         if(ridingEntity instanceof VehicleEntity)
         {
             VehicleEntity vehicle = (VehicleEntity) ridingEntity;
-            this.applyPassengerTransformations(vehicle, player, event.getPoseStack(), event.getPartialTick());
-            this.applyWheelieTransformations(vehicle, player, event.getPoseStack(), event.getPartialTick());
+            applyPassengerTransformations(vehicle, player, matrixStack,partialTicks);
+            applyWheelieTransformations(vehicle, player, matrixStack, partialTicks);
         }
     }
 
     @SuppressWarnings("unchecked")
-    private void applyPassengerTransformations(VehicleEntity vehicle, Player player, PoseStack matrixStack, float partialTicks)
+    public static void applyPassengerTransformations(VehicleEntity vehicle, Player player, PoseStack matrixStack, float partialTicks)
     {
         AbstractVehicleRenderer<VehicleEntity> render = (AbstractVehicleRenderer<VehicleEntity>) VehicleRenderRegistry.getRenderer((EntityType<? extends VehicleEntity>) vehicle.getType());
         if(render != null)
@@ -59,7 +58,7 @@ public class PlayerModelHandler
      * @param matrixStack  the current matrix stack
      * @param partialTicks the current partial ticks
      */
-    private void applyWheelieTransformations(VehicleEntity vehicle, Player player, PoseStack matrixStack, float partialTicks)
+    public static void applyWheelieTransformations(VehicleEntity vehicle, Player player, PoseStack matrixStack, float partialTicks)
     {
         if(!(vehicle instanceof LandVehicleEntity))
             return;
@@ -90,22 +89,19 @@ public class PlayerModelHandler
         matrixStack.translate(-offsetX, -offsetY, -offsetZ);
     }
 
-    @SubscribeEvent
-    public void onSetupAngles(RenderPlayerEvent.Post.Post event) // FIXME
+    public static void onSetupAngles(Player player, PlayerModel<Player> model, float partialTick) // FIXME
     {
-        Player player = event.getEntity();
-
         if(player.equals(Minecraft.getInstance().player) && Minecraft.getInstance().options.getCameraType() == CameraType.FIRST_PERSON)
             return;
 
         if(ModDataKeys.GAS_PUMP.getValue(player).isPresent())
         {
-            FuelingHandler.applyFuelingPose(player, event.getRenderer().getModel());
+            FuelingHandler.applyFuelingPose(player, model);
             return;
         }
 
-        SprayCanHandler.applySprayCanPose(player, event.getRenderer().getModel());
-        this.applyPassengerPose(player, event.getRenderer().getModel(), event.getPartialTick());
+        SprayCanHandler.applySprayCanPose(player, model);
+        applyPassengerPose(player, model, partialTick);
     }
 
     /**
@@ -117,7 +113,7 @@ public class PlayerModelHandler
      * @param partialTicks the current partial ticks
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private void applyPassengerPose(Player player, PlayerModel model, float partialTicks)
+    private static void applyPassengerPose(Player player, PlayerModel model, float partialTicks)
     {
         Entity ridingEntity = player.getVehicle();
         if(!(ridingEntity instanceof VehicleEntity))

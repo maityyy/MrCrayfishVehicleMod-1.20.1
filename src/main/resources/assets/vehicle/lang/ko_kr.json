@@ -79,9 +79,9 @@
     "block.vehicle.workstation": "워크스테이션",
     "block.vehicle.jack": "잭",
 
-    "fluid.vehicle.fuelium": "퓨엘륨",
-    "fluid.vehicle.ender_sap": "엔더 삽",
-    "fluid.vehicle.blaze_juice": "블레이즈 주스",
+    "fluid_type.vehicle.fuelium": "퓨엘륨",
+    "fluid_type.vehicle.ender_sap": "엔더 삽",
+    "fluid_type.vehicle.blaze_juice": "블레이즈 주스",
 
     "container.fluid_extractor": "액체 추출기",
     "container.fluid_mixer": "액체 혼합기",

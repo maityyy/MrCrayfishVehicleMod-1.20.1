@@ -31,6 +31,7 @@ import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
 import java.util.Calendar;
+import java.util.function.Supplier;
 
 /**
  * Author: MrCrayfish
@@ -46,7 +47,7 @@ public class MopedRenderer extends AbstractMotorcycleRenderer<MopedEntity>
     protected final PropertyFunction<MopedEntity, Float> openProgressProperty = new PropertyFunction<>(MopedEntity::getOpenProgress, 0F);
     protected final PropertyFunction<MopedEntity, Float> prevOpenProgressProperty = new PropertyFunction<>(MopedEntity::getPrevOpenProgress, 0F);
 
-    public MopedRenderer(VehicleProperties properties)
+    public MopedRenderer(Supplier<VehicleProperties> properties)
     {
         super(properties);
         Calendar calendar = Calendar.getInstance();

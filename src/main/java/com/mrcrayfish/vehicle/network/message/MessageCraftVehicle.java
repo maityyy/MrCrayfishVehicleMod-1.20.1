@@ -82,7 +82,7 @@ public class MessageCraftVehicle implements IMessage<MessageCraftVehicle>
             if(entityType == null)
                 return;
 
-            if(!VehicleRegistry.getRegisteredVehicleTypes().contains(entityType))
+            if(VehicleRegistry.getRegisteredVehicleTypes().stream().noneMatch(entry -> entry.get().equals(entityType)))
                 return;
 
             WorkstationRecipe recipe = WorkstationRecipes.getRecipe(entityType, world);

@@ -16,6 +16,7 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
 import javax.annotation.Nullable;
+import java.util.function.Supplier;
 
 /**
  * Author: MrCrayfish
@@ -24,7 +25,7 @@ public class SeederTrailerRenderer extends AbstractTrailerRenderer<SeederTrailer
 {
     protected final PropertyFunction<SeederTrailerEntity, StorageInventory> storageProperty = new PropertyFunction<>(SeederTrailerEntity::getInventory, null);
 
-    public SeederTrailerRenderer(VehicleProperties defaultProperties)
+    public SeederTrailerRenderer(Supplier<VehicleProperties> defaultProperties)
     {
         super(defaultProperties);
     }

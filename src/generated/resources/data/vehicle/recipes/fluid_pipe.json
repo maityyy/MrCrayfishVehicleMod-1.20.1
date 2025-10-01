@@ -1,23 +1,25 @@
 {
   "type": "minecraft:crafting_shaped",
-  "pattern": [
-    "IRI",
-    "GGG",
-    "III"
-  ],
+  "category": "misc",
   "key": {
+    "G": {
+      "tag": "forge:glass_panes"
+    },
     "I": {
       "tag": "forge:ingots/iron"
     },
     "R": {
       "item": "minecraft:redstone"
-    },
-    "G": {
-      "tag": "forge:glass_panes"
     }
   },
+  "pattern": [
+    "IRI",
+    "GGG",
+    "III"
+  ],
   "result": {
-    "item": "vehicle:fluid_pipe",
-    "count": 8
-  }
+    "count": 8,
+    "item": "vehicle:fluid_pipe"
+  },
+  "show_notification": true
 }

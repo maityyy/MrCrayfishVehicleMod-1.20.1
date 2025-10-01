@@ -9,11 +9,13 @@ import com.mrcrayfish.vehicle.init.ModDataKeys;
 import com.mrcrayfish.vehicle.init.ModSounds;
 import com.mrcrayfish.vehicle.util.RenderUtil;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -135,17 +137,19 @@ public class FuelingHandler
         }
     }
 
-    @SubscribeEvent
-    public void onModelRenderPost(RenderPlayerEvent.Post event) // FIXME
+    public static <T extends Entity> void onModelRenderPost(T entity, EntityModel<T> model, PoseStack matrixStack)
     {
-        Player player = event.getEntity();
+        if(!(entity instanceof Player))
+            return;
+
+        Player player = (Player) entity;
+
         if(!ModDataKeys.GAS_PUMP.getValue(player).isPresent())
             return;
 
-        PoseStack matrixStack = event.getPoseStack();
         matrixStack.pushPose();
 
-        if(event.getRenderer().getModel().young)
+        if(model.young)
         {
             matrixStack.translate(0.0, 0.75, 0.0);
             matrixStack.scale(0.5F, 0.5F, 0.5F);
@@ -156,7 +160,7 @@ public class FuelingHandler
             matrixStack.translate(0.0, 0.2, 0.0);
         }
 
-        event.getRenderer().getModel().translateToHand(HumanoidArm.RIGHT, event.getPoseStack());
+        ((PlayerModel<?>) model).translateToHand(HumanoidArm.RIGHT, matrixStack);
         matrixStack.mulPose(Axis.XP.rotationDegrees(180F));
         matrixStack.mulPose(Axis.YP.rotationDegrees(180F));
         boolean leftInteractionHanded = player.getMainArm() == HumanoidArm.LEFT;

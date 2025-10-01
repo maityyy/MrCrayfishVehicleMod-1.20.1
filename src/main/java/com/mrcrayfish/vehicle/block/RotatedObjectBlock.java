@@ -16,7 +16,7 @@ import net.minecraft.world.level.block.state.properties.DirectionProperty;
  */
 public abstract class RotatedObjectBlock extends ObjectEntityBlock
 {
-    public static final DirectionProperty DIRECTION = BlockStateProperties.FACING;
+    public static final DirectionProperty DIRECTION = BlockStateProperties.HORIZONTAL_FACING;
 
     public RotatedObjectBlock(BlockBehaviour.Properties properties)
     {

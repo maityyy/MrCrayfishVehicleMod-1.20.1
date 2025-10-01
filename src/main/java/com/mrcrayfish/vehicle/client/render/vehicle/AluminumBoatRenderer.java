@@ -10,30 +10,43 @@ import com.mrcrayfish.vehicle.common.Seat;
 import com.mrcrayfish.vehicle.entity.VehicleProperties;
 import com.mrcrayfish.vehicle.entity.vehicle.AluminumBoatEntity;
 import com.mrcrayfish.vehicle.init.ModEntities;
+import net.minecraft.client.model.Model;
 import net.minecraft.client.model.PlayerModel;
+import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.model.geom.PartPose;
+import net.minecraft.client.model.geom.builders.CubeListBuilder;
+import net.minecraft.client.model.geom.builders.MeshDefinition;
+import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
+import java.util.function.Supplier;
 
 /**
  * Author: MrCrayfish
  */
 public class AluminumBoatRenderer extends AbstractBoatRenderer<AluminumBoatEntity>
 {
-    /*private final ModelPart noWater;*/
+    private final ModelPart noWater;
 
-    public AluminumBoatRenderer(VehicleProperties properties)
+    public AluminumBoatRenderer(Supplier<VehicleProperties> properties)
     {
         super(properties);
-        /*this.noWater = (new ModelPart(new Model(resource -> RenderType.waterMask()){
-            @Override
-            public void renderToBuffer(PoseStack p_225598_1_, VertexConsumer p_225598_2_, int p_225598_3_, int p_225598_4_, float p_225598_5_, float p_225598_6_, float p_225598_7_, float p_225598_8_) {}
-        }, 0, 0)).setTexSize(128, 64);
-        this.noWater.addBox(-15F, -6F, -21F, 30, 8, 35, 0.0F);
-         */
+
+        // FIXME bake like in vanilla
+        MeshDefinition meshDefinition = new MeshDefinition();
+        PartDefinition rootPartDefinition = meshDefinition.getRoot();
+        rootPartDefinition.addOrReplaceChild(
+                "no_water",
+                CubeListBuilder.create().texOffs(0, 0).addBox(-15F, -6F, -21F, 30F, 8F, 35F),
+                PartPose.ZERO
+        );
+        this.noWater = rootPartDefinition.bake(128, 64);
     }
 
     @Override
@@ -41,7 +54,7 @@ public class AluminumBoatRenderer extends AbstractBoatRenderer<AluminumBoatEntit
     {
         this.renderDamagedPart(vehicle, SpecialModels.ALUMINUM_BOAT_BODY.getModel(), matrixStack, renderTypeBuffer, light);
         VertexConsumer buffer = renderTypeBuffer.getBuffer(RenderType.waterMask());
-        //this.noWater.render(matrixStack, buffer, light, OverlayTexture.NO_OVERLAY);
+        this.noWater.render(matrixStack, buffer, light, OverlayTexture.NO_OVERLAY);
     }
 
     @Override

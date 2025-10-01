@@ -17,13 +17,14 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemDisplayContext;
 
 import javax.annotation.Nullable;
+import java.util.function.Supplier;
 
 /**
  * Author: MrCrayfish
  */
 public class OffRoaderRenderer extends AbstractLandVehicleRenderer<OffRoaderEntity>
 {
-    public OffRoaderRenderer(VehicleProperties defaultProperties)
+    public OffRoaderRenderer(Supplier<VehicleProperties> defaultProperties)
     {
         super(defaultProperties);
     }

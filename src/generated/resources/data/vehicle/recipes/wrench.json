@@ -1,22 +1,24 @@
 {
   "type": "minecraft:crafting_shaped",
-  "pattern": [
-    "I",
-    "G",
-    "W"
-  ],
+  "category": "misc",
   "key": {
-    "I": {
-      "tag": "forge:ingots/iron"
-    },
     "G": {
       "tag": "forge:ingots/gold"
+    },
+    "I": {
+      "tag": "forge:ingots/iron"
     },
     "W": {
       "item": "minecraft:black_wool"
     }
   },
+  "pattern": [
+    "I",
+    "G",
+    "W"
+  ],
   "result": {
     "item": "vehicle:wrench"
-  }
+  },
+  "show_notification": true
 }

@@ -25,6 +25,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
+import java.util.function.Supplier;
 
 /**
  * Author: MrCrayfish
@@ -34,7 +35,7 @@ public abstract class AbstractLandVehicleRenderer<T extends LandVehicleEntity & 
     protected final PropertyFunction<T, Float> wheelAngleProperty = new PropertyFunction<>(t -> t.wheelAngle, 0F);
     protected final PropertyFunction<T, Float> prevWheelAngleProperty = new PropertyFunction<>(t -> t.prevWheelAngle, 0F);
 
-    public AbstractLandVehicleRenderer(VehicleProperties defaultProperties)
+    public AbstractLandVehicleRenderer(Supplier<VehicleProperties> defaultProperties)
     {
         super(defaultProperties);
     }

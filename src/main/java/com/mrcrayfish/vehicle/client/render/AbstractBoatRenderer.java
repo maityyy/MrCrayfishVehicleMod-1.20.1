@@ -9,13 +9,14 @@ import com.mrcrayfish.vehicle.entity.VehicleProperties;
 import net.minecraft.client.renderer.MultiBufferSource;
 
 import javax.annotation.Nullable;
+import java.util.function.Supplier;
 
 /**
  * Author: MrCrayfish
  */
 public abstract class AbstractBoatRenderer<T extends BoatEntity & EntityRayTracer.IEntityRayTraceable> extends AbstractPoweredRenderer<T>
 {
-    public AbstractBoatRenderer(VehicleProperties defaultProperties)
+    public AbstractBoatRenderer(Supplier<VehicleProperties> defaultProperties)
     {
         super(defaultProperties);
     }

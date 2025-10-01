@@ -20,13 +20,14 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
 import javax.annotation.Nullable;
+import java.util.function.Supplier;
 
 /**
  * Author: MrCrayfish
  */
 public class DuneBuggyRenderer extends AbstractLandVehicleRenderer<DuneBuggyEntity>
 {
-    public DuneBuggyRenderer(VehicleProperties defaultProperties)
+    public DuneBuggyRenderer(Supplier<VehicleProperties> defaultProperties)
     {
         super(defaultProperties);
     }

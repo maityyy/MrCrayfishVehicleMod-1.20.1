@@ -13,6 +13,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.HitResult;
 
 import javax.annotation.Nullable;
+import java.util.function.Supplier;
 
 /**
  * Author: MrCrayfish
@@ -26,7 +27,7 @@ public abstract class AbstractPoweredRenderer<T extends PoweredVehicleEntity & E
     protected final PropertyFunction<T, ItemStack> engineStackProperty = new PropertyFunction<>(PoweredVehicleEntity::getEngineStack, ItemStack.EMPTY);
     protected final PropertyFunction<T, ItemStack> wheelStackProperty = new PropertyFunction<>(PoweredVehicleEntity::getWheelStack, ItemStack.EMPTY);
 
-    public AbstractPoweredRenderer(VehicleProperties defaultProperties)
+    public AbstractPoweredRenderer(Supplier<VehicleProperties> defaultProperties)
     {
         super(defaultProperties);
     }

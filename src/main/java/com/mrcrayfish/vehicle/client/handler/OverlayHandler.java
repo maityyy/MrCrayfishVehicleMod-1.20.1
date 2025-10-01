@@ -1,34 +1,36 @@
 package com.mrcrayfish.vehicle.client.handler;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mrcrayfish.vehicle.Config;
 import com.mrcrayfish.vehicle.entity.PoweredVehicleEntity;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.renderer.MultiBufferSource.BufferSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
+import java.awt.*;
 import java.text.DecimalFormat;
 
 /**
  * Author: MrCrayfish
  */
+// FIXME maybe replace with overlay?
 public class OverlayHandler
 {
     @SubscribeEvent
-    public void onRenderTick(TickEvent.RenderTickEvent event)
+    public void onRenderTick(RenderGuiOverlayEvent.Post event) // FIXME RenderGuiOverlayEvent vs RenderGuiEvent
     {
         if(!Config.CLIENT.enabledSpeedometer.get())
             return;
 
-        if(event.phase != TickEvent.Phase.END)
-            return;
-
+        // FIXME
         Minecraft mc = Minecraft.getInstance();
-        if(!mc.isWindowActive() || mc.options.hideGui)
-            return;
-
         Player player = mc.player;
         if(player == null)
             return;
@@ -37,17 +39,15 @@ public class OverlayHandler
         if(!(entity instanceof PoweredVehicleEntity))
             return;
 
-        PoseStack matrixStack = new PoseStack();
         PoweredVehicleEntity vehicle = (PoweredVehicleEntity) entity;
         String speed = new DecimalFormat("0.0").format(vehicle.getKilometersPreHour());
-        // FIXME
-        //mc.font.drawInBatch(matrixStack, ChatFormatting.BOLD + "BPS: " + ChatFormatting.YELLOW + speed, 10, 10, Color.WHITE.getRGB());
+        event.getGuiGraphics().drawString(mc.font, ChatFormatting.BOLD + "BPS: " + ChatFormatting.YELLOW + speed, 10, 10, Color.WHITE.getRGB());
 
         if(vehicle.requiresFuel())
         {
             DecimalFormat format = new DecimalFormat("0.0");
             String fuel = format.format(vehicle.getCurrentFuel()) + "/" + format.format(vehicle.getFuelCapacity());
-            //mc.font.drawInBatch(matrixStack, ChatFormatting.BOLD + "Fuel: " + ChatFormatting.YELLOW + fuel, 10, 25, Color.WHITE.getRGB());
+            event.getGuiGraphics().drawString(mc.font, ChatFormatting.BOLD + "Fuel: " + ChatFormatting.YELLOW + fuel, 10, 25, Color.WHITE.getRGB());
         }
     }
 }

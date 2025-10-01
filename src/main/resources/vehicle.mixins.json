@@ -8,6 +8,8 @@
         "defaultRequire": 1
     },
     "client": [
-        "client.ItemInHandLayerMixin"
+        "client.ItemInHandLayerMixin",
+        "client.LivingEntityRendererMixin",
+        "client.PlayerModelMixin"
     ]
 }

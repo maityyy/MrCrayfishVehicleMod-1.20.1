@@ -11,13 +11,14 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.world.entity.player.Player;
 
 import javax.annotation.Nullable;
+import java.util.function.Supplier;
 
 /**
  * Author: MrCrayfish
  */
 public class ShoppingCartRenderer extends AbstractLandVehicleRenderer<ShoppingCartEntity>
 {
-    public ShoppingCartRenderer(VehicleProperties defaultProperties)
+    public ShoppingCartRenderer(Supplier<VehicleProperties> defaultProperties)
     {
         super(defaultProperties);
     }

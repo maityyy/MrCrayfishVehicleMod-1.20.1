@@ -7,6 +7,7 @@ import com.mrcrayfish.vehicle.client.EntityRayTracer;
 import com.mrcrayfish.vehicle.init.ModItems;
 import com.mrcrayfish.vehicle.tileentity.PumpTileEntity;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.Font.DisplayMode;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
@@ -72,8 +73,9 @@ public class FluidPumpRenderer implements BlockEntityRenderer<PumpTileEntity>
         Matrix4f matrix4f = matrixStack.last().pose();
         Font fontRenderer = this.renderer.font;
         Component text = Component.translatable(tileEntity.getPowerMode().getKey());
-        float x = (float)(-fontRenderer.width(text) / 2);
-        /*fontRenderer.drawInBatch(text, x, 0, -1, true, matrix4f, renderTypeBuffer, true, 0, 15728880);*/ // FIXME
+        float x = (-fontRenderer.width(text) / 2.0F);
+        // FIXME
+        fontRenderer.drawInBatch(text, x, 0, -1, true, matrix4f, renderTypeBuffer, DisplayMode.SEE_THROUGH, 0, 15728880);
         matrixStack.popPose();
     }
 

@@ -1,6 +1,6 @@
 package com.mrcrayfish.vehicle.client.handler;
 
-import com.mrcrayfish.vehicle.client.KeyBinds;
+import com.mrcrayfish.vehicle.client.init.KeyBinds;
 import com.mrcrayfish.vehicle.entity.VehicleEntity;
 import com.mrcrayfish.vehicle.network.PacketHandler;
 import com.mrcrayfish.vehicle.network.message.MessageCycleSeats;

@@ -1,16 +1,18 @@
 {
   "type": "minecraft:crafting_shaped",
-  "pattern": [
-    "III",
-    "III"
-  ],
+  "category": "misc",
   "key": {
     "I": {
       "tag": "forge:nuggets/iron"
     }
   },
+  "pattern": [
+    "III",
+    "III"
+  ],
   "result": {
-    "item": "vehicle:panel",
-    "count": 2
-  }
+    "count": 2,
+    "item": "vehicle:panel"
+  },
+  "show_notification": true
 }

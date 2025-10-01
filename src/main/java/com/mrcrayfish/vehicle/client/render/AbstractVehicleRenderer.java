@@ -22,6 +22,7 @@ import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * Author: MrCrayfish
@@ -33,9 +34,9 @@ public abstract class AbstractVehicleRenderer<T extends VehicleEntity & EntityRa
     protected final PropertyFunction<T, Boolean> towTrailerProperty = new PropertyFunction<>(VehicleEntity::canTowTrailer, false);
     protected final PropertyFunction<T, Integer> colorProperty = new PropertyFunction<>(VehicleEntity::getColor, -1);
 
-    public AbstractVehicleRenderer(VehicleProperties defaultProperties)
+    public AbstractVehicleRenderer(Supplier<VehicleProperties> defaultProperties)
     {
-        this.vehiclePropertiesProperty = new PropertyFunction<>(VehicleEntity::getProperties, defaultProperties);
+        this.vehiclePropertiesProperty = new LazyPropertyFunction<>(VehicleEntity::getProperties, defaultProperties);
     }
 
     @Nullable
@@ -227,6 +228,26 @@ public abstract class AbstractVehicleRenderer<T extends VehicleEntity & EntityRa
         protected void setDefaultValue(T value)
         {
             this.defaultValue = value;
+        }
+    }
+
+    protected static class LazyPropertyFunction<V extends VehicleEntity, T> extends PropertyFunction<V, T>
+    {
+        private final Supplier<T> defaultValueCreator;
+
+        public LazyPropertyFunction(Function<V, T> function, Supplier<T> defaultValue) {
+            super(function, null);
+            this.defaultValueCreator = defaultValue;
+        }
+
+        @Override
+        public T get(@org.jetbrains.annotations.Nullable V vehicle)
+        {
+            if (this.defaultValue == null)
+            {
+                this.defaultValue = this.defaultValueCreator.get();
+            }
+            return super.get(vehicle);
         }
     }
 }

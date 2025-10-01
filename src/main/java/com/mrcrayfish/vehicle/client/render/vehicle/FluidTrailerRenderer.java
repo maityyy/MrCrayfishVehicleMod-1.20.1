@@ -19,13 +19,14 @@ import net.minecraftforge.fluids.capability.templates.FluidTank;
 import org.joml.Matrix4f;
 
 import javax.annotation.Nullable;
+import java.util.function.Supplier;
 
 /**
  * Author: MrCrayfish
  */
 public class FluidTrailerRenderer extends AbstractTrailerRenderer<FluidTrailerEntity>
 {
-    public FluidTrailerRenderer(VehicleProperties defaultProperties)
+    public FluidTrailerRenderer(Supplier<VehicleProperties> defaultProperties)
     {
         super(defaultProperties);
     }

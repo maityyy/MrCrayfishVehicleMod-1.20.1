@@ -17,6 +17,7 @@ import net.minecraft.world.level.block.Blocks;
 
 import javax.annotation.Nullable;
 import java.util.Calendar;
+import java.util.function.Supplier;
 
 /**
  * Author: MrCrayfish
@@ -28,7 +29,7 @@ public class StorageTrailerRenderer extends AbstractTrailerRenderer<StorageTrail
     private static final ResourceLocation TEXTURE_NORMAL = new ResourceLocation("textures/entity/chest/normal.png");
     private final boolean isChristmas;
 
-    public StorageTrailerRenderer(VehicleProperties properties)
+    public StorageTrailerRenderer(Supplier<VehicleProperties> properties)
     {
         super(properties);
         Calendar calendar = Calendar.getInstance();

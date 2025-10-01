@@ -106,24 +106,24 @@ public class WorkstationScreen extends AbstractContainerScreen<WorkstationContai
     {
         super.init();
 
-        this.addWidget(Button.builder(Component.literal("<"), button -> {
+        this.addRenderableWidget(Button.builder(Component.literal("<"), button -> {
             this.loadVehicle(Math.floorMod(currentVehicle - 1,  this.vehicleTypes.size()));
             Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
         }).bounds(this.leftPos + 9, this.topPos + 18, 15, 20).build());
 
-        this.addWidget(Button.builder(Component.literal(">"), button -> {
+        this.addRenderableWidget(Button.builder(Component.literal(">"), button -> {
             this.loadVehicle(Math.floorMod(currentVehicle + 1,  this.vehicleTypes.size()));
             Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
         }).bounds(this.leftPos + 153, this.topPos + 18, 15, 20).build());
 
-        this.btnCraft = this.addWidget(Button.builder(Component.translatable("gui.vehicle.craft"), button -> {
+        this.btnCraft = this.addRenderableWidget(Button.builder(Component.translatable("gui.vehicle.craft"), button -> {
             ResourceLocation registryName = ForgeRegistries.ENTITY_TYPES.getKey(this.vehicleTypes.get(currentVehicle));
             Objects.requireNonNull(registryName, "Vehicle registry name must not be null!");
             PacketHandler.instance.sendToServer(new MessageCraftVehicle(registryName.toString(), this.workstation.getBlockPos()));
         }).bounds(this.leftPos + 172, this.topPos + 6, 97, 20).build());
 
         this.btnCraft.active = false;
-        this.checkBoxMaterials = this.addWidget(new CheckBox(this.leftPos + 172, this.topPos + 51,  Component.translatable("gui.vehicle.show_remaining")));
+        this.checkBoxMaterials = this.addRenderableWidget(new CheckBox(this.leftPos + 172, this.topPos + 51,  Component.translatable("gui.vehicle.show_remaining")));
         this.checkBoxMaterials.setToggled(WorkstationScreen.showRemaining);
         this.loadVehicle(currentVehicle);
     }
@@ -377,7 +377,7 @@ public class WorkstationScreen extends AbstractContainerScreen<WorkstationContai
                 }
                 matrixStack.drawString(this.font, name, startX + 172 + 22, startY + i * 19 + 6 + 63, Color.WHITE.getRGB());
 
-                matrixStack.renderItemDecorations(this.font, stack, startX + 172 + 2, startY + i * 19 + 1 + 63);
+                matrixStack.renderItem(stack, startX + 172 + 2, startY + i * 19 + 1 + 63);
 
                 if(this.checkBoxMaterials.isToggled())
                 {
@@ -398,6 +398,7 @@ public class WorkstationScreen extends AbstractContainerScreen<WorkstationContai
         RenderSystem.getModelViewStack().pushPose();
         RenderSystem.getModelViewStack().translate((float) x, (float) y, 1050.0F);
         RenderSystem.getModelViewStack().scale(-1.0F, -1.0F, -1.0F);
+        RenderSystem.applyModelViewMatrix();
 
         PoseStack matrixStack = new PoseStack();
         matrixStack.translate(0.0D, 0.0D, 1000.0D);
@@ -419,6 +420,8 @@ public class WorkstationScreen extends AbstractContainerScreen<WorkstationContai
         matrixStack.mulPose(Axis.ZP.rotationDegrees((float) position.getRotZ()));
         matrixStack.translate(position.getX(), position.getY(), position.getZ());
 
+        Lighting.setupForEntityInInventory();
+
         EntityRenderDispatcher renderManager = Minecraft.getInstance().getEntityRenderDispatcher();
         renderManager.setRenderShadow(false);
         renderManager.overrideCameraOrientation(quaternion);
@@ -430,6 +433,9 @@ public class WorkstationScreen extends AbstractContainerScreen<WorkstationContai
         matrixStack.popPose();
 
         RenderSystem.getModelViewStack().popPose();
+        RenderSystem.applyModelViewMatrix();
+
+        Lighting.setupFor3DItems();
     }
 
     private void drawSlot(GuiGraphics matrixStack, int startX, int startY, int x, int y, int iconX, int iconY, int slot, boolean required, boolean applicable)

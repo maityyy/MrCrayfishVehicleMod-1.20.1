@@ -79,9 +79,9 @@
     "block.vehicle.workstation": "Arbeitsplatz",
     "block.vehicle.jack": "Hebeb\u00fchne",
 
-    "fluid.vehicle.fuelium": "Kraftstoff",
-    "fluid.vehicle.ender_sap": "Endersaft",
-    "fluid.vehicle.blaze_juice": "Lohensaft",
+    "fluid_type.vehicle.fuelium": "Kraftstoff",
+    "fluid_type.vehicle.ender_sap": "Endersaft",
+    "fluid_type.vehicle.blaze_juice": "Lohensaft",
 
     "container.fluid_extractor": "Fl\u00fcssigkeitsabsauger",
     "container.fluid_mixer": "Fl\u00fcssigkeitsmischer",

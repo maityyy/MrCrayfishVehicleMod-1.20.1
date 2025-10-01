@@ -53,7 +53,7 @@ public class FluidExtractorScreen extends AbstractContainerScreen<FluidExtractor
             {
                 if(stack.getAmount() > 0)
                 {
-                    matrixStack.renderTooltip(this.font, Lists.transform(Arrays.asList(Component.literal(stack.getDisplayName().getString()), Component.literal(ChatFormatting.GRAY.toString() + this.fluidExtractorTileEntity.getFluidLevel() + "/" + this.fluidExtractorTileEntity.getCapacity() + " mB")), Component::getVisualOrderText), mouseX, mouseY);
+                    matrixStack.renderTooltip(this.font, Lists.transform(Arrays.asList(Component.translatable(stack.getDisplayName().getString()), Component.literal(ChatFormatting.GRAY.toString() + this.fluidExtractorTileEntity.getFluidLevel() + "/" + this.fluidExtractorTileEntity.getCapacity() + " mB")), Component::getVisualOrderText), mouseX, mouseY);
                 }
                 else
                 {

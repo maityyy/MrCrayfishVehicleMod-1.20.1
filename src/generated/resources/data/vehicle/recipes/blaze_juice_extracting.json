@@ -4,7 +4,7 @@
     "item": "minecraft:blaze_rod"
   },
   "result": {
-    "fluid": "vehicle:blaze_juice",
-    "amount": 450
+    "amount": 450,
+    "fluid": "vehicle:blaze_juice"
   }
 }

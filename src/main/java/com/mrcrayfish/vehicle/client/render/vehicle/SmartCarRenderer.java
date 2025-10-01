@@ -17,13 +17,14 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemDisplayContext;
 
 import javax.annotation.Nullable;
+import java.util.function.Supplier;
 
 /**
  * Author: MrCrayfish
  */
 public class SmartCarRenderer extends AbstractLandVehicleRenderer<SmartCarEntity>
 {
-    public SmartCarRenderer(VehicleProperties defaultProperties)
+    public SmartCarRenderer(Supplier<VehicleProperties> defaultProperties)
     {
         super(defaultProperties);
     }

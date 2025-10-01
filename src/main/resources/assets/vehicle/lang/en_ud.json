@@ -79,9 +79,9 @@
     "block.vehicle.workstation": "uo\u1d09\u0287\u0250\u0287s\u029e\u0279oM",
     "block.vehicle.jack": "\u029e\u0254\u0250\u0550",
 
-    "fluid.vehicle.fuelium": "\u026fn\u1d09\ua781\u01ddn\u2132",
-    "fluid.vehicle.ender_sap": "d\u0250S \u0279\u01ddpu\u018e",
-    "fluid.vehicle.blaze_juice": "\u01dd\u0254\u1d09n\u0550 \u01ddz\u0250\ua781\u15fa",
+    "fluid_type.vehicle.fuelium": "\u026fn\u1d09\ua781\u01ddn\u2132",
+    "fluid_type.vehicle.ender_sap": "d\u0250S \u0279\u01ddpu\u018e",
+    "fluid_type.vehicle.blaze_juice": "\u01dd\u0254\u1d09n\u0550 \u01ddz\u0250\ua781\u15fa",
 
     "container.fluid_extractor": "\u0279o\u0287\u0254\u0250\u0279\u0287x\u018e p\u1d09n\ua781\u2132",
     "container.fluid_mixer": "\u0279\u01ddx\u1d09W p\u1d09n\ua781\u2132",

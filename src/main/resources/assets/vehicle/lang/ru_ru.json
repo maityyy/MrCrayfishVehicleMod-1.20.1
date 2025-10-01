@@ -79,9 +79,9 @@
     "block.vehicle.workstation": "Рабочая станция",
     "block.vehicle.jack": "Домкрат",
 
-    "fluid.vehicle.fuelium": "Топлиум",
-    "fluid.vehicle.ender_sap": "Сок Эндера",
-    "fluid.vehicle.blaze_juice": "Сок Ифрита",
+    "fluid_type.vehicle.fuelium": "Топлиум",
+    "fluid_type.vehicle.ender_sap": "Сок Эндера",
+    "fluid_type.vehicle.blaze_juice": "Сок Ифрита",
 
     "container.fluid_extractor": "Экстрактор жидкости",
     "container.fluid_mixer": "Миксер жидкости",

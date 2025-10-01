@@ -6,6 +6,7 @@ import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraftforge.client.event.ComputeFovModifierEvent;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.ViewportEvent;
 import net.minecraftforge.event.TickEvent;
@@ -83,7 +84,7 @@ public class CameraHandler
     }
 
     @SubscribeEvent
-    public void onFovUpdate(ViewportEvent.ComputeFov event)
+    public void onFovUpdate(ComputeFovModifierEvent event)
     {
         Player player = Minecraft.getInstance().player;
         if(player == null)
@@ -92,7 +93,7 @@ public class CameraHandler
         Entity ridingEntity = player.getVehicle();
         if(ridingEntity instanceof VehicleEntity)
         {
-            event.setFOV(1.0F);
+            event.setNewFovModifier(1.0F);
         }
     }
 }

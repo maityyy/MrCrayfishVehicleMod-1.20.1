@@ -1,3 +1,4 @@
 {
-  "type": "vehicle:color_spray_can"
+  "type": "vehicle:color_spray_can",
+  "category": "misc"
 }

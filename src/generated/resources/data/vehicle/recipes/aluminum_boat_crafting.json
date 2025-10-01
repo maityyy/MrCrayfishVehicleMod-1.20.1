@@ -1,14 +1,14 @@
 {
   "type": "vehicle:workstation",
-  "vehicle": "vehicle:aluminum_boat",
   "materials": [
     {
-      "tag": "forge:ingots/iron",
-      "count": 80
+      "count": 80,
+      "tag": "forge:ingots/iron"
     },
     {
-      "item": "vehicle:panel",
-      "count": 10
+      "count": 10,
+      "item": "vehicle:panel"
     }
-  ]
+  ],
+  "vehicle": "vehicle:aluminum_boat"
 }

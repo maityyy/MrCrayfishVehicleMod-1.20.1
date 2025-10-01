@@ -19,13 +19,14 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
+import java.util.function.Supplier;
 
 /**
  * Author: MrCrayfish
  */
 public class SpeedBoatRenderer extends AbstractBoatRenderer<SpeedBoatEntity>
 {
-    public SpeedBoatRenderer(VehicleProperties defaultProperties)
+    public SpeedBoatRenderer(Supplier<VehicleProperties> defaultProperties)
     {
         super(defaultProperties);
     }

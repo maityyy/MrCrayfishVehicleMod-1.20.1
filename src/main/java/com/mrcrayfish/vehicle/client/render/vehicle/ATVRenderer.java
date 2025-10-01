@@ -18,13 +18,14 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemDisplayContext;
 
 import javax.annotation.Nullable;
+import java.util.function.Supplier;
 
 /**
  * Author: MrCrayfish
  */
 public class ATVRenderer extends AbstractLandVehicleRenderer<ATVEntity>
 {
-    public ATVRenderer(VehicleProperties defaultProperties)
+    public ATVRenderer(Supplier<VehicleProperties> defaultProperties)
     {
         super(defaultProperties);
     }

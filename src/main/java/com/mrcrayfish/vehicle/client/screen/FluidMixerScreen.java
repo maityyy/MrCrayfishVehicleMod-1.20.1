@@ -54,7 +54,7 @@ public class FluidMixerScreen extends AbstractContainerScreen<FluidMixerContaine
             {
                 if(stack.getAmount() > 0)
                 {
-                    matrixStack.renderTooltip(this.font, Lists.transform(Arrays.asList(Component.literal(stack.getDisplayName().getString()), Component.literal(ChatFormatting.GRAY.toString() + this.fluidMixerTileEntity.getBlazeLevel() + "/" + this.fluidMixerTileEntity.getBlazeTank().getCapacity() + " mB")), Component::getVisualOrderText), mouseX, mouseY);
+                    matrixStack.renderTooltip(this.font, Lists.transform(Arrays.asList(Component.translatable(stack.getDisplayName().getString()), Component.literal(ChatFormatting.GRAY.toString() + this.fluidMixerTileEntity.getBlazeLevel() + "/" + this.fluidMixerTileEntity.getBlazeTank().getCapacity() + " mB")), Component::getVisualOrderText), mouseX, mouseY);
                 }
                 else
                 {
@@ -70,7 +70,7 @@ public class FluidMixerScreen extends AbstractContainerScreen<FluidMixerContaine
             {
                 if(stack.getAmount() > 0)
                 {
-                    matrixStack.renderTooltip(this.font, Lists.transform(Arrays.asList(Component.literal(stack.getDisplayName().getString()), Component.literal(ChatFormatting.GRAY.toString() + this.fluidMixerTileEntity.getEnderSapLevel() + "/" + this.fluidMixerTileEntity.getEnderSapTank().getCapacity() + " mB")), Component::getVisualOrderText), mouseX, mouseY);
+                    matrixStack.renderTooltip(this.font, Lists.transform(Arrays.asList(Component.translatable(stack.getDisplayName().getString()), Component.literal(ChatFormatting.GRAY.toString() + this.fluidMixerTileEntity.getEnderSapLevel() + "/" + this.fluidMixerTileEntity.getEnderSapTank().getCapacity() + " mB")), Component::getVisualOrderText), mouseX, mouseY);
                 }
                 else
                 {

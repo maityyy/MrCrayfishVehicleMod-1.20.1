@@ -17,7 +17,7 @@ public class JackHeadBlock extends Block
 {
     public JackHeadBlock()
     {
-        super(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD)); // FIXME missing flammable
+        super(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).ignitedByLava());
     }
 
     @Override

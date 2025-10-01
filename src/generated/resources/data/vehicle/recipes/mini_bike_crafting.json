@@ -1,14 +1,14 @@
 {
   "type": "vehicle:workstation",
-  "vehicle": "vehicle:mini_bike",
   "materials": [
     {
-      "tag": "forge:ingots/iron",
-      "count": 24
+      "count": 24,
+      "tag": "forge:ingots/iron"
     },
     {
-      "item": "minecraft:black_wool",
-      "count": 2
+      "count": 2,
+      "item": "minecraft:black_wool"
     }
-  ]
+  ],
+  "vehicle": "vehicle:mini_bike"
 }

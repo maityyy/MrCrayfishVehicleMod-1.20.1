@@ -22,13 +22,14 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
+import java.util.function.Supplier;
 
 /**
  * Author: MrCrayfish
  */
 public class DirtBikeRenderer extends AbstractMotorcycleRenderer<DirtBikeEntity>
 {
-    public DirtBikeRenderer(VehicleProperties defaultProperties)
+    public DirtBikeRenderer(Supplier<VehicleProperties> defaultProperties)
     {
         super(defaultProperties);
     }

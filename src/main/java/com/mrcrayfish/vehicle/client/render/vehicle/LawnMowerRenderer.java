@@ -14,13 +14,14 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.world.entity.player.Player;
 
 import javax.annotation.Nullable;
+import java.util.function.Supplier;
 
 /**
  * Author: MrCrayfish
  */
 public class LawnMowerRenderer extends AbstractLandVehicleRenderer<LawnMowerEntity>
 {
-    public LawnMowerRenderer(VehicleProperties defaultProperties)
+    public LawnMowerRenderer(Supplier<VehicleProperties> defaultProperties)
     {
         super(defaultProperties);
     }

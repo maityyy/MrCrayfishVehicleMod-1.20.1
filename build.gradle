@@ -25,7 +25,7 @@ tasks.withType(JavaCompile).configureEach {
     options.encoding "UTF-8"
 }
 
-version = "0.45.2-1.16.5"
+version = "0.45.2-1.20.1"
 group = "com.mrcrayfish"
 archivesBaseName = "vehicle-mod"
 
@@ -46,6 +46,8 @@ minecraft {
             }
         }
 
+        client {}
+        server {}
         data {
             args "--mod", "vehicle", "--all", "--output", file("src/generated/resources/")
         }

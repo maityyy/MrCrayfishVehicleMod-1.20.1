@@ -19,13 +19,14 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemDisplayContext;
 
 import javax.annotation.Nullable;
+import java.util.function.Supplier;
 
 /**
  * Author: MrCrayfish
  */
 public class MiniBusRenderer extends AbstractLandVehicleRenderer<MiniBusEntity>
 {
-    public MiniBusRenderer(VehicleProperties defaultProperties)
+    public MiniBusRenderer(Supplier<VehicleProperties> defaultProperties)
     {
         super(defaultProperties);
     }

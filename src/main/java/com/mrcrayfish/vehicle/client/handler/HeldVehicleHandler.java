@@ -49,12 +49,8 @@ public class HeldVehicleHandler
 
     public static final Map<UUID, AnimationCounter> idToCounter = new HashMap<>();
 
-    @SubscribeEvent
-    public void onSetupAngles(RenderPlayerEvent.Post event) // FIXME
+    public static void onSetupAngles(Player player, PlayerModel<Player> model, float partialTick) // FIXME
     {
-        PlayerModel model = event.getRenderer().getModel();
-        Player player = event.getEntity();
-
         boolean holdingVehicle = HeldVehicleDataHandler.isHoldingVehicle(player);
         if(holdingVehicle && !idToCounter.containsKey(player.getUUID()))
         {
@@ -62,7 +58,7 @@ public class HeldVehicleHandler
         }
         else if(idToCounter.containsKey(player.getUUID()))
         {
-            if(idToCounter.get(player.getUUID()).getProgress(event.getPartialTick()) == 0F)
+            if(idToCounter.get(player.getUUID()).getProgress(partialTick) == 0F)
             {
                 idToCounter.remove(player.getUUID());
                 return;
@@ -70,7 +66,7 @@ public class HeldVehicleHandler
             if(!holdingVehicle)
             {
                 AnimationCounter counter = idToCounter.get(player.getUUID());
-                player.yBodyRot = player.getYHeadRot() - (player.getYHeadRot() - player.yBodyRotO) * counter.getProgress(event.getPartialTick());
+                player.yBodyRot = player.getYHeadRot() - (player.getYHeadRot() - player.yBodyRotO) * counter.getProgress(partialTick);
             }
         }
         else
@@ -80,7 +76,7 @@ public class HeldVehicleHandler
 
         AnimationCounter counter = idToCounter.get(player.getUUID());
         counter.update(holdingVehicle);
-        float progress = counter.getProgress(event.getPartialTick());
+        float progress = counter.getProgress(partialTick);
         model.rightArm.xRot = (float) Math.toRadians(-180F * progress);
         model.rightArm.zRot = (float) Math.toRadians(-5F * progress);
         model.rightArm.y = (player.isCrouching() ? 3.0F : -0.5F) * progress;

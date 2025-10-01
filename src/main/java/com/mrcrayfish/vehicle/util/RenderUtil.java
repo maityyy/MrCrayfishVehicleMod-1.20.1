@@ -63,7 +63,6 @@ public class RenderUtil
         float greenEnd = (float)(rightColor >> 16 & 255) / 255.0F;
         float blueEnd = (float)(rightColor >> 8 & 255) / 255.0F;
         float alphaEnd = (float)(rightColor & 255) / 255.0F;
-        /*RenderSystem.disableTexture();*/ // FIXME
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         Tesselator tessellator = Tesselator.getInstance();
@@ -75,14 +74,6 @@ public class RenderUtil
         bufferbuilder.vertex((double)right, (double)bottom, 0).color(greenEnd, blueEnd, alphaEnd, redEnd).endVertex();
         tessellator.end();
         RenderSystem.disableBlend();
-        /*RenderSystem.enableTexture();*/ // FIXME
-    }
-
-    public static void scissor(int x, int y, int width, int height) //TODO might need fixing. I believe I rewrote this in a another mod
-    {
-        Minecraft mc = Minecraft.getInstance();
-        int scale = (int) mc.getWindow().getGuiScale();
-        GL11.glScissor(x * scale, mc.getWindow().getScreenHeight() - y * scale - height * scale, Math.max(0, width * scale), Math.max(0, height * scale));
     }
 
     public static BakedModel getModel(ItemStack stack)

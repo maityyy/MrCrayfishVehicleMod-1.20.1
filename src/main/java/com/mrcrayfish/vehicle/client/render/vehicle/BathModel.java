@@ -17,13 +17,14 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
+import java.util.function.Supplier;
 
 /**
  * Author: MrCrayfish
  */
 public class BathModel extends AbstractPlaneRenderer<BathEntity>
 {
-    public BathModel(VehicleProperties defaultProperties)
+    public BathModel(Supplier<VehicleProperties> defaultProperties)
     {
         super(defaultProperties);
     }

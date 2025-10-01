@@ -24,13 +24,14 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
+import java.util.function.Supplier;
 
 /**
  * Author: MrCrayfish
  */
 public class MiniBikeRenderer extends AbstractMotorcycleRenderer<MiniBikeEntity>
 {
-    public MiniBikeRenderer(VehicleProperties defaultProperties)
+    public MiniBikeRenderer(Supplier<VehicleProperties> defaultProperties)
     {
         super(defaultProperties);
     }

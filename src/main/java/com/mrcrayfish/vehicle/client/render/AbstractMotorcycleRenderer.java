@@ -13,13 +13,14 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 
 import javax.annotation.Nullable;
+import java.util.function.Supplier;
 
 /**
  * Author: MrCrayfish
  */
 public abstract class AbstractMotorcycleRenderer<T extends MotorcycleEntity & EntityRayTracer.IEntityRayTraceable> extends AbstractLandVehicleRenderer<T>
 {
-    public AbstractMotorcycleRenderer(VehicleProperties defaultProperties)
+    public AbstractMotorcycleRenderer(Supplier<VehicleProperties> defaultProperties)
     {
         super(defaultProperties);
     }
