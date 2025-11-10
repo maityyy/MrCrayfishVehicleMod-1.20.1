@@ -23,7 +23,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import org.lwjgl.opengl.GL11;
 
 import java.util.List;
 import java.util.Objects;

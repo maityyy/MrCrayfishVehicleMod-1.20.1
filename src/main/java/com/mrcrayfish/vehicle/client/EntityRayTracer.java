@@ -719,7 +719,7 @@ public class EntityRayTracer
      * @param event mouse event
      */
     @SubscribeEvent
-    public void onMouseEvent(InputEvent.MouseButton event)
+    public void onMouseEvent(InputEvent.MouseButton.Pre event)
     {
         Minecraft mc = Minecraft.getInstance();
         if(mc.getOverlay() != null || mc.screen != null)

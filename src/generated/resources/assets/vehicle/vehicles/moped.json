@@ -82,6 +82,11 @@
       ],
       "particles": true,
       "position": "rear",
+      "scale": [
+        0.6,
+        0.8,
+        0.8
+      ],
       "side": "none"
     }
   ]

@@ -2,7 +2,6 @@ package com.mrcrayfish.vehicle.client.render.tileentity;
 
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat.Mode;
 import com.mrcrayfish.vehicle.tileentity.FuelDrumTileEntity;
 import net.minecraft.client.Minecraft;
@@ -21,8 +20,6 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.templates.FluidTank;
-import org.joml.Matrix4f;
-import org.lwjgl.opengl.GL11;
 
 /**
  * Author: MrCrayfish

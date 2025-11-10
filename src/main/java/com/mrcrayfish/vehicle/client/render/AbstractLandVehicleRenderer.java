@@ -207,7 +207,6 @@ public abstract class AbstractLandVehicleRenderer<T extends LandVehicleEntity & 
         float red = (float) (color >> 16 & 255) / 255.0F;
         float green = (float) (color >> 8 & 255) / 255.0F;
         float blue = (float) (color & 255) / 255.0F;
-        /*RenderSystem.disableTexture();*/ // FIXME
         RenderSystem.lineWidth(Math.max(2.0F, (float) Minecraft.getInstance().getWindow().getWidth() / 1920.0F * 2.0F));
         RenderSystem.enableDepthTest();
         Tesselator tessellator = Tesselator.getInstance();
@@ -217,7 +216,6 @@ public abstract class AbstractLandVehicleRenderer<T extends LandVehicleEntity & 
         buffer.vertex(stack.last().pose(), 0, 2, 0).color(red, green, blue, 1.0F).endVertex();
         tessellator.end();
         RenderSystem.disableDepthTest();
-        /*RenderSystem.enableTexture();*/ // FIXME
     }
 
     protected void renderWheel(@Nullable T vehicle, Wheel wheel, ItemStack stack, BakedModel model, float partialTicks, PoseStack matrixStack, MultiBufferSource renderTypeBuffer, int light)

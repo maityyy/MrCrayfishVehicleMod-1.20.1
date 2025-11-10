@@ -83,7 +83,7 @@ public abstract class TrailerEntity extends VehicleEntity
             if(this.pullingEntity.distanceTo(this) > threshold)
             {
                 this.level().playSound(null, this.pullingEntity.blockPosition(), SoundEvents.ITEM_BREAK, SoundSource.PLAYERS, 1.0F, 1.0F);
-                this.pullingEntity = null;
+                this.setPullingEntity(null); // FIXME
                 return;
             }
         }
@@ -100,7 +100,8 @@ public abstract class TrailerEntity extends VehicleEntity
         else if(!level().isClientSide)
         {
             motion = this.getDeltaMovement();
-            this.move(MoverType.SELF, new Vec3(motion.x() * 0.75, motion.y(), motion.z() * 0.75));
+            this.setDeltaMovement(motion.x() * 0.75, motion.y(), motion.z() * 0.75); // FIXME
+            this.move(MoverType.SELF, this.getDeltaMovement());
         }
 
         this.checkInsideBlocks();

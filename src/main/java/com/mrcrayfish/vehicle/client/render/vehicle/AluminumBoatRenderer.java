@@ -10,7 +10,6 @@ import com.mrcrayfish.vehicle.common.Seat;
 import com.mrcrayfish.vehicle.entity.VehicleProperties;
 import com.mrcrayfish.vehicle.entity.vehicle.AluminumBoatEntity;
 import com.mrcrayfish.vehicle.init.ModEntities;
-import net.minecraft.client.model.Model;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
@@ -19,7 +18,6 @@ import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
@@ -86,6 +84,7 @@ public class AluminumBoatRenderer extends AbstractBoatRenderer<AluminumBoatEntit
             matrixStack.mulPose(Axis.XP.rotationDegrees(-8F * Math.min(1.0F, currentSpeedNormal)));
             matrixStack.mulPose(Axis.ZP.rotationDegrees(turnAngleNormal * currentSpeedNormal * 15F));
             matrixStack.translate(-offsetX, -offsetY, -offsetZ);
+            matrixStack.translate(0, 0.1, 0);
         }
     }
 

@@ -11,7 +11,6 @@ import com.mrcrayfish.vehicle.common.entity.PartPosition;
 import com.mrcrayfish.vehicle.entity.EngineType;
 import com.mrcrayfish.vehicle.inventory.container.EditVehicleContainer;
 import com.mrcrayfish.vehicle.util.CommonUtils;
-import com.mrcrayfish.vehicle.util.RenderUtil;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -25,7 +24,6 @@ import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import org.joml.Quaternionf;
 import org.lwjgl.glfw.GLFW;
-import org.lwjgl.opengl.GL11;
 
 import java.util.Arrays;
 import java.util.Collections;

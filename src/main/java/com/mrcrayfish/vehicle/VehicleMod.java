@@ -14,7 +14,6 @@ import com.mrcrayfish.vehicle.network.PacketHandler;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.loot.LootTableProvider;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.data.event.GatherDataEvent;
@@ -24,7 +23,6 @@ import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.registries.RegistryObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -58,6 +56,7 @@ public class VehicleMod
         eventBus.addListener(this::onCommonSetup);
         eventBus.addListener(this::onClientSetup);
         eventBus.addListener(this::onGatherData);
+        eventBus.addListener(ModIngredients::register);
         MinecraftForge.EVENT_BUS.register(new CommonEvents());
         MinecraftForge.EVENT_BUS.register(FluidNetworkHandler.instance());
     }

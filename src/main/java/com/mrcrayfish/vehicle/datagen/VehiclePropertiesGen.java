@@ -374,6 +374,7 @@ public class VehiclePropertiesGen extends VehiclePropertiesProvider
                 .addWheel(Wheel.builder()
                         .setPosition(Wheel.Position.REAR)
                         .setOffset(0.0, 0.0, -6.7)
+                        .setScale(0.6, 0.8, 0.8)
                         .setParticles(true))
                 .setFrontAxleOffset(14.5)
                 .setRearAxleOffset(-6.7)
