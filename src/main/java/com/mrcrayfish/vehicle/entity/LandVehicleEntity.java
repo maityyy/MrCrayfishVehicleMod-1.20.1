@@ -28,13 +28,9 @@ public abstract class LandVehicleEntity extends PoweredVehicleEntity
     public float additionalYaw;
     public float prevAdditionalYaw;
 
-    @OnlyIn(Dist.CLIENT)
     public float frontWheelRotation;
-    @OnlyIn(Dist.CLIENT)
     public float prevFrontWheelRotation;
-    @OnlyIn(Dist.CLIENT)
     public float rearWheelRotation;
-    @OnlyIn(Dist.CLIENT)
     public float prevRearWheelRotation;
 
     public LandVehicleEntity(EntityType<?> entityType, Level worldIn)
@@ -59,6 +55,7 @@ public abstract class LandVehicleEntity extends PoweredVehicleEntity
     @Override
     public void updateVehicle()
     {
+        // FIXME or put under isClientSide check?
         this.prevAdditionalYaw = this.additionalYaw;
         this.prevFrontWheelRotation = this.frontWheelRotation;
         this.prevRearWheelRotation = this.rearWheelRotation;
