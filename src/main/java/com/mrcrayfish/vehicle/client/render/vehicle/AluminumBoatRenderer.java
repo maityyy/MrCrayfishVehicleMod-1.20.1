@@ -84,7 +84,7 @@ public class AluminumBoatRenderer extends AbstractBoatRenderer<AluminumBoatEntit
             matrixStack.mulPose(Axis.XP.rotationDegrees(-8F * Math.min(1.0F, currentSpeedNormal)));
             matrixStack.mulPose(Axis.ZP.rotationDegrees(turnAngleNormal * currentSpeedNormal * 15F));
             matrixStack.translate(-offsetX, -offsetY, -offsetZ);
-            matrixStack.translate(0, 0.1, 0);
+            matrixStack.translate(0, 0.1, 0); // FIXME
         }
     }
 
