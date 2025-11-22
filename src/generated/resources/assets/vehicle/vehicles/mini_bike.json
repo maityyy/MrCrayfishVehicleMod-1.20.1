@@ -31,7 +31,12 @@
   },
   "position": {
     "body": {
-      "scale": 1.05
+      "scale": 1.05,
+      "translate": [
+        0.0,
+        -0.1,
+        0.0
+      ]
     },
     "engine": {
       "rotation": [
@@ -68,9 +73,9 @@
       "position": "front",
       "render": false,
       "scale": [
-        1.03,
-        1.03,
-        1.03
+        1.48,
+        1.48,
+        1.48
       ],
       "side": "none"
     },
@@ -83,9 +88,9 @@
       "particles": true,
       "position": "rear",
       "scale": [
-        1.03,
-        1.03,
-        1.03
+        1.48,
+        1.48,
+        1.48
       ],
       "side": "none"
     }

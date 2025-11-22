@@ -100,9 +100,9 @@
       "particles": true,
       "position": "rear",
       "scale": [
-        0.97,
-        0.97,
-        0.97
+        1.42,
+        1.42,
+        1.42
       ],
       "side": "left"
     },
@@ -115,9 +115,9 @@
       "particles": true,
       "position": "rear",
       "scale": [
-        0.97,
-        0.97,
-        0.97
+        1.42,
+        1.42,
+        1.42
       ],
       "side": "right"
     }

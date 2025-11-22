@@ -61,9 +61,9 @@
       "position": "front",
       "render": false,
       "scale": [
-        0.625,
-        0.625,
-        0.625
+        1.075,
+        1.075,
+        1.075
       ],
       "side": "none"
     },
@@ -76,9 +76,9 @@
       "particles": true,
       "position": "rear",
       "scale": [
-        0.625,
-        0.625,
-        0.625
+        1.075,
+        1.075,
+        1.075
       ],
       "side": "left"
     },
@@ -91,9 +91,9 @@
       "particles": true,
       "position": "rear",
       "scale": [
-        0.625,
-        0.625,
-        0.625
+        1.075,
+        1.075,
+        1.075
       ],
       "side": "right"
     }

@@ -24,6 +24,13 @@
     "engineType": "vehicle:small_motor"
   },
   "position": {
+    "body": {
+      "translate": [
+        0.0,
+        -0.1,
+        0.0
+      ]
+    },
     "engine": {
       "rotation": [
         0.0,
@@ -78,9 +85,9 @@
       "position": "front",
       "render": false,
       "scale": [
-        0.938,
-        1.4,
-        1.4
+        1.887,
+        1.85,
+        1.85
       ],
       "side": "none"
     },
@@ -93,9 +100,9 @@
       "particles": true,
       "position": "rear",
       "scale": [
-        0.938,
-        1.4,
-        1.4
+        1.887,
+        1.85,
+        1.85
       ],
       "side": "none"
     }
