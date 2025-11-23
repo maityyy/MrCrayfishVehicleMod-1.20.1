@@ -63,9 +63,9 @@
       ],
       "position": "front",
       "scale": [
-        1.25,
-        1.25,
-        1.25
+        0.8,
+        0.8,
+        0.8
       ],
       "side": "left"
     },
@@ -77,9 +77,9 @@
       ],
       "position": "front",
       "scale": [
-        1.25,
-        1.25,
-        1.25
+        0.8,
+        0.8,
+        0.8
       ],
       "side": "right"
     },
@@ -92,9 +92,9 @@
       "particles": true,
       "position": "rear",
       "scale": [
-        1.25,
-        1.25,
-        1.25
+        0.8,
+        0.8,
+        0.8
       ],
       "side": "left"
     },
@@ -107,9 +107,9 @@
       "particles": true,
       "position": "rear",
       "scale": [
-        1.25,
-        1.25,
-        1.25
+        0.8,
+        0.8,
+        0.8
       ],
       "side": "right"
     }

@@ -68,9 +68,9 @@
       "position": "front",
       "render": false,
       "scale": [
-        1.05,
-        1.25,
-        1.25
+        0.6,
+        0.8,
+        0.8
       ],
       "side": "none"
     },
@@ -83,9 +83,9 @@
       "particles": true,
       "position": "rear",
       "scale": [
-        1.05,
-        1.25,
-        1.25
+        0.6,
+        0.8,
+        0.8
       ],
       "side": "none"
     }

@@ -81,7 +81,7 @@
       "particles": true,
       "position": "front",
       "scale": [
-        1.388,
+        0.938,
         0.0,
         0.0
       ],
@@ -97,7 +97,7 @@
       "particles": true,
       "position": "front",
       "scale": [
-        1.388,
+        0.938,
         0.0,
         0.0
       ],
@@ -112,9 +112,9 @@
       "particles": true,
       "position": "rear",
       "scale": [
-        2.325,
-        3.25,
-        3.25
+        1.875,
+        2.8,
+        2.8
       ],
       "side": "left"
     },
@@ -127,9 +127,9 @@
       "particles": true,
       "position": "rear",
       "scale": [
-        2.325,
-        3.25,
-        3.25
+        1.875,
+        2.8,
+        2.8
       ],
       "side": "right"
     }
