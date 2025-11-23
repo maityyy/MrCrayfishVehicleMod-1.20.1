@@ -20,6 +20,13 @@
     "engineType": "vehicle:large_motor"
   },
   "position": {
+    "body": {
+      "translate": [
+        0.0,
+        -0.3,
+        0.0
+      ]
+    },
     "engine": {
       "scale": 0.85,
       "translate": [
@@ -56,8 +63,8 @@
     },
     "towBar": [
       0.0,
-      0.0,
-      -24.5
+      3.5,
+      -22.5
     ]
   },
   "seats": [
@@ -74,14 +81,14 @@
     {
       "autoScale": true,
       "offset": [
-        8.0,
+        6.55,
         0.0,
         14.0
       ],
       "particles": true,
       "position": "front",
       "scale": [
-        1.388,
+        1.487,
         0.0,
         0.0
       ],
@@ -90,14 +97,14 @@
     {
       "autoScale": true,
       "offset": [
-        8.0,
+        6.55,
         0.0,
         14.0
       ],
       "particles": true,
       "position": "front",
       "scale": [
-        1.388,
+        1.487,
         0.0,
         0.0
       ],
@@ -105,31 +112,31 @@
     },
     {
       "offset": [
-        8.0,
+        5.8,
         5.5,
         -14.5
       ],
       "particles": true,
       "position": "rear",
       "scale": [
-        2.325,
-        3.25,
-        3.25
+        3.325,
+        4.05,
+        4.05
       ],
       "side": "left"
     },
     {
       "offset": [
-        8.0,
+        5.8,
         5.5,
         -14.5
       ],
       "particles": true,
       "position": "rear",
       "scale": [
-        2.325,
-        3.25,
-        3.25
+        3.325,
+        4.05,
+        4.05
       ],
       "side": "right"
     }

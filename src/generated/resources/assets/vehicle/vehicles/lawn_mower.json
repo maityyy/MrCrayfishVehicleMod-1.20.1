@@ -26,7 +26,12 @@
   },
   "position": {
     "body": {
-      "scale": 1.25
+      "scale": 1.25,
+      "translate": [
+        0.0,
+        -0.16,
+        0.0
+      ]
     },
     "fuelPort": {
       "rotation": [
@@ -74,8 +79,8 @@
     {
       "autoScale": true,
       "offset": [
-        6.0,
-        0.0,
+        4.7,
+        0.15,
         13.5
       ],
       "position": "front",
@@ -84,8 +89,8 @@
     {
       "autoScale": true,
       "offset": [
-        6.0,
-        0.0,
+        4.7,
+        0.15,
         13.5
       ],
       "position": "front",
@@ -93,8 +98,8 @@
     },
     {
       "offset": [
-        5.0,
-        0.8,
+        3.3,
+        0.75,
         -10.7
       ],
       "particles": true,
@@ -108,8 +113,8 @@
     },
     {
       "offset": [
-        5.0,
-        0.8,
+        3.3,
+        0.75,
         -10.7
       ],
       "particles": true,

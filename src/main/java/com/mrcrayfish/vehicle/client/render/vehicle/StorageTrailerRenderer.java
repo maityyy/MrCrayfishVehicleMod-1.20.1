@@ -40,8 +40,8 @@ public class StorageTrailerRenderer extends AbstractTrailerRenderer<StorageTrail
     public void render(@Nullable StorageTrailerEntity vehicle, PoseStack matrixStack, MultiBufferSource renderTypeBuffer, float partialTicks, int light)
     {
         this.renderDamagedPart(vehicle, SpecialModels.STORAGE_TRAILER.getModel(), matrixStack, renderTypeBuffer, light);
-        this.renderWheel(vehicle, matrixStack, renderTypeBuffer, false, -11.5F * 0.0625F, -0.5F, 0.0F, 1.25F, partialTicks, light);
-        this.renderWheel(vehicle, matrixStack, renderTypeBuffer, true, 11.5F * 0.0625F, -0.5F, 0.0F, 1.25F, partialTicks, light);
+        this.renderWheel(vehicle, matrixStack, renderTypeBuffer, false, -11.5F * 0.0625F, -0.45F, 0.0F, 1.75F, partialTicks, light);
+        this.renderWheel(vehicle, matrixStack, renderTypeBuffer, true, 11.5F * 0.0625F, -0.45F, 0.0F, 1.75F, partialTicks, light);
 
         matrixStack.pushPose();
         matrixStack.translate(0, 0.0625, 0);

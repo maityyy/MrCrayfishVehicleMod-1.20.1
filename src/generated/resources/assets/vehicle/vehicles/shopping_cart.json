@@ -24,7 +24,12 @@
   },
   "position": {
     "body": {
-      "scale": 1.05
+      "scale": 1.05,
+      "translate": [
+        0.0,
+        -0.1,
+        0.0
+      ]
     }
   },
   "seats": [
