@@ -210,7 +210,7 @@ public class VehicleCrateBlock extends RotatedObjectBlock
         CompoundTag blockEntityTag = new CompoundTag();
         blockEntityTag.putString("Vehicle", entityId.toString());
         blockEntityTag.putInt("Color", color);
-        blockEntityTag.put("EngineStack", engine.save(new CompoundTag()));
+        if (engine != null) blockEntityTag.put("EngineStack", engine.save(new CompoundTag()));
         blockEntityTag.put("WheelStack", wheel.save(new CompoundTag()));
         CompoundTag itemTag = new CompoundTag();
         itemTag.put("BlockEntityTag", blockEntityTag);
