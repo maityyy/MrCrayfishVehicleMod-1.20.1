@@ -31,12 +31,7 @@
   },
   "position": {
     "body": {
-      "scale": 1.2,
-      "translate": [
-        0.0,
-        -0.16,
-        0.0
-      ]
+      "scale": 1.2
     },
     "fuelPort": {
       "rotation": [
@@ -73,9 +68,9 @@
       "position": "front",
       "render": false,
       "scale": [
-        1.05,
-        1.25,
-        1.25
+        0.6,
+        0.8,
+        0.8
       ],
       "side": "none"
     },
@@ -88,9 +83,9 @@
       "particles": true,
       "position": "rear",
       "scale": [
-        1.05,
-        1.25,
-        1.25
+        0.6,
+        0.8,
+        0.8
       ],
       "side": "none"
     }

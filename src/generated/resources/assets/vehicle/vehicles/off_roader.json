@@ -25,12 +25,7 @@
   },
   "position": {
     "body": {
-      "scale": 1.4,
-      "translate": [
-        0.0,
-        -0.24,
-        0.0
-      ]
+      "scale": 1.4
     },
     "fuelPort": {
       "rotation": [
@@ -93,61 +88,61 @@
   "wheels": [
     {
       "offset": [
-        8.19,
+        9.0,
         0.0,
         14.5
       ],
       "particles": true,
       "position": "front",
       "scale": [
-        1.85,
-        1.85,
-        1.85
+        1.4,
+        1.4,
+        1.4
       ],
       "side": "left"
     },
     {
       "offset": [
-        8.19,
+        9.0,
         0.0,
         14.5
       ],
       "particles": true,
       "position": "front",
       "scale": [
-        1.85,
-        1.85,
-        1.85
+        1.4,
+        1.4,
+        1.4
       ],
       "side": "right"
     },
     {
       "offset": [
-        8.19,
+        9.0,
         0.0,
         -14.5
       ],
       "particles": true,
       "position": "rear",
       "scale": [
-        1.85,
-        1.85,
-        1.85
+        1.4,
+        1.4,
+        1.4
       ],
       "side": "left"
     },
     {
       "offset": [
-        8.19,
+        9.0,
         0.0,
         -14.5
       ],
       "particles": true,
       "position": "rear",
       "scale": [
-        1.85,
-        1.85,
-        1.85
+        1.4,
+        1.4,
+        1.4
       ],
       "side": "right"
     }
