@@ -123,19 +123,23 @@ public class JerryCanItem extends Item
     @Override
     public boolean isBarVisible(ItemStack stack)
     {
-        return this.getCurrentFuel(stack) > 0;
+        return this.getCurrentFuel(stack) < this.capacitySupplier.get();
     }
 
-    // FIXME
     @Override
     public int getBarWidth(ItemStack stack)
     {
-        return 1 - (this.getCurrentFuel(stack) / this.capacitySupplier.get());
+        // See super method for magic constant
+        return Math.round(this.getCurrentFuel(stack) * 13.0F / this.capacitySupplier.get());
     }
 
     @Override
     public int getBarColor(ItemStack stack)
     {
+        if (this.getCurrentFuel(stack) <= 0)
+        {
+            return 0;
+        }
         Optional<IFluidHandlerItem> optional = stack.getCapability(ForgeCapabilities.FLUID_HANDLER_ITEM).resolve();
         return optional.map(handler -> {
             int color = IClientFluidTypeExtensions.of(handler.getFluidInTank(0).getFluid()).getTintColor();
