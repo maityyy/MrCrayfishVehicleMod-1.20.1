@@ -1090,8 +1090,8 @@ public class EntityRayTracer
     {
         Matrix4f pose = matrixStack.last().pose();
         shape.forAllEdges((minX, minY, minZ, maxX, maxY, maxZ) -> {
-            builder.vertex(pose, (float) minX, (float) minY, (float) minZ).color(red, green, blue, alpha).endVertex();
-            builder.vertex(pose, (float) maxX, (float) maxY, (float) maxZ).color(red, green, blue, alpha).endVertex();
+            builder.vertex(pose, (float) minX, (float) minY, (float) minZ).color(red, green, blue, alpha).normal(0, 1, 0).endVertex();
+            builder.vertex(pose, (float) maxX, (float) maxY, (float) maxZ).color(red, green, blue, alpha).normal(0, 1, 0).endVertex();
         });
     }
 

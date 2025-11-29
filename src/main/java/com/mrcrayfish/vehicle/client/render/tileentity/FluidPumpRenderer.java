@@ -75,7 +75,7 @@ public class FluidPumpRenderer implements BlockEntityRenderer<PumpTileEntity>
         Component text = Component.translatable(tileEntity.getPowerMode().getKey());
         float x = (-fontRenderer.width(text) / 2.0F);
         // FIXME
-        fontRenderer.drawInBatch(text, x, 0, -1, true, matrix4f, renderTypeBuffer, DisplayMode.SEE_THROUGH, 0, 15728880);
+        fontRenderer.drawInBatch(text, x, 0, -1, false, matrix4f, renderTypeBuffer, DisplayMode.SEE_THROUGH, 0, 15728880);
         matrixStack.popPose();
     }
 
