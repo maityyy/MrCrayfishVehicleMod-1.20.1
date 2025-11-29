@@ -11,6 +11,7 @@ import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.At.Shift;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
@@ -23,14 +24,20 @@ class LivingEntityRendererMixin<T extends LivingEntity, M extends EntityModel<T>
     protected M model;
 
     @Inject(method = "render(Lnet/minecraft/world/entity/LivingEntity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/model/EntityModel;renderToBuffer(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;IIFFFF)V"))
-    void fireRenderPlayer(T entity, float entityYaw, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int light, CallbackInfo callback)
+    void fireRenderPlayerPre(T entity, float entityYaw, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int light, CallbackInfo callback)
     {
         if(!(entity instanceof Player))
             return;
 
-        Player player = (Player) entity;
+        PlayerModelHandler.onPreRender((Player) entity, poseStack, partialTick);
+    }
 
-        PlayerModelHandler.onPreRender(player, poseStack, partialTick);
-        FuelingHandler.onModelRenderPost(entity, model, poseStack);
+    @Inject(method = "render(Lnet/minecraft/world/entity/LivingEntity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", at = @At(shift = Shift.AFTER, value = "INVOKE", target = "Lnet/minecraft/client/model/EntityModel;renderToBuffer(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;IIFFFF)V"))
+    void fireRenderPlayerPost(T entity, float entityYaw, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int light, CallbackInfo callback)
+    {
+        if(!(entity instanceof Player))
+            return;
+
+        FuelingHandler.onModelRenderPost(entity, this.model, poseStack);
     }
 }
