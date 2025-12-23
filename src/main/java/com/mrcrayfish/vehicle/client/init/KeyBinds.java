@@ -41,19 +41,16 @@ public class KeyBinds
 
     public static final KeyMapping KEY_HORN = new KeyMapping("key.vehicle.horn", GLFW.GLFW_KEY_H, "key.categories.vehicle");
     public static final KeyMapping KEY_CYCLE_SEATS = new KeyMapping("key.vehicle.cycle_seats", GLFW.GLFW_KEY_C, "key.categories.vehicle");
-    public static final KeyMapping KEY_HITCH_TRAILER = new KeyMapping("key.vehicle.hitch_trailer", GLFW.GLFW_KEY_LEFT_CONTROL, "key.categories.vehicle");
 
     static
     {
         KEY_HORN.setKeyConflictContext(RIDING_VEHICLE);
         KEY_CYCLE_SEATS.setKeyConflictContext(RIDING_VEHICLE);
-        KEY_HITCH_TRAILER.setKeyConflictContext(RIDING_VEHICLE);
     }
 
     @SubscribeEvent
     public static void registerKeyBinds(RegisterKeyMappingsEvent event) {
         event.register(KeyBinds.KEY_HORN);
         event.register(KeyBinds.KEY_CYCLE_SEATS);
-        event.register(KeyBinds.KEY_HITCH_TRAILER);
     }
 }

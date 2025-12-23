@@ -51,7 +51,6 @@ import net.minecraftforge.network.NetworkHooks;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
-import java.util.UUID;
 
 /**
  * Author: MrCrayfish
@@ -66,9 +65,8 @@ public abstract class VehicleEntity extends Entity implements IEntityAdditionalS
     private static final EntityDataAccessor<Float> HEALTH = SynchedEntityData.defineId(VehicleEntity.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Integer> TRAILER = SynchedEntityData.defineId(VehicleEntity.class, EntityDataSerializers.INT);
 
-    protected UUID trailerId;
     protected TrailerEntity trailer = null;
-    private int searchDelay = 0;
+    private CompoundTag pendingTrailer = null;
 
     protected int lerpSteps;
     protected double lerpX;
@@ -128,7 +126,7 @@ public abstract class VehicleEntity extends Entity implements IEntityAdditionalS
                     if(entity instanceof TrailerEntity && entity != this)
                     {
                         TrailerEntity trailer = (TrailerEntity) entity;
-                        this.setTrailer(trailer);
+                        this.updateTrailer(trailer);
                         ModDataKeys.TRAILER.setValue(player, -1);
                     }
                 }
@@ -246,13 +244,13 @@ public abstract class VehicleEntity extends Entity implements IEntityAdditionalS
         {
             this.setHealth(compound.getFloat("Health"));
         }
-        if(compound.hasUUID("Trailer"))
-        {
-            this.trailerId = compound.getUUID("Trailer");
-        }
         if(compound.contains("SeatTracker", Tag.TAG_COMPOUND))
         {
             this.seatTracker.read(compound.getCompound("SeatTracker"));
+        }
+        if(compound.contains("Trailer", Tag.TAG_COMPOUND))
+        {
+            this.pendingTrailer = compound.getCompound("Trailer");
         }
     }
 
@@ -262,19 +260,76 @@ public abstract class VehicleEntity extends Entity implements IEntityAdditionalS
         compound.putIntArray("Color", this.getColorRGB());
         compound.putFloat("MaxHealth", this.getMaxHealth());
         compound.putFloat("Health", this.getHealth());
-
-        //TODO make it save the entity
-        if(this.trailerId != null)
-        {
-            compound.putUUID("Trailer", this.trailerId);
-        }
-
         compound.put("SeatTracker", this.seatTracker.write());
+
+        if(this.trailer != null)
+        {
+            CompoundTag trailerTag = new CompoundTag();
+            if(this.trailer.saveAsPassenger(trailerTag))
+            {
+                compound.put("Trailer", trailerTag);
+            }
+        }
+    }
+
+    @Override
+    public void onSyncedDataUpdated(EntityDataAccessor<?> key) {
+        super.onSyncedDataUpdated(key);
+
+        if(key.equals(TRAILER))
+        {
+            int trailerId = this.entityData.get(TRAILER);
+
+            if(trailerId == -1)
+            {
+                if(this.trailer != null)
+                {
+                    this.trailer.setPulling(null);
+                }
+                this.trailer = null;
+            }
+            else
+            {
+                Entity potentialTrailer = this.level().getEntity(trailerId);
+
+                if(potentialTrailer instanceof TrailerEntity)
+                {
+                    ((TrailerEntity) potentialTrailer).setPulling(this);
+                    this.trailer = (TrailerEntity) potentialTrailer;
+                }
+            }
+        }
+    }
+
+    @Override
+    public void setRemoved(RemovalReason reason) {
+        super.setRemoved(reason);
+
+        if(reason.shouldSave() && this.trailer != null)
+        {
+            this.trailer.remove(RemovalReason.UNLOADED_WITH_PLAYER);
+        }
     }
 
     @Override
     public void tick()
     {
+        if (this.pendingTrailer != null && this.level() instanceof ServerLevel)
+        {
+            ServerLevel serverLevel = (ServerLevel) this.level();
+
+            Entity potentialTrailer = EntityType.loadEntityRecursive(this.pendingTrailer, serverLevel, entity -> {
+                serverLevel.addFreshEntityWithPassengers(entity);
+                return entity;
+            });
+            if(potentialTrailer instanceof TrailerEntity)
+            {
+                this.updateTrailer((TrailerEntity) potentialTrailer);
+            }
+
+            this.pendingTrailer = null;
+        }
+
         if(this.getTimeSinceHit() > 0)
         {
             this.setTimeSinceHit(this.getTimeSinceHit() - 1);
@@ -284,77 +339,14 @@ public abstract class VehicleEntity extends Entity implements IEntityAdditionalS
         this.prevPosY = this.getPosY();
         this.prevPosZ = this.getPosZ();*/
 
-        if(!this.level().isClientSide)
+        if(!this.level().isClientSide() && this.trailer != null && (!this.trailer.isAlive() || (this.trailer.getPullingEntity() != null && !this.trailer.getPullingEntity().equals(this))))
         {
-            if(this.searchDelay <= 0)
-            {
-                if(this.trailer != null)
-                {
-                    /* Updates periodically to ensure the client knows the vehicle/trailer connection.
-                     * There is often problems on loading worlds that it doesn't sync correctly, so this
-                     * is the fix. */
-                    this.entityData.set(TRAILER, trailer.getId());
-                    this.trailer.getEntityData().set(TrailerEntity.PULLING_ENTITY, this.getId());
-                    this.searchDelay = Config.SERVER.trailerSyncCooldown.get();
-                }
-                else
-                {
-                    this.findTrailer();
-                }
-            }
-            else
-            {
-                this.searchDelay--;
-            }
-        }
-
-        if(this.level().isClientSide)
-        {
-            int entityId = this.entityData.get(TRAILER);
-            if(entityId != -1)
-            {
-                Entity entity = this.level().getEntity(this.entityData.get(TRAILER));
-                if(entity instanceof TrailerEntity)
-                {
-                    this.trailer = (TrailerEntity) entity;
-                    this.trailerId = trailer.getUUID();
-                }
-                else if(this.trailer != null)
-                {
-                    this.trailer = null;
-                    this.trailerId = null;
-                }
-            }
-            else if(this.trailer != null)
-            {
-                this.trailer = null;
-                this.trailerId = null;
-            }
-        }
-
-        if(!this.level().isClientSide && this.trailer != null && (!this.trailer.isAlive() || this.trailer.getPullingEntity() != this))
-        {
-            this.setTrailer(null);
+            this.updateTrailer(null);
         }
 
         super.tick();
         this.tickLerp();
         this.onUpdateVehicle();
-    }
-
-    private void findTrailer()
-    {
-        if(!this.level().isClientSide && this.trailerId != null && this.trailer == null)
-        {
-            ServerLevel server = (ServerLevel) this.level();
-            Entity entity = server.getEntity(this.trailerId);
-            if(entity instanceof TrailerEntity)
-            {
-                this.setTrailer((TrailerEntity) entity);
-                return;
-            }
-            this.trailerId = null;
-        }
     }
 
     protected abstract void onUpdateVehicle();
@@ -668,31 +660,28 @@ public abstract class VehicleEntity extends Entity implements IEntityAdditionalS
         return false;
     }
 
-    public void setTrailer(TrailerEntity trailer)
+    public void updateTrailer(TrailerEntity trailer)
     {
         if(trailer != null)
         {
             this.trailer = trailer;
-            this.trailerId = trailer.getUUID();
-            trailer.setPullingEntity(this);
             this.entityData.set(TRAILER, trailer.getId());
+            trailer.updatePulling(this);
         }
         else
         {
-            if(this.trailer != null && this.trailer.getPullingEntity() == this)
+            if (this.trailer != null)
             {
-                this.trailer.setPullingEntity(null);
+                this.trailer.updatePulling(null);
             }
             this.trailer = null;
-            this.trailerId = null;
             this.entityData.set(TRAILER, -1);
         }
     }
 
-    @Nullable
-    public UUID getTrailerId()
+    public void setTrailer(TrailerEntity entity)
     {
-        return trailerId;
+        this.trailer = entity;
     }
 
     @Nullable

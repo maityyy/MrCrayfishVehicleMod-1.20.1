@@ -32,17 +32,5 @@ public class InputHandler
                 PacketHandler.instance.sendToServer(new MessageCycleSeats());
             }
         }
-
-        if(KeyBinds.KEY_HITCH_TRAILER.isDown())
-        {
-            if(minecraft.player.getVehicle() instanceof VehicleEntity)
-            {
-                VehicleEntity vehicle = (VehicleEntity) minecraft.player.getVehicle();
-                if(vehicle.canTowTrailer())
-                {
-                    PacketHandler.instance.sendToServer(new MessageHitchTrailer(vehicle.getTrailer() == null));
-                }
-            }
-        }
     }
 }

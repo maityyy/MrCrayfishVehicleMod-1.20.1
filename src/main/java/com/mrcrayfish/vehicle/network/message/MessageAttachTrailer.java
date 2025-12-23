@@ -1,6 +1,7 @@
 package com.mrcrayfish.vehicle.network.message;
 
 import com.mrcrayfish.vehicle.entity.TrailerEntity;
+import com.mrcrayfish.vehicle.entity.VehicleEntity;
 import com.mrcrayfish.vehicle.init.ModDataKeys;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
@@ -56,7 +57,11 @@ public class MessageAttachTrailer implements IMessage<MessageAttachTrailer>
                     Entity entity = world.getEntity(message.entityId);
                     if(entity instanceof Player && entity.getVehicle() == null)
                     {
-                        trailer.setPullingEntity(entity);
+                        if(trailer.getPullingEntity() instanceof VehicleEntity)
+                        {
+                            ((VehicleEntity) trailer.getPullingEntity()).updateTrailer(null);
+                        }
+                        trailer.updatePulling(entity);
                         ModDataKeys.TRAILER.setValue((Player) entity, message.trailerId);
                     }
                 }
