@@ -48,6 +48,6 @@ public class VehicleUtil
 
     private static <T extends Entity> EntityType<T> buildVehicleType(ResourceLocation id, BiFunction<EntityType<T>, Level, T> function, float width, float height)
     {
-        return EntityType.Builder.of(function::apply, MobCategory.MISC).sized(width, height).setTrackingRange(256).setUpdateInterval(1).fireImmune().setShouldReceiveVelocityUpdates(true).build(id.toString());
+        return EntityType.Builder.of(function::apply, MobCategory.MISC).sized(width, height).setTrackingRange(16).setUpdateInterval(1).fireImmune().setShouldReceiveVelocityUpdates(true).build(id.toString());
     }
 }

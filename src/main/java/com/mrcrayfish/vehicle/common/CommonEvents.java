@@ -139,7 +139,7 @@ public class CommonEvents
                     String id = getEntityString(targetEntity);
                     if(id != null)
                     {
-                        ((VehicleEntity) targetEntity).updateTrailer(null);
+                        ((VehicleEntity) targetEntity).setTrailerAndPulling(null);
 
                         tagCompound.putString("id", id);
                         targetEntity.saveWithoutId(tagCompound);
@@ -377,13 +377,7 @@ public class CommonEvents
                     Entity entity = world.getEntity(trailerId);
                     if(entity instanceof TrailerEntity)
                     {
-                        TrailerEntity trailer = (TrailerEntity) entity;
-
-                        if(trailer.getPullingEntity() instanceof VehicleEntity)
-                        {
-                            ((VehicleEntity) trailer.getPullingEntity()).updateTrailer(null);
-                        }
-                        trailer.updatePulling(null);
+                        ((TrailerEntity) entity).resetPullingOrMaybeTrailer();
                     }
                     ModDataKeys.TRAILER.setValue(player, -1);
                 }

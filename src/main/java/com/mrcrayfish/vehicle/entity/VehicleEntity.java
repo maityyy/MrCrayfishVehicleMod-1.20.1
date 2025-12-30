@@ -17,6 +17,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAnimatePacket;
@@ -66,7 +67,8 @@ public abstract class VehicleEntity extends Entity implements IEntityAdditionalS
     private static final EntityDataAccessor<Integer> TRAILER = SynchedEntityData.defineId(VehicleEntity.class, EntityDataSerializers.INT);
 
     protected TrailerEntity trailer = null;
-    private CompoundTag pendingTrailer = null;
+    private CompoundTag serverPendingTrailerTag = null;
+    private int clientPendingTrailerId = -1;
 
     protected int lerpSteps;
     protected double lerpX;
@@ -126,7 +128,7 @@ public abstract class VehicleEntity extends Entity implements IEntityAdditionalS
                     if(entity instanceof TrailerEntity && entity != this)
                     {
                         TrailerEntity trailer = (TrailerEntity) entity;
-                        this.updateTrailer(trailer);
+                        this.setTrailerAndPulling(trailer);
                         ModDataKeys.TRAILER.setValue(player, -1);
                     }
                 }
@@ -250,7 +252,7 @@ public abstract class VehicleEntity extends Entity implements IEntityAdditionalS
         }
         if(compound.contains("Trailer", Tag.TAG_COMPOUND))
         {
-            this.pendingTrailer = compound.getCompound("Trailer");
+            this.serverPendingTrailerTag = compound.getCompound("Trailer");
         }
     }
 
@@ -276,27 +278,16 @@ public abstract class VehicleEntity extends Entity implements IEntityAdditionalS
     public void onSyncedDataUpdated(EntityDataAccessor<?> key) {
         super.onSyncedDataUpdated(key);
 
-        if(key.equals(TRAILER))
+        if(this.level().isClientSide() && key.equals(TRAILER))
         {
-            int trailerId = this.entityData.get(TRAILER);
-
-            if(trailerId == -1)
+            int requestedTrailerId = this.entityData.get(TRAILER);
+            if(requestedTrailerId == -1)
             {
-                if(this.trailer != null)
-                {
-                    this.trailer.setPulling(null);
-                }
-                this.trailer = null;
+                this.setTrailerAndPulling(null);
             }
             else
             {
-                Entity potentialTrailer = this.level().getEntity(trailerId);
-
-                if(potentialTrailer instanceof TrailerEntity)
-                {
-                    ((TrailerEntity) potentialTrailer).setPulling(this);
-                    this.trailer = (TrailerEntity) potentialTrailer;
-                }
+                this.clientPendingTrailerId = requestedTrailerId;
             }
         }
     }
@@ -305,29 +296,38 @@ public abstract class VehicleEntity extends Entity implements IEntityAdditionalS
     public void setRemoved(RemovalReason reason) {
         super.setRemoved(reason);
 
-        if(reason.shouldSave() && this.trailer != null)
+        if(!this.level().isClientSide() && reason.shouldSave() && this.trailer != null)
         {
             this.trailer.remove(RemovalReason.UNLOADED_WITH_PLAYER);
         }
     }
 
     @Override
+    public Component getName() {
+        return Component.literal(getTypeName().getString() + " id = " + getId());
+    }
+
+    @Override
     public void tick()
     {
-        if (this.pendingTrailer != null && this.level() instanceof ServerLevel)
+        if(!this.level().isClientSide() && this.serverPendingTrailerTag != null)
         {
             ServerLevel serverLevel = (ServerLevel) this.level();
-
-            Entity potentialTrailer = EntityType.loadEntityRecursive(this.pendingTrailer, serverLevel, entity -> {
-                serverLevel.addFreshEntityWithPassengers(entity);
+            Entity potentialTrailer = EntityType.loadEntityRecursive(this.serverPendingTrailerTag, serverLevel, entity -> {
+                serverLevel.addWithUUID(entity);
                 return entity;
             });
+            this.setTrailerAndPulling((TrailerEntity) potentialTrailer);
+            this.serverPendingTrailerTag = null;
+        }
+        if(this.level().isClientSide() && this.clientPendingTrailerId != -1)
+        {
+            Entity potentialTrailer = this.level().getEntity(this.clientPendingTrailerId);
             if(potentialTrailer instanceof TrailerEntity)
             {
-                this.updateTrailer((TrailerEntity) potentialTrailer);
+                this.clientPendingTrailerId = -1;
+                this.setTrailerAndPulling((TrailerEntity) potentialTrailer);
             }
-
-            this.pendingTrailer = null;
         }
 
         if(this.getTimeSinceHit() > 0)
@@ -341,7 +341,7 @@ public abstract class VehicleEntity extends Entity implements IEntityAdditionalS
 
         if(!this.level().isClientSide() && this.trailer != null && (!this.trailer.isAlive() || (this.trailer.getPullingEntity() != null && !this.trailer.getPullingEntity().equals(this))))
         {
-            this.updateTrailer(null);
+            this.setTrailerAndPulling(null);
         }
 
         super.tick();
@@ -660,28 +660,29 @@ public abstract class VehicleEntity extends Entity implements IEntityAdditionalS
         return false;
     }
 
-    public void updateTrailer(TrailerEntity trailer)
+    public void setTrailerAndPulling(@Nullable TrailerEntity trailer)
     {
         if(trailer != null)
         {
+            trailer.setPulling(this);
+            if(!this.level().isClientSide())
+            {
+                this.entityData.set(TRAILER, trailer.getId(), true);
+            }
             this.trailer = trailer;
-            this.entityData.set(TRAILER, trailer.getId());
-            trailer.updatePulling(this);
         }
         else
         {
             if (this.trailer != null)
             {
-                this.trailer.updatePulling(null);
+                this.trailer.setPulling(null);
+            }
+            if(!this.level().isClientSide())
+            {
+                this.entityData.set(TRAILER, -1, true);
             }
             this.trailer = null;
-            this.entityData.set(TRAILER, -1);
         }
-    }
-
-    public void setTrailer(TrailerEntity entity)
-    {
-        this.trailer = entity;
     }
 
     @Nullable

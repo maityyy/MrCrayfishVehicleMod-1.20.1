@@ -5,6 +5,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ChunkMap.TrackedEntity;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
@@ -26,6 +28,7 @@ public abstract class TrailerEntity extends VehicleEntity
     public static final EntityDataAccessor<Integer> PULLING_ENTITY = SynchedEntityData.defineId(TrailerEntity.class, EntityDataSerializers.INT);
 
     private Entity pullingEntity;
+    private int clientPendingPullingEntityId = -1;
 
     public float wheelRotation;
     public float prevWheelRotation;
@@ -53,30 +56,16 @@ public abstract class TrailerEntity extends VehicleEntity
     public void onSyncedDataUpdated(EntityDataAccessor<?> key) {
         super.onSyncedDataUpdated(key);
 
-        if(key.equals(PULLING_ENTITY))
+        if(this.level().isClientSide() && key.equals(PULLING_ENTITY))
         {
-            int pullingId = this.entityData.get(PULLING_ENTITY);
-
-            if(pullingId == -1)
+            int requestedPullingEntityId = this.entityData.get(PULLING_ENTITY);
+            if(requestedPullingEntityId == -1)
             {
-                if(this.pullingEntity instanceof VehicleEntity)
-                {
-                    ((VehicleEntity) this.pullingEntity).setTrailer(null);
-                }
-                this.pullingEntity = null;
+                this.resetPullingOrMaybeTrailer();
             }
             else
             {
-                Entity potentialPulling = this.level().getEntity(pullingId);
-
-                if(potentialPulling instanceof Player || (potentialPulling instanceof VehicleEntity && ((VehicleEntity) potentialPulling).canTowTrailer()))
-                {
-                    if(potentialPulling instanceof VehicleEntity)
-                    {
-                        ((VehicleEntity) potentialPulling).setTrailer(this);
-                    }
-                    this.pullingEntity = potentialPulling;
-                }
+                this.clientPendingPullingEntityId = requestedPullingEntityId;
             }
         }
     }
@@ -84,6 +73,16 @@ public abstract class TrailerEntity extends VehicleEntity
     @Override
     public void onUpdateVehicle()
     {
+        if(this.level().isClientSide() && this.clientPendingPullingEntityId != -1)
+        {
+            Entity potentialPullingEntity = this.level().getEntity(this.clientPendingPullingEntityId);
+            if(potentialPullingEntity instanceof Player || (potentialPullingEntity instanceof VehicleEntity && ((VehicleEntity) potentialPullingEntity).canTowTrailer()))
+            {
+                this.clientPendingPullingEntityId = -1;
+                this.setPullingOrMaybeTrailer(potentialPullingEntity);
+            }
+        }
+
         this.prevWheelRotation = this.wheelRotation;
 
         Vec3 motion = this.getDeltaMovement();
@@ -95,28 +94,13 @@ public abstract class TrailerEntity extends VehicleEntity
             if(this.pullingEntity.distanceTo(this) > threshold)
             {
                 this.level().playSound(null, this.pullingEntity.blockPosition(), SoundEvents.ITEM_BREAK, SoundSource.PLAYERS, 1.0F, 1.0F);
-
-                if(this.pullingEntity instanceof VehicleEntity)
-                {
-                    ((VehicleEntity) this.pullingEntity).updateTrailer(null);
-                }
-                else
-                {
-                    this.updatePulling(null);
-                }
+                this.resetPullingOrMaybeTrailer();
             }
         }
 
         if(!this.level().isClientSide() && this.pullingEntity != null && (!this.pullingEntity.isAlive() || (this.pullingEntity instanceof VehicleEntity && ((VehicleEntity) this.pullingEntity).getTrailer() != null && !((VehicleEntity) this.pullingEntity).getTrailer().equals(this))))
         {
-            if(this.pullingEntity instanceof VehicleEntity)
-            {
-                ((VehicleEntity) this.pullingEntity).updateTrailer(null);
-            }
-            else
-            {
-                this.updatePulling(null);
-            }
+            this.resetPullingOrMaybeTrailer();
         }
 
         if(this.pullingEntity != null)
@@ -129,6 +113,7 @@ public abstract class TrailerEntity extends VehicleEntity
             this.setDeltaMovement(motion.x() * 0.75, motion.y(), motion.z() * 0.75);
             this.move(MoverType.SELF, this.getDeltaMovement());
         }
+        this.hurtMarked = true;
 
         this.checkInsideBlocks();
 
@@ -173,28 +158,71 @@ public abstract class TrailerEntity extends VehicleEntity
     }
 
     @Override
+    public boolean broadcastToPlayer(ServerPlayer player)
+    {
+        if(this.pullingEntity != null)
+        {
+            TrackedEntity trackedPullingEntity = player.serverLevel().getChunkSource().chunkMap.entityMap.get(this.pullingEntity.getId());
+
+            if(!trackedPullingEntity.seenBy.contains(player.connection))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    @Override
     public double getPassengersRidingOffset()
     {
         return 0.0;
     }
 
-    public void updatePulling(Entity pulling)
+    public void resetPullingOrMaybeTrailer()
+    {
+        if(this.pullingEntity instanceof VehicleEntity)
+        {
+            ((VehicleEntity) this.pullingEntity).setTrailerAndPulling(null);
+        }
+        else
+        {
+            this.setPulling(null);
+        }
+    }
+
+    public void setPullingOrMaybeTrailer(Entity entity)
+    {
+        this.resetPullingOrMaybeTrailer();
+
+        if(entity instanceof VehicleEntity)
+        {
+            ((VehicleEntity) entity).setTrailerAndPulling(this);
+        }
+        else
+        {
+            this.setPulling(entity);
+        }
+    }
+
+    public void setPulling(@Nullable Entity pulling)
     {
         if(pulling instanceof Player || (pulling instanceof VehicleEntity && pulling.getVehicle() == null && ((VehicleEntity) pulling).canTowTrailer()))
         {
-            this.entityData.set(PULLING_ENTITY, pulling.getId());
+            if(!this.level().isClientSide())
+            {
+                this.entityData.set(PULLING_ENTITY, pulling.getId(), true);
+            }
             this.pullingEntity = pulling;
         }
         else
         {
-            this.entityData.set(PULLING_ENTITY, -1);
+            if(!this.level().isClientSide())
+            {
+                this.entityData.set(PULLING_ENTITY, -1, true);
+            }
             this.pullingEntity = null;
         }
-    }
-
-    public void setPulling(Entity entity)
-    {
-        this.pullingEntity = entity;
     }
 
     @Nullable
@@ -228,6 +256,8 @@ public abstract class TrailerEntity extends VehicleEntity
     {
         return false;
     }
+
+    // TODO save player link
 
     @Override
     public boolean shouldBeSaved()

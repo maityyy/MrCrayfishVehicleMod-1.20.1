@@ -60,7 +60,7 @@ public class MessageHitchTrailer implements IMessage<MessageHitchTrailer>
                 {
                     if(vehicle.getTrailer() != null)
                     {
-                        vehicle.updateTrailer(null);
+                        vehicle.setTrailerAndPulling(null);
                         player.level().playSound(null, vehicle.blockPosition(), SoundEvents.ITEM_BREAK, SoundSource.PLAYERS, 1.0F, 1.0F);
                     }
                 }
@@ -93,7 +93,7 @@ public class MessageHitchTrailer implements IMessage<MessageHitchTrailer>
                         AABB hitchBox = new AABB(trailerVec.x, trailerVec.y, trailerVec.z, trailerVec.x, trailerVec.y, trailerVec.z).inflate(0.25);
                         if(towBarBox.intersects(hitchBox))
                         {
-                            vehicle.updateTrailer(trailer);
+                            vehicle.setTrailerAndPulling(trailer);
                             player.level().playSound(null, vehicle.blockPosition(), SoundEvents.ANVIL_PLACE, SoundSource.PLAYERS, 1.0F, 1.5F);
                             return;
                         }

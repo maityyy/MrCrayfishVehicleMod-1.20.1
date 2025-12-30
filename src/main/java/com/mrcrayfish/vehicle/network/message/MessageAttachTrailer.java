@@ -57,11 +57,7 @@ public class MessageAttachTrailer implements IMessage<MessageAttachTrailer>
                     Entity entity = world.getEntity(message.entityId);
                     if(entity instanceof Player && entity.getVehicle() == null)
                     {
-                        if(trailer.getPullingEntity() instanceof VehicleEntity)
-                        {
-                            ((VehicleEntity) trailer.getPullingEntity()).updateTrailer(null);
-                        }
-                        trailer.updatePulling(entity);
+                        trailer.setPullingOrMaybeTrailer(entity);
                         ModDataKeys.TRAILER.setValue((Player) entity, message.trailerId);
                     }
                 }
