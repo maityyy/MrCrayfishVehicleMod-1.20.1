@@ -369,7 +369,7 @@ public class CommonEvents
         {
             Player player = event.player;
             Level world = player.level();
-            if(player.isCrouching())
+            if(!world.isClientSide() && player.isCrouching())
             {
                 int trailerId = ModDataKeys.TRAILER.getValue(player);
                 if(trailerId != -1)

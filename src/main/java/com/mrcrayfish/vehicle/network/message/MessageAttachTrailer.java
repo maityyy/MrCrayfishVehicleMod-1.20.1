@@ -55,7 +55,7 @@ public class MessageAttachTrailer implements IMessage<MessageAttachTrailer>
                 {
                     TrailerEntity trailer = (TrailerEntity) trailerEntity;
                     Entity entity = world.getEntity(message.entityId);
-                    if(entity instanceof Player && entity.getVehicle() == null)
+                    if(entity instanceof Player && entity.getVehicle() == null && !entity.isCrouching() && ModDataKeys.TRAILER.getValue((Player) entity) == -1)
                     {
                         trailer.setPullingOrMaybeTrailer(entity);
                         ModDataKeys.TRAILER.setValue((Player) entity, message.trailerId);
